@@ -1,0 +1,22 @@
+# 依赖与构建产物
+node_modules/
+dist-app/
+package-lock.json
+npm-debug.log*
+
+# 网页版聊天室运行时产生的数据（历史与上传的图片）
+.chat-data/
+
+# 桌面版在开发时可能留下的数据
+data/
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 本仓库自己的临时文件
+*.tmp
+*.bak

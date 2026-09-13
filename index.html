@@ -1,0 +1,1736 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>元素手帐 · 把日子记下来</title>
+<meta name="description" content="一个可以自由改的个人手帐站：日常随笔、读书笔记、厨房记录与走走看看，配主题色、壁纸模式、氛围特效和小游戏。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@400;600;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   Mizuki 设计令牌（对照 src/styles/variables.styl）
+   oklch + --hue 驱动，hue 默认 240
+   ============================================================ */
+:root {
+  /* --hue 是"裸数字"，直接当 oklch(L C var(--hue)) 的第三个参数用，
+     和 Fuwari 一致（默认 250；本站元素系统把它调成 230 = 水元素）。 */
+  --hue: 240;
+  --radius-large: 1rem;          /* 卡片：Fuwari 唯一的圆角令牌 */
+  --radius-btn: .5rem;           /* 所有按钮：rounded-lg */
+  --radius-cover: .75rem;        /* 封面 / 头像：rounded-xl */
+  --radius-chip: .375rem;        /* 小标签 / 行内码：rounded-md */
+  /* Fuwari 原值 75rem（三栏后正文只剩 576px，偏窄）；90rem 又偏宽。
+     84rem = 1344px：正文栏约 720px，导航栏同宽。 */
+  --page-width: 84rem;
+  --layout-page-width: var(--page-width);
+  --layout-sidebar-width: 17.5rem;
+  --banner-height: 35vh;
+  --banner-height-home: min(65vh, 760px);
+  --panel-overlap: 3.5rem;
+  --content-delay: 150ms;
+  --wallpaper-opacity: 0.8;
+  --wallpaper-blur: 1px;
+  --card-transparent-opacity: 0.92;
+
+  --primary: oklch(0.70 0.14 var(--hue));
+  /* 正文/徽标要落在浅底上，需要比 --primary 更暗才够对比度（W3C 4.5:1） */
+  --primary-text: oklch(0.48 0.14 var(--hue));
+  --primary-strong: oklch(0.45 0.14 var(--hue));
+  --page-bg: oklch(0.95 0.01 var(--hue));
+  --card-bg: #ffffff;
+  --card-bg-transparent: rgba(255, 255, 255, 0.92);
+  /* Fuwari 原值是 oklch(0.55 0.12)，但它压在自己的 --btn-regular-bg(0.95 0.025) 上
+     只有 4.05:1，过不了 WCAG AA。降到 0.50（≈4.94:1）视觉几乎无差别。 */
+  --btn-content: oklch(0.50 0.12 var(--hue));
+  --btn-regular-bg: oklch(0.95 0.025 var(--hue));
+  --btn-regular-bg-hover: oklch(0.9 0.05 var(--hue));
+  --btn-regular-bg-active: oklch(0.85 0.08 var(--hue));
+  --btn-plain-bg-hover: oklch(0.95 0.025 var(--hue));
+  --btn-plain-bg-active: oklch(0.98 0.01 var(--hue));
+  --deep-text: oklch(0.25 0.02 var(--hue));
+  --title-active: oklch(0.6 0.1 var(--hue));
+  --line-divider: rgba(0, 0, 0, 0.08);
+  --line-color: rgba(0, 0, 0, 0.1);
+  --meta-divider: rgba(0, 0, 0, 0.2);
+  /* Fuwari 的次要文字是"主色 50% 透明度"（.text-50），但 50% 黑在浅底上只有
+     3.98:1，同样过不了 AA；抬到 58%（≈5.32:1）。 */
+  --content-meta: rgba(0, 0, 0, 0.58);
+  --float-panel-bg: #ffffff;
+  --link-underline: oklch(0.93 0.04 var(--hue));
+  --link-hover: oklch(0.95 0.025 var(--hue));
+  --link-active: oklch(0.90 0.05 var(--hue));
+  --toc-item-active: oklch(0.70 0.13 var(--hue));
+  --selection-bg: oklch(0.90 0.05 var(--hue));
+
+  --font-body: "Noto Sans SC", "Zen Maru Gothic", system-ui, sans-serif;
+  --font-cjk: "Noto Sans SC", system-ui, sans-serif;
+  /* 文章正文用衬线（借鉴 XinghuisamaBlogs 的阅读体验：正文衬线、界面无衬线） */
+  --font-serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "SimSun", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  /* 手帐 / 漫画元素用：圆体，比正文更软，中文缺字自动回落 Noto Sans SC */
+  --font-hand: "Zen Maru Gothic", "Noto Sans SC", system-ui, sans-serif;
+  --font-display: "Zen Maru Gothic", "Noto Sans SC", system-ui, sans-serif;
+  color-scheme: light;
+}
+
+:root.dark {
+  --primary: oklch(0.75 0.14 var(--hue));
+  --primary-text: oklch(0.82 0.10 var(--hue));
+  --primary-strong: oklch(0.48 0.14 var(--hue));
+  --page-bg: oklch(0.16 0.014 var(--hue));
+  --card-bg: oklch(0.23 0.015 var(--hue));
+  --card-bg-transparent: rgba(31, 34, 40, 0.92);
+  --btn-content: oklch(0.75 0.1 var(--hue));
+  --btn-regular-bg: oklch(0.33 0.035 var(--hue));
+  --btn-regular-bg-hover: oklch(0.38 0.04 var(--hue));
+  --btn-regular-bg-active: oklch(0.43 0.045 var(--hue));
+  --btn-plain-bg-hover: oklch(0.30 0.035 var(--hue));
+  --btn-plain-bg-active: oklch(0.27 0.025 var(--hue));
+  /* 注意：Fuwari 的 --deep-text 在亮/暗两种模式下取值相同，因为它靠
+     prose-invert / text-* 工具类接管暗色正文。本站把 --deep-text 当主文字色用，
+     照抄会让暗色模式变成深字压深底，所以这里保留亮色取值。 */
+  --deep-text: oklch(0.95 0.01 var(--hue));
+  --line-divider: rgba(255, 255, 255, 0.08);
+  --line-color: rgba(255, 255, 255, 0.1);
+  --meta-divider: rgba(255, 255, 255, 0.2);
+  --content-meta: rgba(255, 255, 255, 0.62);
+  --float-panel-bg: oklch(0.19 0.015 var(--hue));
+  --link-underline: oklch(0.40 0.08 var(--hue));
+  --link-hover: oklch(0.40 0.08 var(--hue));
+  --link-active: oklch(0.35 0.07 var(--hue));
+  --selection-bg: oklch(0.40 0.08 var(--hue));
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scrollbar-gutter: stable; }
+
+/* ---------- 滚动条（借鉴 XinghuisamaBlogs / Yuimi-chaya：细、圆、主色渐显） ---------- */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--primary) 32%, transparent);
+  border-radius: 9999px; border: 2px solid transparent; background-clip: content-box;
+  transition: background-color .2s ease;
+}
+::-webkit-scrollbar-thumb:hover { background: color-mix(in oklab, var(--primary) 72%, transparent); background-clip: content-box; }
+::-webkit-scrollbar-corner { background: transparent; }
+* { scrollbar-width: thin; scrollbar-color: color-mix(in oklab, var(--primary) 40%, transparent) transparent; }
+
+/* Fuwari: 根字号 16px，正文行高 1.5（长文正文另给 1.75；文章页用衬线，见 enhance.css） */
+body {
+  margin: 0;
+  background: var(--page-bg);
+  color: var(--deep-text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  transition: color .15s cubic-bezier(.4,0,.2,1), background-color .15s cubic-bezier(.4,0,.2,1);
+}
+::selection { background: var(--selection-bg); }
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
+
+/* ============================================================
+   全屏壁纸（FullscreenWallpaper + Banner 背景）
+   ============================================================ */
+#wallpaper {
+  position: fixed; inset: 0; z-index: -2; overflow: hidden;
+  background: var(--page-bg);
+}
+/* ★ 交叉淡入淡出的关键在 visibility 的时机。
+   原来只有 transition: opacity，而 visibility 是**离散**属性、不参与过渡 ——
+   一旦摘掉 .on，visibility 立刻变 hidden，旧图当帧就消失了，
+   所以看到的是"啪"一下切掉 + 新图淡入，而不是两张图叠着化过去。
+   给 visibility 加一个和 opacity 等长的延迟，让它在淡出**结束之后**才隐藏，
+   同时又能在淡入开始时立刻可见（.on 那条规则里延迟为 0）。 */
+#wallpaper img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: center;
+  opacity: 0; visibility: hidden;
+  transition: opacity 1.2s ease, visibility 0s linear 1.2s;
+}
+/* ★ 壁纸默认**不加 filter**。
+   全屏图上的 filter 会让这一层额外走一遍光栅化：桌面版实测（Intel 核显、
+   dpr 1.5、窗口 1426×883 → 实际光栅 2139×1325）帧时间中位数从 4.3ms 涨到
+   12.4ms，p95 也跟着抖；而 1px 的模糊在照片上肉眼几乎看不出来。
+   想要那种柔化质感就在设置面板里开「壁纸柔化」，那时才挂上滤镜。 */
+body.wallpaper-soft #wallpaper img { filter: blur(var(--wallpaper-blur)); }
+#wallpaper img.on { opacity: var(--wallpaper-opacity); visibility: visible; transition: opacity 1.2s ease, visibility 0s; }
+
+/* 壁纸/横幅整层显隐的过渡（切换"横幅/全屏/透明/无"时用）：
+   先淡出，淡完再真正 display:none —— 这样既平滑，也不会让隐藏的那层
+   继续参与合成（全屏图片带 blur，留着它是实打实的开销）。 */
+#wallpaper, #banner-wrapper { transition: opacity .45s ease, visibility 0s; }
+#wallpaper.mj-layer-off, #banner-wrapper.mj-layer-off {
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity .45s ease, visibility 0s linear .45s;
+}
+#main-outer { transition: margin-top .45s ease; }
+@media (prefers-reduced-motion: reduce) {
+  #wallpaper, #banner-wrapper, #main-outer, #wallpaper img, #banner-wrapper img { transition: none; }
+}
+
+/* 顶部渐变高光 */
+.top-gradient-highlight {
+  position: fixed; top: 0; left: 0; right: 0; height: 180px; z-index: 20; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(255,255,255,.5) 0%, rgba(255,255,255,.3) 30%, rgba(255,255,255,.15) 60%, rgba(255,255,255,.05) 80%, transparent 100%);
+}
+:root.dark .top-gradient-highlight {
+  background: linear-gradient(to bottom, rgba(0,0,0,.5) 0%, rgba(0,0,0,.3) 30%, rgba(0,0,0,.15) 60%, rgba(0,0,0,.05) 80%, transparent 100%);
+}
+
+/* ============================================================
+   导航栏
+   ============================================================ */
+/* Fuwari 的导航栏不是"悬浮胶囊"：它是一条贴着页面宽度的实心卡片，
+   只有下半部分圆角（上角方），高度 72px、左右内边距 16px，
+   并且全站没有一处 backdrop-filter。 */
+#navbar-wrapper { position: sticky; top: 0; z-index: 50; }
+#navbar {
+  max-width: var(--layout-page-width); margin: 0 auto; height: 4.5rem;
+  display: flex; align-items: center; justify-content: space-between; padding: 0 1rem;
+  transition: transform .3s cubic-bezier(.4,0,.2,1), opacity .3s cubic-bezier(.4,0,.2,1);
+}
+/* 往下滚时收起，往上滚立刻回来（Fuwari 的 .navbar-hidden） */
+#navbar-wrapper.hidden > #navbar { transform: translateY(-1rem); opacity: 0; pointer-events: none; }
+#navbar > .nav-inner {
+  width: 100%; height: 100%; display: flex; align-items: center; gap: .5rem;
+  padding: 0 1rem;
+  /* Fuwari 的导航栏就是一条实心卡片：上角方（贴着视口顶端）、下角 1rem 圆角 */
+  border-radius: 0 0 var(--radius-large) var(--radius-large);
+  background: var(--card-bg);
+  border: 0;
+  transition: background-color .15s cubic-bezier(.4,0,.2,1);
+}
+#navbar.scrolled > .nav-inner, .wallpaper-none #navbar > .nav-inner { background: var(--card-bg); }
+.nav-brand { display: flex; align-items: center; gap: .55rem; font-weight: 700; font-size: 1.05rem; }
+.nav-logo { width: 2rem; height: 2rem; border-radius: .6rem; object-fit: cover; }
+/* 导航链接：Fuwari 用 rounded-lg(0.5rem)、h-11、px-5，hover 是
+   "从 0.85 放大到 1 的填充层"，而不是直接换底色。 */
+.nav-links { display: flex; gap: .15rem; margin-left: 1rem; }
+.nav-links a {
+  position: relative; display: flex; align-items: center; gap: .4rem;
+  height: 2.75rem; padding: 0 1.25rem; border-radius: var(--radius-btn);
+  font-size: .875rem; font-weight: 500; color: color-mix(in oklab, var(--deep-text) 75%, transparent);
+  transition: color .15s cubic-bezier(.4,0,.2,1), transform .15s cubic-bezier(.4,0,.2,1);
+}
+.nav-links a::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1;
+  background: var(--btn-plain-bg-hover); transform: scale(.85); transition: transform .15s ease-out;
+}
+.nav-links a:hover { color: var(--primary-text); }
+.nav-links a:hover::before { transform: scale(1); }
+.nav-links a:active { transform: scale(.95); }
+.nav-links a.on { color: var(--primary-text); font-weight: 700; }
+.nav-right { display: flex; align-items: center; gap: .35rem; margin-left: auto; }
+/* 图标按钮：Fuwari 固定 44×44，rounded-lg */
+.icon-btn {
+  width: 2.75rem; height: 2.75rem; display: grid; place-items: center; border: 0; cursor: pointer;
+  border-radius: var(--radius-btn); background: transparent; color: color-mix(in oklab, var(--deep-text) 75%, transparent);
+  transition: color .15s cubic-bezier(.4,0,.2,1), background-color .15s cubic-bezier(.4,0,.2,1), transform .15s cubic-bezier(.4,0,.2,1);
+  font-size: 1rem;
+}
+.icon-btn:hover { color: var(--primary-text); background: var(--btn-plain-bg-hover); }
+.icon-btn:active { transform: scale(.9); }
+
+/* ============================================================
+   Banner
+   ============================================================ */
+#banner-wrapper {
+  position: relative; width: 100%; height: var(--banner-height-home);
+  margin-top: -4.5rem; overflow: hidden;
+}
+#banner-wrapper img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; visibility: hidden; transition: opacity 1.5s ease, visibility 0s linear 1.5s; }
+#banner-wrapper img.on { opacity: 1; visibility: visible; transition: opacity 1.5s ease, visibility 0s; }
+#banner-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,.32) 0%, rgba(0,0,0,.12) 45%, color-mix(in oklab, var(--page-bg) 85%, transparent) 100%);
+}
+#banner-text {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center; color: #fff;
+  padding: 0 1rem 4rem; text-shadow: 0 2px 12px rgba(0,0,0,.4);
+}
+#banner-text h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.25rem); font-weight: 900; letter-spacing: .02em; }
+#banner-text .subs { margin-top: .6rem; display: flex; flex-direction: column; gap: .15rem; font-size: clamp(.8rem, 1.5vw, .95rem); opacity: .92; }
+/* 原来这里还有一枚右上角的「© 图片来源」胶囊角标，已按要求去掉 */
+/* 波浪 */
+#waves { position: absolute; left: 0; right: 0; bottom: -1px; height: 5rem; color: var(--page-bg); }
+#waves svg { width: 100%; height: 100%; display: block; }
+
+/* ============================================================
+   主网格（三栏）
+   ============================================================ */
+/* 主网格不再负向上压：这个 -3.5rem 原是为"面板压住 Banner"设计的，
+   但 Opening Memory 插进 Banner 与主网格之间后，它变成了压住记忆区内容（实测重叠 79,856 px²） */
+#main-outer { position: relative; z-index: 30; margin-top: 0; }
+#main-grid {
+  max-width: var(--layout-page-width); margin: 0 auto; padding: 1.4rem 1rem 1rem;
+  display: grid; grid-template-columns: var(--layout-sidebar-width) minmax(0,1fr) var(--layout-sidebar-width);
+  gap: 1rem; align-items: start;
+}
+/* 模块之间的竖向节奏：统一 1rem 会显得"卡片叠卡片"很硬，
+   放大到 1.2rem 并配合更柔的入场动画，让模块之间有呼吸感。 */
+aside.left-sidebar, aside.right-sidebar { display: flex; flex-direction: column; gap: 1.2rem; }
+main#content { display: flex; flex-direction: column; gap: 1.2rem; min-width: 0; }
+
+/* ============================================================
+   卡片
+   ============================================================ */
+/* Fuwari 的 .card-base 只有"圆角 + 裁切 + 背景色"，没有边框也没有阴影：
+   模块之间靠 --page-bg / --card-bg 的明度差分开，而不是靠描边。
+   ★ 加了轻量的悬停/按下反馈（用户要求"方框圆框要有过渡与动画"）：
+   只动 background-color 与 transform，全部走合成层，不掉帧。 */
+.card-base {
+  border-radius: var(--radius-large); overflow: hidden;
+  background: var(--card-bg-transparent);
+  border: 0; box-shadow: none;
+  transition: background-color .2s cubic-bezier(.4,0,.2,1);
+}
+/* 只有"可交互卡片"抬升：文章卡、友链卡、工程卡、时间线卡都各自声明了，
+   普通容器（侧栏组件、列表容器）保持静止，避免整页都在抖。 */
+.card-base .card-base { background: var(--card-bg-transparent); }
+.card-pad { padding: 1rem; }
+
+/* 侧栏组件标题：Fuwari 是"粗体文字 + 左侧 4px 圆角主色条"，没有下划线。
+   ★ 越界修正：主色条原来贴在 left:0（卡片最左缘），视觉上像"捅出卡片边界"，
+   而且正好压在 1rem 圆角上。改成条子在 1rem 处、文字再让开 0.5rem，
+   和 Fuwari 的 ml-8 + before:left-[-16px] 是同一个间距关系。 */
+.widget-head {
+  display: flex; align-items: center; gap: .5rem;
+  padding: 1rem 1rem .5rem 1.5rem; position: relative;
+  font-weight: 700; font-size: 1.125rem; line-height: 1.75rem;
+}
+.widget-head::before {
+  content: ""; position: absolute; left: 1rem; top: 1.35rem;
+  width: 4px; height: 1rem; border-radius: var(--radius-chip);
+  background: var(--primary);
+}
+.widget-head .w-ico {
+  width: 1.5rem; height: 1.5rem; border-radius: var(--radius-chip);
+  background: var(--btn-regular-bg); display: grid; place-items: center;
+  font-size: .7rem; color: var(--btn-content); flex: none;
+}
+.widget-body { padding: .25rem 1rem 1rem; }
+
+/* 个人资料 */
+.profile-avatar { border-radius: 50%; overflow: hidden; display: block; position: relative; transition: transform .15s;
+  width: 96px; height: 96px; margin: 0 auto .55rem; box-shadow: 0 6px 18px -8px rgba(0,0,0,.4); }
+.profile-avatar:active { transform: scale(.95); }
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.profile-avatar .hover-mask {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  background: transparent; transition: background-color .2s; color: #fff; font-size: 1.8rem; opacity: 0;
+}
+.profile-avatar:hover .hover-mask { background: rgba(0,0,0,.3); opacity: 1; }
+.profile-name { font-weight: 700; font-size: 1.25rem; text-align: center; margin: .75rem 0 .25rem; }
+.profile-bar { height: .25rem; width: 1.25rem; background: var(--primary); border-radius: 999px; margin: 0 auto .5rem; transition: background-color .15s; }
+.profile-bio { text-align: center; color: color-mix(in oklab, var(--deep-text) 64%, transparent); font-size: .85rem; margin-bottom: .7rem; min-height: 2.6em; }
+.profile-bio .caret { display: inline-block; width: 1px; background: currentColor; animation: blink 1s steps(2) infinite; }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+.social-row { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; }
+.btn-regular {
+  display: flex; align-items: center; justify-content: center;
+  background: var(--btn-regular-bg); color: var(--btn-content);
+  transition: background-color .15s cubic-bezier(.4,0,.2,1), color .15s cubic-bezier(.4,0,.2,1), transform .15s cubic-bezier(.4,0,.2,1);
+}
+.btn-regular:hover { background: var(--btn-regular-bg-hover); }
+.btn-regular:active { background: var(--btn-regular-bg-active); transform: scale(.9); }
+/* Fuwari：社交按钮 h-10(2.5rem) w-10 / h-10 px-3，rounded-lg */
+.social-row .btn-regular { height: 2.5rem; min-width: 2.5rem; padding: 0 .75rem; border-radius: var(--radius-btn); font-size: .76rem; font-weight: 600; }
+
+/* 公告 */
+.announce { font-size: .85rem; line-height: 1.8; color: color-mix(in oklab, var(--deep-text) 82%, transparent); }
+.announce p { margin: 0 0 .4rem; }
+
+/* 标签 / 分类
+   注意点击目标尺寸：原来 padding .25rem .6rem 让 chip 只有约 26px 高、
+   相邻间隙 6.4px，Lighthouse 的 target-size 会判"安全点击直径 13.6px < 24px"。
+   现在高度按 24px 起、间隙 8px，既合 Fuwari 的 rounded-md 观感也过审计。 */
+.chip-row { display: flex; flex-wrap: wrap; gap: .5rem; }
+.chip {
+  display: inline-flex; align-items: center; gap: .3rem;
+  min-height: 1.75rem; padding: .3rem .625rem; border-radius: var(--radius-chip);
+  background: var(--btn-regular-bg); color: var(--btn-content); font-size: .78rem; font-weight: 500;
+  transition: background-color .15s cubic-bezier(.4,0,.2,1), transform .15s cubic-bezier(.4,0,.2,1);
+}
+.chip:hover { background: var(--btn-regular-bg-hover); }
+.chip:active { transform: scale(.94); }
+.chip .n { opacity: .75; font-size: .7rem; font-weight: 400; }
+.cat-row { display: flex; flex-direction: column; gap: .15rem; }
+.cat-row a {
+  display: flex; align-items: center; justify-content: space-between; padding: .4rem .55rem;
+  border-radius: .5rem; font-size: .85rem; transition: background-color .15s, color .15s;
+}
+.cat-row a:hover { background: var(--btn-plain-bg-hover); color: var(--primary-text); }
+.cat-row a .n { font-family: var(--font-mono); font-size: .72rem; opacity: .8; }
+
+/* 站点统计 → 使用情况 */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.stat-cell { background: var(--btn-regular-bg); border-radius: var(--radius-chip); padding: .5rem .6rem; text-align: center; }
+.stat-cell b { display: block; font-family: var(--font-mono); font-size: 1.05rem; color: var(--btn-content); font-weight: 600; }
+.stat-cell span { font-size: .75rem; color: color-mix(in oklab, var(--deep-text) 68%, transparent); }
+.stat-line { margin-top: .6rem; font-family: var(--font-mono); font-size: .72rem; line-height: 1.5; color: var(--content-meta); }
+
+/* ============================================================
+   三套参考主题的"特色"在这里融合（只借技法与思路，不照搬取值/素材）
+   · Fuwari      → 令牌体系：oklch(L C var(--hue))、--radius-large、无边框无阴影卡片
+   · Mizuki      → 壁纸多模式、卡片描边开关、透明模式 backdrop 模糊、顶部渐变高光、页面切换过渡
+   · Xinghuisama → 衬线正文、细滚动条、云端杂谈式弹幕、底部应用状态栏
+   · 本站自己的  → 手帐/漫画墨线语言 + 元素色相系统（这两条是识别度所在，不外借）
+   下面三条是新增的"融合层"，全部默认关闭或极轻量，不影响 60fps 基线。
+   ============================================================ */
+/* ① 透明壁纸模式：卡片半透明 + 背景模糊（只有这一档会付 backdrop-filter 的代价） */
+body.wallpaper-transparent .card-base {
+  background: color-mix(in oklab, var(--card-bg) 62%, transparent) !important;
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+}
+/* ② 卡片描边开关（Mizuki 的 enable-card-border） */
+body.enable-card-border .card-base { border: 1px solid var(--line-divider); }
+body.enable-card-border .mj-view .card-base { border-color: color-mix(in oklab, var(--line-divider) 80%, transparent); }
+/* ③ 路由切换过渡：新视图轻微上浮淡入（只动 transform/opacity） */
+@keyframes mjViewIn {
+  from { opacity: 0; transform: translateY(.6rem); }
+  to { opacity: 1; transform: none; }
+}
+.mj-view { animation: mjViewIn .26s cubic-bezier(.4,0,.2,1) both; }
+@media (prefers-reduced-motion: reduce) { .mj-view { animation: none; } }
+/* ④ 顶部渐变高光：折进壁纸层做背景，不额外起图层（Mizuki 原本是独立 fixed 层） */
+#wallpaper::after, #banner-wrapper::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 180px; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(255,255,255,.5) 0%, rgba(255,255,255,.3) 30%, rgba(255,255,255,.15) 60%, rgba(255,255,255,.05) 80%, transparent 100%);
+}
+:root.dark #wallpaper::after, :root.dark #banner-wrapper::after {
+  background: linear-gradient(to bottom, rgba(0,0,0,.5) 0%, rgba(0,0,0,.3) 30%, rgba(0,0,0,.15) 60%, rgba(0,0,0,.05) 80%, transparent 100%);
+}
+
+/* ============================================================
+   应用状态栏（往"下载自用的桌面应用"靠拢的形态）
+   固定贴底，左侧是应用身份 + 当前页，中间是真实数据，右侧是帧率与数据操作。
+   ============================================================ */
+#mjStatus {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 9998;
+  display: flex; align-items: center; gap: .75rem;
+  height: 30px; padding: 0 .75rem;
+  background: var(--card-bg);
+  border-top: 1px solid var(--line-divider);
+  font-family: var(--font-mono); font-size: 11px; line-height: 1;
+  color: var(--content-meta);
+  user-select: none; -webkit-user-select: none;
+}
+#mjStatus .sb-left, #mjStatus .sb-right { display: flex; align-items: center; gap: .5rem; flex: none; }
+#mjStatus .sb-mid { display: flex; align-items: center; gap: .9rem; flex: 1 1 auto; justify-content: center; min-width: 0; overflow: hidden; white-space: nowrap; }
+#mjStatus .sb-app { display: inline-flex; align-items: center; gap: .35rem; color: var(--deep-text); font-weight: 600; }
+#mjStatus .sb-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 22%, transparent);
+  animation: sbPulse 2.6s ease-in-out infinite;
+}
+@keyframes sbPulse { 0%, 100% { opacity: .55; transform: scale(.9); } 50% { opacity: 1; transform: scale(1); } }
+#mjStatus .sb-tag {
+  padding: 1px 6px; border-radius: 999px;
+  background: var(--btn-regular-bg); color: var(--btn-content);
+}
+#mjStatus .sb-sep { width: 1px; height: 14px; background: var(--line-divider); }
+#mjStatus .sb-view { color: var(--primary-text); }
+/* 不要在这里加 opacity：--content-meta 已经压着 4.5:1 的线，
+   再叠一层 .8 不透明度会掉到 3.49:1（Lighthouse 会判 color-contrast 失败）。 */
+#mjStatus .sb-fps { font-variant-numeric: tabular-nums; }
+#mjStatus .sb-btn {
+  font: inherit; height: 20px; padding: 0 .5rem; border: 0; cursor: pointer;
+  border-radius: var(--radius-chip); background: var(--btn-regular-bg); color: var(--btn-content);
+  transition: background-color .15s cubic-bezier(.4,0,.2,1), color .15s ease, transform .15s cubic-bezier(.4,0,.2,1);
+}
+#mjStatus .sb-btn:hover { background: var(--btn-regular-bg-hover); color: var(--primary-text); }
+#mjStatus .sb-btn:active { transform: scale(.94); }
+@media (max-width: 720px) {
+  #mjStatus .sb-mid { display: none; }
+}
+/* 状态栏是固定贴底的，给页面留出高度，别压住页脚 */
+#main-grid { padding-bottom: 2.6rem; }
+
+/* 日历 */
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .5rem; }
+.cal-head b { font-size: .85rem; font-family: var(--font-mono); }
+.cal-nav { display: flex; gap: .25rem; }
+.cal-nav button { width: 1.6rem; height: 1.6rem; border: 0; border-radius: .45rem; cursor: pointer; background: var(--btn-regular-bg); color: var(--btn-content); font-size: .7rem; display: grid; place-items: center; }
+.cal-nav button:hover { background: var(--btn-regular-bg-hover); }
+.cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; text-align: center; font-size: .72rem; }
+.cal-grid .wd { color: color-mix(in oklab, var(--deep-text) 66%, transparent); font-weight: 700; padding: .15rem 0; }
+.cal-grid .d { padding: .22rem 0; border-radius: .4rem; font-family: var(--font-mono); }
+.cal-grid .d.has { background: var(--btn-regular-bg); color: var(--btn-content); cursor: pointer; }
+.cal-grid .d.has:hover { background: var(--btn-regular-bg-hover); }
+.cal-grid .d.today { background: var(--primary-strong); color: #fff; font-weight: 700; }
+.cal-grid .d.blank { visibility: hidden; }
+
+/* 侧栏音乐 */
+.music-side { display: flex; flex-direction: column; gap: .6rem; }
+/* 封面与曲目信息并排：原来封面 width:100% 会撑成整条侧栏宽的正方形（≈250px），
+   比播放器其它部分加起来还大。现在封面有上限、等比缩放，信息条与它垂直居中。 */
+.music-head { display: flex; align-items: center; gap: .7rem; min-width: 0; }
+.music-cover { position: relative; flex: none; width: clamp(72px, 34%, 96px); border-radius: .6rem; overflow: hidden; }
+.music-cover img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; transition: transform .4s; }
+.music-cover:hover img { transform: scale(1.05); }
+.music-meta { min-width: 0; flex: 1 1 auto; }
+.music-title {
+  font-weight: 700; font-size: .86rem; line-height: 1.35;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.music-artist {
+  font-size: .72rem; margin-top: .2rem; color: color-mix(in oklab, var(--deep-text) 72%, transparent);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.music-bar { height: .3rem; border-radius: 999px; background: var(--btn-regular-bg); overflow: hidden; cursor: pointer; }
+.music-bar i { display: block; height: 100%; width: 32%; background: var(--primary); }
+.music-time { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: .65rem; opacity: .72; }
+.music-ctrl { display: flex; align-items: center; justify-content: center; gap: .6rem; }
+.music-ctrl .mb { width: 2.2rem; height: 2.2rem; border-radius: 50%; display: grid; place-items: center; border: 0; cursor: pointer; background: var(--btn-regular-bg); color: var(--btn-content); transition: background-color .15s, transform .1s; }
+.music-ctrl .mb:hover { background: var(--btn-regular-bg-hover); }
+.music-ctrl .mb:active { transform: scale(.92); }
+.music-ctrl .mb.play { width: 2.6rem; height: 2.6rem; background: var(--primary-strong); color: #fff; }
+.music-ctrl .tri { width: 0; height: 0; border-left: .55rem solid currentColor; border-top: .35rem solid transparent; border-bottom: .35rem solid transparent; margin-left: .12rem; }
+.music-ctrl .bars { display: flex; gap: 2px; align-items: flex-end; height: .85rem; }
+.music-ctrl .bars i { width: 2.5px; background: currentColor; border-radius: 2px; }
+
+/* 目录 */
+.toc-list { display: flex; flex-direction: column; gap: .1rem; font-size: .82rem; }
+.toc-list a { padding: .3rem .5rem; border-radius: .45rem; color: color-mix(in oklab, var(--deep-text) 76%, transparent); border-left: 2px solid transparent; transition: .15s; }
+.toc-list a:hover { background: var(--btn-plain-bg-hover); color: var(--primary-text); }
+.toc-list a.on { color: var(--primary-text); border-left-color: var(--primary-strong); font-weight: 700; background: var(--btn-regular-bg); }
+.toc-list a.lv3 { padding-left: 1.2rem; font-size: .78rem; }
+
+/* ============================================================
+   文章列表
+   ============================================================ */
+/* Fuwari 的卡片标题是 text-lg(1.125rem)/1.75rem + 左侧主色条
+   （同样把条子从卡片最左缘移到 1rem 处，避免看起来越界） */
+.list-bar { display: flex; align-items: center; gap: .5rem; padding: .75rem 1rem .75rem 1.5rem; position: relative; }
+.list-bar .lb-title { font-weight: 700; font-size: 1.125rem; line-height: 1.75rem; }
+.list-bar::before {
+  content: ""; position: absolute; left: 1rem; top: 1.1rem;
+  width: 4px; height: 1.25rem; border-radius: var(--radius-chip); background: var(--primary);
+}
+.list-bar .seg { display: flex; gap: .2rem; margin-left: auto; background: var(--btn-regular-bg); padding: .2rem; border-radius: var(--radius-btn); }
+.list-bar .seg button {
+  min-height: 1.75rem; border: 0; cursor: pointer; padding: .28rem .75rem; border-radius: var(--radius-chip);
+  font-size: .8125rem; font-weight: 500; background: transparent; color: var(--btn-content);
+  transition: background-color .15s cubic-bezier(.4,0,.2,1), color .15s cubic-bezier(.4,0,.2,1);
+}
+.list-bar .seg button:hover { background: var(--btn-plain-bg-hover); }
+.list-bar .seg button.on { background: var(--card-bg); color: var(--primary-text); }
+
+#post-list { display: flex; flex-direction: column; gap: 1rem; }
+#post-list.grid-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+/* Fuwari 的卡片没有阴影，hover 也不抬升；这里保留"不投影"，
+   但给文章卡一个更明显的悬停位移 + 按下回弹（用户要求的交互动效）。 */
+.post-card { position: relative; transition: transform .22s cubic-bezier(.34,1.4,.64,1); }
+.post-card:hover { transform: translateY(-3px); }
+.post-card:active { transform: translateY(-1px) scale(.995); }
+.post-card a.post-link { display: flex; gap: 0; }
+.grid-mode .post-card a.post-link { flex-direction: column; }
+.post-cover { position: relative; width: 15rem; flex: none; overflow: hidden; border-radius: var(--radius-cover); }
+.grid-mode .post-cover { width: 100%; }
+.post-cover img { width: 100%; height: 100%; min-height: 9rem; object-fit: cover; transition: transform .4s cubic-bezier(.4,0,.2,1); }
+.post-card:hover .post-cover img { transform: scale(1.04); }
+.grid-mode .post-cover img { aspect-ratio: 16/9; min-height: 0; }
+.post-body { padding: 1rem 1.25rem 1.25rem; display: flex; flex-direction: column; gap: .4rem; min-width: 0; flex: 1; }
+/* 标题：字重 700、行高收到 1.3（Fuwari 的标题行高比正文紧） */
+.post-title { font-weight: 700; font-size: 1.375rem; line-height: 1.3; transition: color .15s cubic-bezier(.4,0,.2,1); }
+.post-card:hover .post-title { color: var(--primary-text); }
+.grid-mode .post-title { font-size: 1.125rem; }
+.post-desc {
+  font-size: .9375rem; line-height: 1.6; color: color-mix(in oklab, var(--deep-text) 70%, transparent);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.grid-mode .post-desc { -webkit-line-clamp: 2; }
+/* 元信息：Fuwari 的 text-sm font-medium + 50% 透明度 */
+.post-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; font-size: .875rem; font-weight: 500; line-height: 1.25rem; color: var(--content-meta); margin-top: auto; padding-top: .35rem; }
+.post-meta .m { display: inline-flex; align-items: center; gap: .25rem; }
+.post-meta .sep { width: 3px; height: 3px; border-radius: 50%; background: var(--meta-divider); }
+.post-tags { display: flex; flex-wrap: wrap; gap: .3rem; }
+.post-tags .chip { font-size: .75rem; padding: .25rem .5rem; border-radius: var(--radius-chip); }
+.post-pinned { position: absolute; top: .5rem; right: .5rem; z-index: 2; font-size: .65rem; font-weight: 700; padding: .15rem .45rem; border-radius: .35rem; background: var(--primary-strong); color: #fff; }
+
+/* 分页 */
+.pager { display: flex; justify-content: center; gap: .35rem; padding: .9rem; }
+.pager button { min-width: 2rem; height: 2rem; border: 0; cursor: pointer; border-radius: .5rem; background: var(--btn-regular-bg); color: var(--btn-content); font-size: .8rem; font-family: var(--font-mono); transition: .15s; }
+.pager button:hover { background: var(--btn-regular-bg-hover); }
+.pager button.on { background: var(--primary-strong); color: #fff; font-weight: 700; }
+
+/* 页脚 */
+footer.site-footer {
+  border: 1px dashed color-mix(in oklab, var(--deep-text) 15%, transparent);
+  border-radius: 1rem; padding: 1.4rem 1rem; margin-bottom: 1rem;
+  display: flex; flex-direction: column; align-items: center; gap: .5rem;
+  font-size: .8rem; color: color-mix(in oklab, var(--deep-text) 72%, transparent);
+}
+footer.site-footer .f-links { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+footer.site-footer a { transition: color .15s; }
+footer.site-footer a:hover { color: var(--primary-text); }
+
+/* ============================================================
+   浮动控制
+   ============================================================ */
+#floating-controls {
+  position: fixed; right: 1rem; bottom: 1.5rem; z-index: 60;
+  display: flex; flex-direction: column; gap: .5rem;
+}
+#floating-controls button {
+  width: 2.6rem; height: 2.6rem; border: 1px solid var(--line-divider); cursor: pointer;
+  border-radius: 50%; background: var(--float-panel-bg); color: var(--btn-content);
+  display: grid; place-items: center; font-size: .95rem;
+  box-shadow: 0 8px 22px -12px rgba(0,0,0,.45); transition: transform .18s, background-color .15s;
+}
+#floating-controls button:hover { transform: translateY(-2px); background: var(--btn-regular-bg); }
+#floating-controls button.hidden { display: none; }
+
+/* 浮动面板（设置）
+   Fuwari: .float-panel = rounded-1rem + --float-panel-bg + shadow-xl，暗色下 shadow-none */
+.float-panel {
+  position: fixed; right: 1rem; bottom: 5.2rem; z-index: 61; width: 20rem;
+  border-radius: var(--radius-large); background: var(--float-panel-bg);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / .1), 0 8px 10px -6px rgb(0 0 0 / .1);
+  border: 0;
+  padding: 1rem; transform-origin: bottom right;
+  transition: transform .15s cubic-bezier(.4,0,.2,1), opacity .15s cubic-bezier(.4,0,.2,1);
+}
+:root.dark .float-panel { box-shadow: none; }
+.float-panel.closed { transform: translateY(.5rem) scale(.96); opacity: 0; pointer-events: none; }
+.fp-row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .35rem 0; font-size: .8rem; }
+.fp-row + .fp-row { border-top: 1px dashed var(--line-divider); }
+.fp-seg { display: flex; gap: .2rem; background: var(--btn-regular-bg); padding: .15rem; border-radius: .5rem; }
+.fp-seg button { border: 0; cursor: pointer; padding: .22rem .5rem; border-radius: .35rem; font-size: .7rem; background: transparent; color: var(--btn-content); }
+.fp-seg button.on { background: var(--card-bg); color: var(--primary-text); font-weight: 700; }
+
+/* ============================================================
+   入场动画
+   Fuwari：.onload-animation = opacity 0 → 1 + translateY → 0，300ms，
+   animation-fill-mode: forwards；延迟阶梯 0 / 100 / 150 / 250 / 400ms。
+   ★ 唯一偏离：Fuwari 的位移是 2rem，但相邻模块是错开 70ms 起跑的，
+   2rem 的落差会让"后一个模块的文字"在动画途中压到前一个模块的文字上
+   （用户明确要求装饰/动画不能和边界文字打架），所以收到 .75rem。
+   ============================================================ */
+/* ★ 入场动画只负责"第一次出现"，不要让它成为"是否可见"的决定因素。
+   实测的坑：home 视图是靠 hidden 属性隐藏/显示的（切到别的页面再回来），
+   而 Chrome 在这时会把这个元素的 CSS 动画**重新起跑**，且有时会卡在
+   currentTime 0（playState 却是 running）——动画永远停在 0%，
+   于是 fill-mode 把元素永久按在 opacity: 0 上：从别的页面切回首页，
+   主标题整段消失。
+   所以：基底不写 opacity: 0（默认就是可见），动画只做入场；
+   并且入场放完后由 JS 把 .onload-animation 摘掉（见 enhance.js），
+   这样以后再来回切页面也不会重新起跑、更不会卡住。 */
+.onload-animation {
+  animation: fade-in-up 300ms cubic-bezier(.4,0,.2,1) both;
+}
+@keyframes fade-in-up {
+  0% { transform: translateY(.75rem); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+/* 逐块延迟按 70ms 等间距递进（覆盖 HTML 上手工写的 animation-delay）。
+   主栏的模块挂在 .mj-view 下（Views 把首页子节点收进视图容器）。 */
+aside.left-sidebar > .onload-animation, aside.right-sidebar > .onload-animation,
+.mj-view > .onload-animation { animation-delay: 0ms !important; }
+aside.left-sidebar > *:nth-child(2), aside.right-sidebar > *:nth-child(2), .mj-view > *:nth-child(2) { animation-delay: 70ms !important; }
+aside.left-sidebar > *:nth-child(3), aside.right-sidebar > *:nth-child(3), .mj-view > *:nth-child(3) { animation-delay: 140ms !important; }
+aside.left-sidebar > *:nth-child(4), aside.right-sidebar > *:nth-child(4), .mj-view > *:nth-child(4) { animation-delay: 210ms !important; }
+aside.left-sidebar > *:nth-child(5), aside.right-sidebar > *:nth-child(5), .mj-view > *:nth-child(5) { animation-delay: 280ms !important; }
+aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-delay: 350ms !important; }
+.mj-view > *:nth-child(7) { animation-delay: 420ms !important; }
+
+/* 波浪动画 */
+@keyframes waveMove { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+#waves svg { width: 200%; animation: waveMove 14s linear infinite; }
+
+/* ============================================================
+   ★ 并入自 XinghuisamaBlogs：气氛层与交互层
+   ============================================================ */
+
+/* 磨砂白纱：已折进 #wallpaper 容器，z-index 改为在图片之上 */
+.bg-overlay {
+  position: absolute; inset: 0; z-index: 2;
+  background: rgba(255,255,255,.3);
+  transition: background-color 1s;
+}
+:root.dark .bg-overlay { background: rgba(15,23,42,.4); }
+
+/* 呼吸流动渐变：transform 驱动 + 小幅度过扫。
+   原先 inset:-50%/200%×200% 的合成面积达 6 倍视口（实测 5.9M px²）且带旋转，
+   每帧合成成本极高；收缩到 1.16 倍视口、去掉旋转后观感不变而开销降一个量级。 */
+.gradient-breathe {
+  position: absolute; inset: -8%; width: 116%; height: 116%; z-index: 1; opacity: .42;
+  background: linear-gradient(-45deg, #a18cd1, #fbc2eb, #a1c4fd, #c2e9fb);
+  animation: gradientDrift 18s ease-in-out infinite;
+  transition: opacity 1s;
+}
+:root.dark .gradient-breathe { opacity: .18; }
+@keyframes gradientDrift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(-3%, -2.5%, 0); }
+}
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+/* 两层模糊光晕：用径向渐变代替 filter: blur(100px)（后者会每帧重算模糊） */
+.glow-orb { position: absolute; width: 62%; height: 62%; border-radius: 50%; z-index: 3; }
+.glow-orb.a { top: -18%; left: -18%; background: radial-gradient(circle, rgba(255,255,255,.5) 0%, rgba(255,255,255,.22) 34%, transparent 68%); }
+.glow-orb.b { bottom: -18%; right: -18%; background: radial-gradient(circle, rgba(129,140,248,.4) 0%, rgba(129,140,248,.16) 34%, transparent 68%); }
+:root.dark .glow-orb.a { background: radial-gradient(circle, rgba(49,46,129,.4) 0%, rgba(49,46,129,.15) 34%, transparent 68%); }
+:root.dark .glow-orb.b { background: radial-gradient(circle, rgba(88,28,135,.45) 0%, rgba(88,28,135,.18) 34%, transparent 68%); }
+
+/* 2. 主题感知粒子层 */
+/* 主题感知粒子层：非当前主题的一层不参与渲染，否则 26 个不可见元素在空转 */
+.fx-layer { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 10; contain: strict; }
+.fx-sakura { transition: opacity 1s, visibility 0s; }
+.fx-fireflies { opacity: 0; visibility: hidden; transition: opacity 1s, visibility 0s 1s; mix-blend-mode: normal; }
+:root.dark .fx-sakura { opacity: 0; visibility: hidden; transition: opacity 1s, visibility 0s 1s; }
+:root.dark .fx-fireflies { opacity: 1; visibility: visible; transition: opacity 1s, visibility 0s; }
+.petal-s {
+  position: absolute; top: 0; background: rgba(249,168,212,.7);
+  border-radius: 100% 0 100% 0;
+  box-shadow: 0 0 5px rgba(255,182,193,.6);
+}
+@keyframes sakuraFall {
+  0% { transform: translate(0,-10vh) rotate(0deg); opacity: 0; }
+  10%, 80% { opacity: 1; }
+  100% { transform: translate(15vw,110vh) rotate(360deg); opacity: 0; }
+}
+/* 荧火呼吸：只动 transform / opacity，辉光改为静态径向渐变（原版动画 box-shadow 是逐帧重绘） */
+.firefly { position: absolute; will-change: transform; }
+.firefly i {
+  display: block; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,.95) 0%, rgba(200,255,200,.9) 30%, rgba(80,255,140,.35) 60%, transparent 72%);
+  animation: fireflyBreathe 3s ease-in-out infinite;
+}
+@keyframes fireflyBreathe {
+  0%, 100% { opacity: 0; transform: scale(.3); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+@keyframes ffFloat1 { 0%,100% { transform: translate(0,0); } 33% { transform: translate(10vw,-15vh); } 66% { transform: translate(-5vw,-20vh); } }
+@keyframes ffFloat2 { 0%,100% { transform: translate(0,0); } 33% { transform: translate(-12vw,10vh); } 66% { transform: translate(8vw,15vh); } }
+@keyframes ffFloat3 { 0%,100% { transform: translate(0,0); } 33% { transform: translate(15vw,15vh); } 66% { transform: translate(-10vw,5vh); } }
+@keyframes ffFloat4 { 0%,100% { transform: translate(0,0); } 33% { transform: translate(-15vw,-10vh); } 66% { transform: translate(10vw,-15vh); } }
+
+/* 3. 全局背景弹幕 */
+#danmaku-band {
+  position: fixed; top: 7rem; left: 0; right: 0; height: 30vh;
+  overflow: hidden; pointer-events: none; z-index: 0;
+}
+#danmaku-band span {
+  position: absolute; right: -100%; white-space: nowrap;
+  font-weight: 700; font-size: 1.1rem; letter-spacing: .05em;
+  color: color-mix(in oklab, var(--deep-text) 30%, transparent);
+  user-select: none;
+}
+:root.dark #danmaku-band span { color: rgba(255,255,255,.1); }
+@keyframes floatLeft {
+  0% { right: -100%; transform: translateX(100%); }
+  100% { right: 100%; transform: translateX(-100%); }
+}
+
+/* 4. 点击涟漪画布 */
+#click-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
+#click-canvas[hidden] { display: none; }
+
+/* 5. 启动遮罩：已整体移除
+   那一块是从参考项目带进来的 SplashScreen（写着参考主题的名字 + 一根假进度条），
+   加载时会在页面上闪一下，看着就像"别人家的加载页"。按要求整块删掉：
+   标记、样式、脚本都不再存在，页面上不会再出现任何启动/加载画面。 */
+
+/* 6. 歌词条（深色玻璃 + 波形 + 打字机） */
+.lyric-bar {
+  border-radius: 1.5rem; padding: 1.25rem;
+  background: rgba(15,23,42,.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,.1);
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,.35);
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 5rem;
+  transition: box-shadow .5s;
+}
+.lyric-bar:hover { box-shadow: 0 25px 50px -12px rgba(99,102,241,.35); }
+.wave { display: flex; align-items: flex-end; justify-content: center; gap: 4px; height: 2rem; width: 4rem; flex: none; }
+.wave i { width: .375rem; border-radius: .125rem .125rem 0 0; height: 4px; background: #475569; transition: all .5s ease-out; }
+.wave.playing i { animation: safeWave 1s ease-in-out infinite; }
+.wave.playing i:nth-child(1) { background: #818cf8; animation-delay: 0ms; }
+.wave.playing i:nth-child(2) { background: #c084fc; animation-delay: 200ms; }
+.wave.playing i:nth-child(3) { background: #6366f1; animation-delay: 400ms; }
+.wave.playing i:nth-child(4) { background: #a855f7; animation-delay: 100ms; }
+.wave.playing i:nth-child(5) { background: #a5b4fc; animation-delay: 300ms; }
+@keyframes safeWave { 0%, 100% { height: 8px; } 50% { height: 28px; } }
+.lyric-text {
+  flex: 1; text-align: center; color: #fff; font-weight: 700; font-size: 1.05rem;
+  letter-spacing: .1em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-shadow: 0 0 8px rgba(99,102,241,.8); margin: 0;
+}
+.lyric-cursor { display: inline-block; width: 3px; height: 1.25rem; background: #818cf8; vertical-align: middle; margin-left: .25rem; box-shadow: 0 0 8px rgba(99,102,241,.8); animation: cursorBlink .8s step-end infinite; }
+@keyframes cursorBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.lyric-icon { width: 4rem; display: flex; justify-content: flex-end; flex: none; color: rgba(129,140,248,.5); font-size: 1.4rem; }
+.lyric-icon.on { color: #818cf8; animation: bounceIcon 1s infinite; }
+@keyframes bounceIcon { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+
+/* 7. 站点仪表盘（翻页时钟 + 运行时长 + 徽章） */
+.dashboard {
+  border-radius: 1.5rem; overflow: hidden; display: flex; align-items: stretch; min-height: 5rem;
+  background: rgba(255,255,255,.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.4); box-shadow: 0 20px 25px -5px rgba(0,0,0,.12);
+}
+:root.dark .dashboard { background: rgba(30,41,59,.5); border-color: rgba(255,255,255,.1); }
+.flip-clock {
+  position: relative; overflow: hidden; flex: none;
+  background: #0f172a; color: #fff; padding: 0 2rem;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 1.6rem; font-weight: 700; letter-spacing: .1em;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,.4); transition: color .3s;
+}
+:root.dark .flip-clock { background: #000; }
+.dashboard:hover .flip-clock { color: #818cf8; }
+.flip-clock::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(255,255,255,.1), transparent); pointer-events: none; }
+.flip-clock::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: rgba(0,0,0,.5); }
+.dash-body { flex: 1; padding: .75rem 1.5rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; font-size: .8rem; font-weight: 700; color: color-mix(in oklab, var(--deep-text) 78%, transparent); }
+.dash-up { display: flex; align-items: center; gap: .5rem; }
+.dash-dot { width: .5rem; height: .5rem; border-radius: 50%; background: #22c55e; animation: pulseDot 2s infinite; }
+@keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+.dash-up b { color: var(--primary-text); font-weight: 900; }
+.badges { display: flex; gap: .5rem; flex-wrap: wrap; }
+.badges span {
+  padding: .25rem .5rem; border-radius: .375rem; background: rgba(255,255,255,.5);
+  border: 1px solid rgba(255,255,255,.4); box-shadow: 0 1px 2px rgba(0,0,0,.05);
+  display: inline-flex; align-items: center; gap: .25rem; font-size: .7rem;
+}
+:root.dark .badges span { background: rgba(51,65,85,.5); border-color: rgba(148,163,184,.3); }
+.badges span em { font-style: normal; width: .5rem; height: .5rem; border-radius: .15rem; }
+.dash-icp { color: color-mix(in oklab, var(--deep-text) 70%, transparent); border-bottom: 1px dashed currentColor; padding-bottom: 1px; }
+.dash-icp:hover { color: var(--primary-text); }
+
+/* 效果开关
+   ★ 之前开/关只差一个 opacity: .45，看着像"按钮按下去了没弹回来"，
+     而且分不清到底开没开。现在做成明确的两种状态：
+     开 = 主题色实心 + 对勾，关 = 空心描边 + 变暗；
+     另外补上 :active 的按压反馈，松手立刻回到对应状态。 */
+.fp-switch { display: flex; gap: .25rem; flex-wrap: wrap; }
+.fp-switch button {
+  position: relative; border: 1px solid transparent; cursor: pointer;
+  padding: .25rem .55rem .25rem 1.25rem; border-radius: .45rem; font-size: .7rem;
+  background: var(--btn-regular-bg); color: var(--btn-content); font-weight: 600;
+  transition: background-color .16s ease, color .16s ease, border-color .16s ease,
+              opacity .16s ease, transform .12s cubic-bezier(.34,1.5,.64,1);
+}
+/* 左边的状态点：开=实心主题色，关=空心 */
+.fp-switch button::before {
+  content: ""; position: absolute; left: .42rem; top: 50%; width: .5rem; height: .5rem;
+  margin-top: -.25rem; border-radius: 50%;
+  border: 2px solid currentColor; background: transparent;
+  transition: background-color .16s ease, border-color .16s ease;
+}
+.fp-switch button:not(.off) { background: var(--primary); color: #fff; border-color: var(--primary); }
+.fp-switch button:not(.off)::before { background: #fff; border-color: #fff; }
+.fp-switch button:not(.off):hover { background: color-mix(in oklab, var(--primary) 84%, #000); }
+.fp-switch button.off { opacity: .62; background: transparent; border-color: var(--line-divider); }
+.fp-switch button.off:hover { opacity: 1; background: var(--btn-regular-bg-hover); }
+/* 按下去缩一下，松手回弹（transition 在 button 上，不会卡在按下态） */
+.fp-switch button:active { transform: scale(.94); }
+
+/* ============================================================
+   响应式
+   ============================================================ */
+@media (max-width: 1279px) {
+  #main-grid { grid-template-columns: var(--layout-sidebar-width) minmax(0,1fr); }
+  aside.right-sidebar { display: none; }
+}
+@media (max-width: 767px) {
+  :root { --layout-page-width: 100%; }
+  #main-grid { grid-template-columns: minmax(0,1fr); padding: 0 .75rem .75rem; }
+  aside.left-sidebar { display: none; }
+  .nav-links { display: none; }
+  #banner-wrapper { height: min(55vh, 620px); }
+  .post-card a.post-link { flex-direction: column; }
+  .post-cover { width: 100%; }
+  .post-cover img { aspect-ratio: 16/9; min-height: 0; }
+  #post-list.grid-mode { grid-template-columns: 1fr; }
+  /* 移端隐藏高负载特效（对齐 Xinghuisama 的 mobile 策略） */
+  #danmaku-band, .fx-layer, #click-canvas { display: none; }
+  .dashboard { flex-direction: column; }
+  .flip-clock { padding: 1rem; }
+  .lyric-text { font-size: .9rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+  .onload-animation { opacity: 1; transform: none; }
+  html { scroll-behavior: auto; }
+  .fx-layer, #danmaku-band, #click-canvas { display: none; }
+}
+</style>
+<!-- ★ 增强层：在既有外壳上叠加的开场 / 光标 / 场景序列 / 记忆 / 成就 -->
+<link rel="stylesheet" href="enhance.css" />
+<link rel="stylesheet" href="modules.css" />
+<link rel="stylesheet" href="chat.css" />
+</head>
+<body>
+
+<!-- 全屏壁纸 -->
+<div id="wallpaper" aria-hidden="true">
+  <img src="assets/mys/bg-01.jpg" alt="" class="on" />
+  <img src="assets/mys/bg-02.jpg" alt="" />
+  <div class="gradient-breathe"></div>
+</div>
+
+<!-- ★ 气氛层：磨砂白纱 + 双层模糊光晕（并入自 Xinghuisama layout.tsx） -->
+<div id="atmosphere" aria-hidden="true">
+  <div class="bg-overlay"></div>
+  <div class="glow-orb a"></div>
+  <div class="glow-orb b"></div>
+</div>
+<div class="top-gradient-highlight" aria-hidden="true"></div>
+
+<!-- ★ 主题感知粒子层：亮色樱花 / 暗色萤火虫 -->
+<div class="fx-layer fx-sakura" id="fxSakura" aria-hidden="true"></div>
+<div class="fx-layer fx-fireflies" id="fxFireflies" aria-hidden="true"></div>
+
+<!-- ★ 全局背景弹幕 -->
+<div id="danmaku-band" aria-hidden="true"></div>
+
+<!-- ★ 点击涟漪画布 -->
+<canvas id="click-canvas" aria-hidden="true" hidden></canvas>
+
+<!-- 导航栏 -->
+<div id="navbar-wrapper">
+  <nav id="navbar" aria-label="主导航">
+    <div class="nav-inner">
+      <a class="nav-brand" href="#">
+        <img class="nav-logo" src="assets/sakura.webp" alt="" />
+        <span id="navBrandName">元素手帐</span>
+      </a>
+      <div class="nav-links">
+        <a class="on" href="#/" data-nav="home">首页</a>
+        <a href="#/blog" data-nav="blog">文章</a>
+        <a href="#/works" data-nav="works">作品</a>
+        <a href="#/projects" data-nav="projects">项目</a>
+        <a href="#/schedule" data-nav="schedule">课表</a>
+        <a href="#/games" data-nav="games">游戏</a>
+        <a href="#/chat" data-nav="chat">茶室</a>
+        <a href="#/about" data-nav="about">关于</a>
+        <a href="#/friends" data-nav="friends">友链</a>
+      </div>
+      <div class="nav-right">
+        <button class="icon-btn" id="searchBtn" type="button" aria-label="搜索" title="搜索">⌕</button>
+        <button class="icon-btn" id="themeBtn" type="button" aria-label="切换主题" title="切换主题">◐</button>
+        <button class="icon-btn" id="bgBtn" type="button" aria-label="切换壁纸模式" title="切换壁纸模式">❖</button>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- Banner -->
+<div id="banner-wrapper">
+  <img src="assets/mys/bg-01.jpg" alt="" class="on" />
+  <img src="assets/mys/bg-02.jpg" alt="" />
+  <div id="banner-overlay" aria-hidden="true"></div>
+  <div id="banner-text">
+    <h1 class="onload-animation" style="animation-delay:0ms" data-ed="banner.title" data-ed-default="今天也值得记一笔">今天也值得记一笔</h1>
+    <div class="subs onload-animation" style="animation-delay:80ms">
+      <span data-ed="banner.sub1" data-ed-default="日常、心情，和那些不想忘掉的小事">日常、心情，和那些不想忘掉的小事</span>
+      <span data-ed="banner.sub2" data-ed-default="慢慢写，慢慢生活">慢慢写，慢慢生活</span>
+    </div>
+  </div>
+  <div id="waves" aria-hidden="true">
+    <svg viewBox="0 0 2400 120" preserveAspectRatio="none">
+      <path fill="currentColor" d="M0,64 C150,96 300,32 450,48 C600,64 750,112 900,104 C1050,96 1200,32 1350,40 C1500,48 1650,104 1800,104 C1950,104 2100,56 2250,48 C2325,44 2362,52 2400,60 L2400,120 L0,120 Z"/>
+      <path fill="currentColor" opacity=".55" d="M0,80 C150,112 300,56 450,72 C600,88 750,120 900,112 C1050,104 1200,56 1350,64 C1500,72 1650,112 1800,112 C1950,112 2100,80 2250,72 C2325,68 2362,74 2400,80 L2400,120 L0,120 Z"/>
+    </svg>
+  </div>
+</div>
+
+<!-- 主网格 -->
+<div id="main-outer">
+  <div id="main-grid">
+
+    <!-- 左侧栏 -->
+    <aside class="left-sidebar">
+      <!-- 个人资料 -->
+      <div class="card-base card-pad onload-animation" style="animation-delay:0ms">
+        <a class="profile-avatar" href="#" id="mjAvatarLink" aria-label="关于我">
+          <img src="assets/avatar-user.jpg" alt="头像" id="mjAvatarImg" />
+          <span class="hover-mask">▤</span>
+        </a>
+        <div class="profile-name">元素手帐</div>
+        <div class="profile-bar"></div>
+        <div class="profile-bio"><span id="typed"></span><span class="caret">&nbsp;</span></div>
+        <!-- 个人标签（平台名 + 链接都可改，存在 State.lists.social） -->
+        <div class="social-row" id="mjSocial"></div>
+      </div>
+
+      <!-- 公告（内容可增删改，存在 State.lists.announce） -->
+      <div class="card-base onload-animation" style="animation-delay:50ms">
+        <div class="widget-head"><span class="w-ico">▸</span><span class="ed-label">公告</span></div>
+        <div class="widget-body">
+          <div class="announce" id="mjAnnounce"></div>
+          <div class="ed-bar">
+            <button class="ed-add" type="button" data-ed-add="announce" data-i="-1" title="新增一条公告">＋ 新增公告</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 标签（可增删改，存在 State.lists.tags） -->
+      <div class="card-base onload-animation" style="animation-delay:150ms">
+        <div class="widget-head"><span class="w-ico">▸</span><span class="ed-label">标签</span></div>
+        <div class="widget-body">
+          <div class="chip-row" id="mjTags"></div>
+          <div class="ed-bar">
+            <button class="ed-add" type="button" data-ed-add="tags" data-i="-1" title="新增标签">＋ 新增标签</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 目录（可增删改，存在 State.lists.toc） -->
+      <div class="card-base onload-animation" style="animation-delay:200ms">
+        <div class="widget-head"><span class="w-ico">▸</span><span class="ed-label">目录</span></div>
+        <div class="widget-body">
+          <div class="toc-list" id="tocList"></div>
+          <div class="ed-bar">
+            <button class="ed-add" type="button" data-ed-add="toc" data-i="-1" title="新增目录项">＋ 新增目录项</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 主内容 -->
+    <main id="content">
+      <div class="card-base list-bar onload-animation" style="animation-delay:100ms">
+        <h2 class="lb-title">最新文章</h2>
+        <div class="seg" role="group" aria-label="列表布局">
+          <button type="button" class="on" data-layout="list">列表</button>
+          <button type="button" data-layout="grid">网格</button>
+        </div>
+      </div>
+
+      <div id="post-list" class="onload-animation" style="animation-delay:150ms">
+        <article class="post-card card-base">
+          <span class="post-pinned">置顶</span>
+          <a class="post-link" href="#">
+            <div class="post-cover"><img src="assets/mys/bg-03.jpg" alt="" loading="lazy" /></div>
+            <div class="post-body">
+              <div class="post-title">搬进来之后的第一件事</div>
+              <div class="post-desc">空房间最麻烦的不是没有家具，而是不知道光从哪边进来。住了两周才把桌子挪到对的位置。</div>
+              <div class="post-tags"><span class="chip">生活随笔</span><span class="chip">日常</span></div>
+              <div class="post-meta">
+                <span class="m">2026-02-14</span><span class="sep"></span>
+                <span class="m">我</span><span class="sep"></span>
+                <span class="m">8 分钟</span>
+              </div>
+            </div>
+          </a>
+        </article>
+
+        <article class="post-card card-base">
+          <a class="post-link" href="#">
+            <div class="post-cover"><img src="assets/mys/bg-05.jpg" alt="" loading="lazy" /></div>
+            <div class="post-body">
+              <div class="post-title">关于早起这件小事</div>
+              <div class="post-desc">试过很多方法，最后有用的只有一条：把闹钟放到必须下床才能关的地方。附一份我用了半年的晨间流程。</div>
+              <div class="post-tags"><span class="chip">日常</span><span class="chip">习惯</span></div>
+              <div class="post-meta">
+                <span class="m">2026-02-08</span><span class="sep"></span>
+                <span class="m">我</span><span class="sep"></span>
+                <span class="m">9 分钟</span>
+              </div>
+            </div>
+          </a>
+        </article>
+
+        <article class="post-card card-base">
+          <a class="post-link" href="#">
+            <div class="post-cover"><img src="assets/mys/bg-06.jpg" alt="" loading="lazy" /></div>
+            <div class="post-body">
+              <div class="post-title">一本读完想立刻重读的书</div>
+              <div class="post-desc">有些书是拿来"用"的，这本是拿来反复翻的。记下几个被打动的段落，以及我为什么在最后一章停了很久。</div>
+              <div class="post-tags"><span class="chip">读书笔记</span><span class="chip">摘抄</span></div>
+              <div class="post-meta">
+                <span class="m">2026-02-02</span><span class="sep"></span>
+                <span class="m">我</span><span class="sep"></span>
+                <span class="m">11 分钟</span>
+              </div>
+            </div>
+          </a>
+        </article>
+
+        <article class="post-card card-base">
+          <a class="post-link" href="#">
+            <div class="post-cover"><img src="assets/mys/bg-07.jpg" alt="" loading="lazy" /></div>
+            <div class="post-body">
+              <div class="post-title">周末做一次慢炖</div>
+              <div class="post-desc">不用守着锅，两小时之后它自己就好了。写清楚配比与时间，下次照着做不会失手。</div>
+              <div class="post-tags"><span class="chip">厨房记录</span><span class="chip">食谱</span></div>
+              <div class="post-meta">
+                <span class="m">2026-01-26</span><span class="sep"></span>
+                <span class="m">我</span><span class="sep"></span>
+                <span class="m">12 分钟</span>
+              </div>
+            </div>
+          </a>
+        </article>
+      </div>
+
+      <!-- ★ 歌词条（并入自 Xinghuisama LyricBar，与右侧栏播放器共用状态） -->
+      <div class="lyric-bar onload-animation" style="animation-delay:180ms">
+        <div class="wave" id="lyricWave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <p class="lyric-text"><span id="lyricText">点击右侧播放器开始播放</span><span class="lyric-cursor" aria-hidden="true"></span></p>
+        <div class="lyric-icon" id="lyricIcon" aria-hidden="true">♪</div>
+      </div>
+
+      <div class="card-base pager onload-animation" style="animation-delay:200ms">
+        <button type="button" class="on">1</button>
+        <button type="button">2</button>
+        <button type="button">3</button>
+        <button type="button">›</button>
+      </div>
+
+      <!-- ★ 站点仪表盘（并入自 Xinghuisama SiteDashboard） -->
+      <div class="dashboard onload-animation" style="animation-delay:220ms">
+        <div class="flip-clock" id="flipClock">00:00:00</div>
+        <div class="dash-body">
+          <div class="dash-up">
+            <span class="dash-dot" aria-hidden="true"></span>
+            <span>系统已稳定运行：<b id="uptime">0 天 0 小时</b></span>
+          </div>
+          <div class="badges">
+            <span><em style="background:#3b82f6"></em>原生 JS</span>
+            <span><em style="background:#0ea5e9"></em>零构建</span>
+            <span><em style="background:#14b8a6"></em>离线可用</span>
+          </div>
+          <span class="dash-icp">静态站点 · 不需要后端</span>
+        </div>
+      </div>
+
+      <footer class="site-footer onload-animation" style="animation-delay:250ms">
+        <div>© 2026 <span id="footName">元素手帐</span> · 保留所有权利</div>
+        <div class="f-links">
+          <a href="#">GitHub</a><a href="#">哔哩哔哩</a><a href="#">RSS</a><a href="#">站点地图</a>
+        </div>
+      </footer>
+    </main>
+
+    <!-- 右侧栏 -->
+    <aside class="right-sidebar">
+      <!-- 站点统计（数值全部由 Stats 模块按真实数据回填，不再写死） -->
+      <div class="card-base onload-animation" style="animation-delay:200ms">
+        <div class="widget-head"><span class="w-ico">▸</span><span class="ed-label">使用情况</span></div>
+        <div class="widget-body">
+          <div class="stat-grid" id="mjStats">
+            <div class="stat-cell"><b data-st="posts">–</b><span>文章</span></div>
+            <div class="stat-cell"><b data-st="tags">–</b><span>标签</span></div>
+            <div class="stat-cell"><b data-st="words">–</b><span>正文字数</span></div>
+            <div class="stat-cell"><b data-st="photos">–</b><span>照片</span></div>
+            <div class="stat-cell"><b data-st="music">–</b><span>音乐</span></div>
+            <div class="stat-cell"><b data-st="ach">–</b><span>成就</span></div>
+            <div class="stat-cell"><b data-st="courses">–</b><span>课程</span></div>
+            <div class="stat-cell"><b data-st="days">–</b><span>建站天数</span></div>
+          </div>
+          <div class="stat-line" id="mjStatsLine">正在统计…</div>
+        </div>
+      </div>
+
+      <!-- 天气预报（Open-Meteo，无需 API key） -->
+      <div class="card-base onload-animation" style="animation-delay:220ms">
+        <div class="widget-head"><span class="w-ico">▸</span><span class="ed-label">天气</span></div>
+        <div class="widget-body" id="mj2WeatherBody">
+          <div class="mj2-loading">正在获取天气…</div>
+        </div>
+      </div>
+
+      <!-- 日历 -->
+      <div class="card-base onload-animation" style="animation-delay:250ms">
+        <div class="widget-head"><span class="w-ico">▸</span><span class="ed-label">日历</span></div>
+        <div class="widget-body">
+          <div class="cal-head">
+            <b id="calLabel">----</b>
+            <div class="cal-nav">
+              <button type="button" id="calPrev" aria-label="上个月">‹</button>
+              <button type="button" id="calNext" aria-label="下个月">›</button>
+            </div>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+      </div>
+
+      <!-- 分类（可增删改，存在 State.lists.cats） -->
+      <div class="card-base onload-animation" style="animation-delay:200ms">
+        <div class="widget-head"><span class="w-ico">▸</span><span class="ed-label">分类</span></div>
+        <div class="widget-body">
+          <div class="cat-row" id="mjCats"></div>
+          <div class="ed-bar">
+            <button class="ed-add" type="button" data-ed-add="cats" data-i="-1" title="新增分类">＋ 新增分类</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 侧栏音乐 -->
+      <div class="card-base onload-animation" style="animation-delay:100ms">
+        <div class="widget-head"><span class="w-ico">▸</span><span class="ed-label">音乐</span></div>
+        <div class="widget-body music-side">
+          <div class="music-head">
+            <div class="music-cover"><img id="mCover" src="assets/xryx.webp" alt="" /></div>
+            <div class="music-meta">
+              <div class="music-title" id="mTitle">夏日与海</div>
+              <div class="music-artist" id="mArtist">玖音 feat. 初音未来</div>
+            </div>
+          </div>
+          <div class="music-bar" id="mBar"><i id="mProg"></i></div>
+          <div class="music-time"><span id="mNow">00:52</span><span id="mAll">02:44</span></div>
+          <div class="music-ctrl">
+            <button class="mb" type="button" id="mPrev" aria-label="上一首">‹</button>
+            <button class="mb play" type="button" id="mPlay" aria-label="播放"><span class="tri"></span></button>
+            <button class="mb" type="button" id="mNext" aria-label="下一首">›</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<!-- 浮动控制 -->
+<div id="floating-controls">
+  <button type="button" id="fcTop" class="hidden" aria-label="回到顶部">↑</button>
+  <button type="button" id="fcSetting" aria-label="显示设置">⚙</button>
+</div>
+
+<!-- 设置面板 -->
+<div class="float-panel closed" id="settingPanel">
+  <div class="fp-row"><span>主题色相</span><span id="hueLabel" style="font-family:var(--font-mono)">240</span></div>
+  <div class="fp-row" style="display:block">
+    <input type="range" id="hueRange" min="0" max="360" value="240" aria-label="主题色相" style="width:100%" />
+  </div>
+  <div class="fp-row">
+    <span>壁纸模式</span>
+    <div class="fp-seg" id="wpSeg">
+      <button type="button" data-wp="banner" class="on">横幅</button>
+      <button type="button" data-wp="fullscreen">全屏</button>
+      <button type="button" data-wp="transparent">透明</button>
+      <button type="button" data-wp="none">无</button>
+    </div>
+  </div>
+  <div class="fp-row">
+    <span>卡片描边</span>
+    <div class="fp-seg" id="cardBorderSeg">
+      <button type="button" data-cb="off" class="on">关</button>
+      <button type="button" data-cb="on">开</button>
+    </div>
+  </div>
+  <div class="fp-row">
+    <span>壁纸透明度</span>
+    <input type="range" id="opRange" min="0" max="100" value="80" aria-label="壁纸透明度" style="width:7rem" />
+  </div>
+  <div class="fp-row">
+    <span>卡片透明</span>
+    <input type="range" id="cardRange" min="0" max="100" value="80" aria-label="卡片不透明度" style="width:7rem" />
+  </div>
+  <div class="fp-row">
+    <span>壁纸柔化</span>
+    <div class="fp-seg" id="softSeg">
+      <button type="button" data-sf="off" class="on">关</button>
+      <button type="button" data-sf="on">开</button>
+    </div>
+  </div>
+  <div class="fp-row">
+    <span>氛围特效</span>
+    <div class="fp-switch" id="fxSwitch">
+      <button type="button" data-fx="sakura">樱花</button>
+      <button type="button" data-fx="fireflies">萤火</button>
+      <button type="button" data-fx="danmaku">弹幕</button>
+      <button type="button" data-fx="ripple">涟漪</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- 打字机 ---------- */
+  var BIO = '把日常、心情和随手记下的小事留在这里。写字、拍照、做饭、散步，都算。';
+  var typedEl = document.getElementById('typed');
+  if (reduced) { typedEl.textContent = BIO; }
+  else {
+    var i = 0;
+    (function type() {
+      typedEl.textContent = BIO.slice(0, i);
+      if (i++ < BIO.length) setTimeout(type, 80);
+    })();
+  }
+
+  /* ---------- Banner + 壁纸轮播（5s） ---------- */
+  var bannerImgs = document.querySelectorAll('#banner-wrapper img');
+  var wpImgs = document.querySelectorAll('#wallpaper img');
+  var cur = 0;
+  if (!reduced) {
+    setInterval(function () {
+      bannerImgs[cur].classList.remove('on');
+      wpImgs[cur].classList.remove('on');
+      cur = (cur + 1) % bannerImgs.length;
+      bannerImgs[cur].classList.add('on');
+      wpImgs[cur].classList.add('on');
+    }, 5000);
+  }
+
+  /* ---------- 导航栏滚动状态 ----------
+     Fuwari 的行为：往下滚过阈值就收起（.navbar-hidden → opacity 0 + 上移），
+     一开始往上滚立刻回来。这样长文里读正文时顶部不会一直压着一条实心条。 */
+  var navbar = document.getElementById('navbar');
+  var navWrap = document.getElementById('navbar-wrapper');
+  var fcTop = document.getElementById('fcTop');
+  var ticking = false;
+  var lastY = window.scrollY;
+  var HIDE_AT = 240;
+  function onScroll() {
+    var y = window.scrollY;
+    navbar.classList.toggle('scrolled', y > 20);
+    fcTop.classList.toggle('hidden', y < 320);
+    var goingDown = y > lastY + 4;
+    var goingUp = y < lastY - 4;
+    if (y < HIDE_AT || goingUp) navWrap.classList.remove('hidden');
+    else if (goingDown) navWrap.classList.add('hidden');
+    if (Math.abs(y - lastY) > 4) lastY = y;
+    ticking = false;
+  }
+  window.addEventListener('scroll', function () {
+    if (!ticking) { requestAnimationFrame(onScroll); ticking = true; }
+  }, { passive: true });
+  onScroll();
+  fcTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }); });
+
+  /* ---------- 文章列表布局切换 ---------- */
+  var postList = document.getElementById('post-list');
+  document.querySelectorAll('.list-bar .seg button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.list-bar .seg button').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      postList.classList.toggle('grid-mode', b.dataset.layout === 'grid');
+    });
+  });
+
+  /* ---------- 目录高亮 ---------- */
+  document.querySelectorAll('#tocList a').forEach(function (a) {
+    a.addEventListener('click', function () {
+      document.querySelectorAll('#tocList a').forEach(function (x) { x.classList.remove('on'); });
+      a.classList.add('on');
+    });
+  });
+
+  /* ---------- 主题切换（View Transitions 圆形擦除） ---------- */
+  var themeBtn = document.getElementById('themeBtn');
+  themeBtn.addEventListener('click', function () {
+    var next = root.classList.contains('dark') ? 'light' : 'dark';
+    var apply = function () { root.classList.toggle('dark', next === 'dark'); };
+    if (document.startViewTransition && !reduced) {
+      var t = document.startViewTransition(apply);
+      t.ready.then(function () {
+        var r = themeBtn.getBoundingClientRect();
+        var x = r.left + r.width / 2, y = r.top + r.height / 2;
+        var end = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+        document.documentElement.animate(
+          { clipPath: ['circle(0px at ' + x + 'px ' + y + 'px)', 'circle(' + end + 'px at ' + x + 'px ' + y + 'px)'] },
+          { duration: 450, easing: 'ease-in-out', pseudoElement: '::view-transition-new(root)' }
+        );
+      });
+    } else { apply(); }
+  });
+
+  /* ---------- 壁纸模式 ----------
+     借鉴 Mizuki 的多模式思路（横幅 / 全屏 / 无），另外补了两档：
+     「透明」= 卡片改用半透明 + backdrop 模糊（Mizuki 的 wallpaper-transparent）；
+     「描边」不是模式而是开关，给卡片加 1px 描边（Mizuki 的 enable-card-border）。
+     这两档都是默认关闭的，避免常驻 backdrop-filter 带来的合成开销。 */
+  var bannerWrapper = document.getElementById('banner-wrapper');
+  var mainOuter = document.getElementById('main-outer');
+  var navbarWrapper = document.getElementById('navbar-wrapper');
+  /* 整层显隐：先淡出，等过渡跑完再真正 display:none。
+     直接 display 硬切是没有过渡可言的；而只改 opacity 又会让横幅继续占着
+     那 55vh 的高度，全屏模式下顶上会留一大块空白。两个都要，所以用延时。 */
+  var LAYER_FADE = reduced ? 0 : 450;
+  function showLayer(layer, show) {
+    if (!layer) return;
+    clearTimeout(layer.__mjFade);
+    if (show) {
+      layer.style.display = '';
+      layer.classList.remove('mj-layer-off');
+    } else {
+      layer.classList.add('mj-layer-off');
+      layer.__mjFade = setTimeout(function () {
+        if (layer.classList.contains('mj-layer-off')) layer.style.display = 'none';
+      }, LAYER_FADE);
+    }
+  }
+  function setWallpaperMode(mode) {
+    document.body.classList.toggle('wallpaper-none', mode === 'none');
+    document.body.classList.toggle('wallpaper-transparent', mode === 'transparent');
+    var showWp = (mode === 'fullscreen' || mode === 'transparent');
+    var showBanner = (mode === 'banner');
+    showLayer(document.getElementById('wallpaper'), showWp);
+    showLayer(bannerWrapper, showBanner);
+    navbarWrapper.style.position = (mode === 'none') ? 'relative' : 'sticky';
+    mainOuter.style.marginTop = showWp ? '5.5rem' : (mode === 'none' ? '0' : '');
+    document.querySelectorAll('#wpSeg button').forEach(function (b) { b.classList.toggle('on', b.dataset.wp === mode); });
+  }
+  document.querySelectorAll('#wpSeg button').forEach(function (b) {
+    b.addEventListener('click', function () { setWallpaperMode(b.dataset.wp); });
+  });
+  // 卡片描边开关
+  var borderSeg = document.getElementById('cardBorderSeg');
+  if (borderSeg) {
+    var setBorder = function (on) {
+      document.body.classList.toggle('enable-card-border', on);
+      borderSeg.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', (b.dataset.cb === 'on') === on); });
+    };
+    borderSeg.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () { setBorder(b.dataset.cb === 'on'); });
+    });
+  }
+  /* 壁纸柔化开关：默认关（全屏滤镜很贵，见 #wallpaper img 那段注释） */
+  var softSeg = document.getElementById('softSeg');
+  if (softSeg) {
+    var setSoft = function (on) {
+      document.body.classList.toggle('wallpaper-soft', on);
+      softSeg.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', (b.dataset.sf === 'on') === on); });
+      try { localStorage.setItem('mj_wp_soft', on ? '1' : '0'); } catch (e) {}
+    };
+    softSeg.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () { setSoft(b.dataset.sf === 'on'); });
+    });
+    // 记住上次的选择
+    var savedSoft = '0';
+    try { savedSoft = localStorage.getItem('mj_wp_soft') || '0'; } catch (e) {}
+    setSoft(savedSoft === '1');
+  }
+  document.getElementById('bgBtn').addEventListener('click', function () {
+    var order = ['banner', 'fullscreen', 'none'];
+    var nowEl = document.querySelector('#wpSeg button.on');
+    var idx = order.indexOf(nowEl ? nowEl.dataset.wp : 'banner');
+    setWallpaperMode(order[(idx + 1) % order.length]);
+  });
+
+  /* ---------- 设置面板 ---------- */
+  var panel = document.getElementById('settingPanel');
+  document.getElementById('fcSetting').addEventListener('click', function () { panel.classList.toggle('closed'); });
+  document.addEventListener('click', function (e) {
+    if (!panel.classList.contains('closed') &&
+        !panel.contains(e.target) &&
+        !document.getElementById('fcSetting').contains(e.target)) {
+      panel.classList.add('closed');
+    }
+  });
+
+  /* 主题色相 */
+  var hueRange = document.getElementById('hueRange');
+  var hueLabel = document.getElementById('hueLabel');
+  hueRange.addEventListener('input', function () {
+    root.style.setProperty('--hue', hueRange.value);
+    hueLabel.textContent = hueRange.value;
+  });
+
+  /* 壁纸透明度 / 卡片透明度 */
+  var opRange = document.getElementById('opRange');
+  var cardRange = document.getElementById('cardRange');
+  opRange.addEventListener('input', function () {
+    root.style.setProperty('--wallpaper-opacity', opRange.value / 100);
+  });
+  cardRange.addEventListener('input', function () {
+    var v = cardRange.value / 100;
+    var dark = root.classList.contains('dark');
+    root.style.setProperty('--card-transparent-opacity', v);
+    root.style.setProperty('--card-bg-transparent',
+      dark ? 'rgba(23,23,23,' + v + ')' : 'rgba(255,255,255,' + v + ')');
+  });
+
+  /* ---------- 日历（可翻月） ---------- */
+  var calGrid = document.getElementById('calGrid');
+  var calLabel = document.getElementById('calLabel');
+  var WEEK = ['日', '一', '二', '三', '四', '五', '六'];
+  var today = new Date();
+  var viewY = today.getFullYear(), viewM = today.getMonth();
+  var POST_DAYS = [2, 5, 8, 14, 18, 21, 26];
+  function renderCal() {
+    calLabel.textContent = viewY + ' / ' + String(viewM + 1).padStart(2, '0');
+    var first = new Date(viewY, viewM, 1).getDay();
+    var days = new Date(viewY, viewM + 1, 0).getDate();
+    var html = '';
+    WEEK.forEach(function (w) { html += '<span class="wd">' + w + '</span>'; });
+    for (var i = 0; i < first; i++) html += '<span class="d blank">·</span>';
+    for (var d = 1; d <= days; d++) {
+      var isToday = viewY === today.getFullYear() && viewM === today.getMonth() && d === today.getDate();
+      var has = POST_DAYS.indexOf(d) > -1;
+      html += '<span class="d' + (isToday ? ' today' : has ? ' has' : '') + '">' + d + '</span>';
+    }
+    calGrid.innerHTML = html;
+  }
+  document.getElementById('calPrev').addEventListener('click', function () {
+    viewM--; if (viewM < 0) { viewM = 11; viewY--; } renderCal();
+  });
+  document.getElementById('calNext').addEventListener('click', function () {
+    viewM++; if (viewM > 11) { viewM = 0; viewY++; } renderCal();
+  });
+  renderCal();
+
+  /* ---------- 侧栏音乐 ---------- */
+  var TRACKS = [
+    { title: '夏日与海', artist: '玖音 feat. 初音未来', cover: 'assets/xryx.webp', len: 164 },
+    { title: '深夜调音室', artist: '玖音', cover: 'assets/hitori.webp', len: 212 },
+    { title: '存在证明', artist: '玖音 feat. 初音未来', cover: 'assets/cl.webp', len: 233 },
+    { title: '星之航路', artist: 'dazbee', cover: 'assets/dazbee.webp', len: 198 }
+  ];
+  var ti2 = 0, mPlaying = false, mPos = 52, mTimer = null;
+  var mCover = document.getElementById('mCover');
+  var mTitle = document.getElementById('mTitle');
+  var mArtist = document.getElementById('mArtist');
+  var mProg = document.getElementById('mProg');
+  var mNow = document.getElementById('mNow');
+  var mAll = document.getElementById('mAll');
+  var mPlay = document.getElementById('mPlay');
+  function fmt(s) { return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(Math.floor(s % 60)).padStart(2, '0'); }
+  function renderTrack() {
+    var t = TRACKS[ti2];
+    mCover.src = t.cover; mTitle.textContent = t.title; mArtist.textContent = t.artist;
+    mAll.textContent = fmt(t.len);
+    if (mPos > t.len) mPos = 0;
+    paint();
+  }
+  function paint() {
+    var t = TRACKS[ti2];
+    mProg.style.width = (mPos / t.len * 100) + '%';
+    mNow.textContent = fmt(mPos);
+  }
+  function setPlaying(on) {
+    mPlaying = on;
+    clearInterval(mTimer);
+    if (on) {
+      mPlay.innerHTML = '<span class="bars"><i style="height:7px"></i><i style="height:13px"></i><i style="height:10px"></i></span>';
+      mTimer = setInterval(function () {
+        mPos++;
+        if (mPos >= TRACKS[ti2].len) { mPos = 0; ti2 = (ti2 + 1) % TRACKS.length; renderTrack(); }
+        paint();
+      }, 1000);
+    } else {
+      mPlay.innerHTML = '<span class="tri"></span>';
+    }
+  }
+  mPlay.addEventListener('click', function () { setPlaying(!mPlaying); });
+  document.getElementById('mNext').addEventListener('click', function () { ti2 = (ti2 + 1) % TRACKS.length; mPos = 0; renderTrack(); });
+  document.getElementById('mPrev').addEventListener('click', function () { ti2 = (ti2 - 1 + TRACKS.length) % TRACKS.length; mPos = 0; renderTrack(); });
+  document.getElementById('mBar').addEventListener('click', function (e) {
+    var r = this.getBoundingClientRect();
+    mPos = Math.round((e.clientX - r.left) / r.width * TRACKS[ti2].len);
+    paint();
+  });
+  renderTrack();
+
+  /* ============================================================
+     ★ 并入自 XinghuisamaBlogs 的气氛与交互层
+     ============================================================ */
+
+  /* ---------- 站点名 / 页脚署名 ----------
+     跟"个人资料"里改过的昵称走（Profile 模块存在 localStorage.mj2_profile），
+     没设过就用站点自己的名字。
+     ★ 这里原本还有一整套从参考项目带进来的启动遮罩（SplashScreen）：
+     加载时全屏盖一层，上面写着参考主题的名字和一根假进度条。按要求**整块删掉**
+     —— 元素、样式、计时器都不再存在，页面上不会再有启动/加载画面。
+     顺带也去掉了"两个开场串起来要 5 秒"的问题。 */
+  (function () {
+    var prof = {};
+    try { prof = JSON.parse(localStorage.getItem('mj2_profile') || '{}') || {}; } catch (e) { prof = {}; }
+    if (!prof.name) return;
+    var brandEl = document.getElementById('navBrandName');
+    var footEl = document.getElementById('footName');
+    if (brandEl) brandEl.textContent = prof.name;
+    if (footEl) footEl.textContent = prof.name;
+  })();
+
+  var fx = { sakura: !reduced, fireflies: !reduced, danmaku: !reduced, ripple: !reduced };
+
+  /* ---------- 樱花（Sakura：40 片，6–14s） ---------- */
+  (function () {
+    var host = document.getElementById('fxSakura');
+    if (!host || reduced) return;
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < 22; i++) {
+      var p = document.createElement('div');
+      p.className = 'petal-s';
+      var size = 8 + Math.random() * 12;
+      p.style.left = (Math.random() * 100) + '%';
+      p.style.width = size + 'px';
+      p.style.height = (size * 1.2) + 'px';
+      p.style.animation = 'sakuraFall ' + (6 + Math.random() * 8) + 's linear infinite';
+      p.style.animationDelay = (Math.random() * -15) + 's';
+      frag.appendChild(p);
+    }
+    host.appendChild(frag);
+  })();
+
+  /* ---------- 萤火虫（Fireflies：50 只，双层动画） ---------- */
+  (function () {
+    var host = document.getElementById('fxFireflies');
+    if (!host || reduced) return;
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < 26; i++) {
+      var outer = document.createElement('div');
+      outer.className = 'firefly';
+      outer.style.top = (Math.random() * 100) + '%';
+      outer.style.left = (Math.random() * 100) + '%';
+      outer.style.animation = 'ffFloat' + (1 + Math.floor(Math.random() * 4)) + ' ' + (15 + Math.random() * 20) + 's ease-in-out infinite';
+      outer.style.animationDelay = (Math.random() * -20) + 's';
+      var inner = document.createElement('i');
+      var size = 3 + Math.random() * 4;
+      inner.style.width = size + 'px';
+      inner.style.height = size + 'px';
+      inner.style.animationDuration = (3 + Math.random() * 5) + 's';
+      inner.style.animationDelay = (Math.random() * -10) + 's';
+      outer.appendChild(inner);
+      frag.appendChild(outer);
+    }
+    host.appendChild(frag);
+  })();
+
+  /* ---------- 全局背景弹幕（DanmakuBackground：15 条） ---------- */
+  (function () {
+    var host = document.getElementById('danmaku-band');
+    if (!host || reduced) return;
+    var LIST = ['今天也要好好吃饭', '记得喝水', '外面在下雨', '晚安，早点睡', '这本书真好看', '周末去哪儿',
+      '刚烤好面包', '在听什么歌', '天冷了加件衣服', '慢慢来比较快', '明天见', '今天心情不错',
+      '窗外的云很好看', '把窗帘拉开吧', '走了很远的路', '该给花浇水了']; 
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < 12; i++) {
+      var s = document.createElement('span');
+      s.textContent = LIST[Math.floor(Math.random() * LIST.length)];
+      s.style.top = (Math.random() * 80 + 10) + '%';
+      s.style.animation = 'floatLeft ' + (Math.random() * 20 + 25) + 's linear ' + (Math.random() * 20) + 's infinite';
+      frag.appendChild(s);
+    }
+    host.appendChild(frag);
+  })();
+
+  /* ---------- 点击涟漪（ClickEffect：canvas，靛蓝，速度衰减） ---------- */
+  (function () {
+    var canvas = document.getElementById('click-canvas');
+    if (!canvas || reduced) return;
+    var ctx = canvas.getContext('2d');
+    var ripples = [];
+    function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+    addEventListener('resize', resize);
+    resize();
+    function Ripple(x, y) { this.x = x; this.y = y; this.r = 0; this.opacity = .6; this.velocity = 2.5; }
+    Ripple.prototype.update = function () { this.r += this.velocity; this.velocity *= .96; this.opacity -= .015; };
+    Ripple.prototype.draw = function () {
+      ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(129,140,248,' + this.opacity + ')'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.beginPath(); ctx.arc(this.x, this.y, this.r * .5, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(129,140,248,' + (this.opacity * .3) + ')'; ctx.fill();
+    };
+    var running = false;
+    addEventListener('click', function (e) { if (!fx.ripple) return; ripples.push(new Ripple(e.clientX, e.clientY)); if (!running) { running = true; canvas.hidden = false; requestAnimationFrame(animate); } });
+    function animate() {
+      // 无涟漪时彻底停机并隐藏画布，不再无条件排下一帧（原实现每帧空转且常驻一个全屏图层）
+      if (ripples.length === 0) { running = false; canvas.hidden = true; ctx.clearRect(0, 0, canvas.width, canvas.height); return; }
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.shadowBlur = 10; ctx.shadowColor = 'rgba(129,140,248,.5)';
+      for (var i = 0; i < ripples.length; i++) {
+        ripples[i].update(); ripples[i].draw();
+        if (ripples[i].opacity <= 0) { ripples.splice(i, 1); i--; }
+      }
+      requestAnimationFrame(animate);
+    }
+  })();
+
+  /* ---------- 歌词条（LyricBar）：与右侧栏播放器共用状态 ---------- */
+  var LYRICS = [
+    ['夏日与海', '「夏日与海」', ['海风把夏天吹得很长', '脚步声落在午后的柏油路上', '我们把名字写进浪花里', '退潮时又悄悄带走']],
+    ['深夜调音室', '「深夜调音室」', ['凌晨两点的光标还在闪', '把走音的那一句再唱一遍', '直到窗外的天开始发白', '才算把这首歌唱完']],
+    ['存在证明', '「存在证明」', ['如果声音能被记录', '是不是就证明我来过', '把心跳压进每一拍里', '这就是我的存在证明']],
+    ['星之航路', '「星之航路」', ['沿着星轨一直往北', '把没说完的话留给风', '航路尽头会有光吗', '会有的，我这样相信着']]
+  ];
+  var lyricWave = document.getElementById('lyricWave');
+  var lyricText = document.getElementById('lyricText');
+  var lyricIcon = document.getElementById('lyricIcon');
+  var lastTrack = -1, lastLine = -1, typingTimer = null;
+
+  function typeLyric(text) {
+    if (typingTimer) clearInterval(typingTimer);
+    lyricText.textContent = '';
+    if (reduced) { lyricText.textContent = text; return; }
+    var i = 0;
+    typingTimer = setInterval(function () {
+      if (i <= text.length) { lyricText.textContent = text.slice(0, i); i++; }
+      else clearInterval(typingTimer);
+    }, 50);
+  }
+  function syncLyric() {
+    var t = TRACKS[ti2];
+    if (ti2 !== lastTrack) { lastTrack = ti2; lastLine = -1; }
+    var lines = LYRICS[ti2][2];
+    var ratio = mPos / t.len;
+    var idx = Math.min(lines.length - 1, Math.floor(ratio * lines.length));
+    if (idx !== lastLine) { lastLine = idx; typeLyric(lines[idx]); }
+    lyricWave.classList.toggle('playing', mPlaying);
+    lyricIcon.classList.toggle('on', mPlaying);
+    if (mPlaying && !reduced) {
+      var bars = lyricWave.children;
+      for (var k = 0; k < bars.length; k++) bars[k].style.height = '';
+    } else {
+      var bs = lyricWave.children;
+      for (var j = 0; j < bs.length; j++) bs[j].style.height = '4px';
+    }
+  }
+  setInterval(syncLyric, 1000);
+  syncLyric();
+  // 切歌时立即刷新
+  ['mNext', 'mPrev'].forEach(function (id) {
+    document.getElementById(id).addEventListener('click', function () { setTimeout(syncLyric, 0); });
+  });
+
+  /* ---------- 站点仪表盘：翻页时钟 + 运行时长 ---------- */
+  (function () {
+    var flipClock = document.getElementById('flipClock');
+    var uptimeEl = document.getElementById('uptime');
+    var START = new Date('2023-04-01T00:00:00').getTime();
+    (function updateDash() {
+      var now = new Date();
+      flipClock.textContent = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      var diff = now.getTime() - START;
+      var days = Math.floor(diff / 86400000);
+      var hours = Math.floor((diff / 3600000) % 24);
+      uptimeEl.textContent = days + ' 天 ' + hours + ' 小时';
+      setTimeout(updateDash, 1000);
+    })();
+  })();
+
+  /* ---------- 氛围特效开关 ---------- */
+  document.querySelectorAll('#fxSwitch button').forEach(function (b) {
+    // 初始状态要和 fx 对齐：减少动效偏好下默认是关的，按钮也得显示成关
+    if (fx[b.dataset.fx] === false) b.classList.add('off');
+    b.addEventListener('click', function () {
+      var key = b.dataset.fx;
+      fx[key] = !fx[key];
+      b.classList.toggle('off', !fx[key]);
+      // 这些 DOM 粒子层已由 Canvas 粒子层接管并移除，取值必须空值安全
+      var map = { sakura: 'fxSakura', fireflies: 'fxFireflies', danmaku: 'danmaku-band' };
+      var node = document.getElementById(map[key]);
+      if (node) node.style.display = fx[key] ? '' : 'none';
+    });
+  });
+
+  /* ---------- 搜索占位 ---------- */
+  document.getElementById('searchBtn').addEventListener('click', function () {
+    document.getElementById('fcSetting').click();
+  });
+})();
+</script>
+<!-- ★ 增强层运行时：必须在既有脚本之后加载，接管主栏路由与常驻模块 -->
+<script src="enhance.js"></script>
+<script src="modules.js"></script>
+<script src="qr.js"></script>
+<script src="chat.js"></script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+{
+  "name": "elemental-journal",
+  "version": "1.0.0",
+  "description": "元素手帐 · 米哈游二次元手帐博客（桌面版）",
+  "main": "electron/main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "web": "node server.js",
+    "dist": "electron-builder --win --x64",
+    "dist:dir": "electron-builder --win --x64 --dir"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.elemental.journal",
+    "productName": "元素手帐",
+    "copyright": "元素手帐 · 个人桌面应用",
+    "directories": {
+      "output": "dist-app",
+      "buildResources": "assets"
+    },
+    "files": [
+      "index.html",
+      "enhance.css",
+      "enhance.js",
+      "modules.css",
+      "modules.js",
+      "chat.css",
+      "chat.js",
+      "qr.js",
+      "chatd.js",
+      "assets/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/app-icon.png",
+      "artifactName": "元素手帐-${version}-安装包.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "元素手帐",
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}
