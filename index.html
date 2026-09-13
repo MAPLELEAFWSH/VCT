@@ -44,17 +44,25 @@
   /* 裸数字（不带单位），直接当 oklch(L C var(--element-hue)) 第三个参数。
      默认 230 = 水元素；七元素的值见 enhance.js 的 ELEMENTS。 */
   --element-hue: 240;
-  --radius-card: 1rem;           /* 卡片 */
-  --radius-btn: .5rem;           /* 按钮 */
-  --radius-cover: .75rem;        /* 封面 / 头像 */
-  --radius-chip: .375rem;        /* 小标签 / 行内码 */
-  /* 正文栏宽度的取舍：75rem 时三栏挤得正文只剩 576px，90rem 又散。
-     84rem = 1344px，正文栏约 720px，导航栏同宽。 */
+  /* 形状尺度：22 / 10 / 14 / 4 —— 这套数是本站自己的。
+     参考主题那一系用的是 16 / 8 / 12 / 6（rounded-lg/xl/md）。
+     不是"随便改个数"：外形尺度撞在一起，两个站看起来就像同一个骨架；
+     把它们拉开是成本最低、也最容易被一眼看出来的差异化。 */
+  --radius-card: 1.375rem;       /* 卡片：22px，比参考系明显更圆、更像一张软纸 */
+  --radius-btn: .625rem;         /* 按钮：10px */
+  --radius-cover: .875rem;       /* 封面 / 头像：14px */
+  --radius-chip: .25rem;         /* 小标签 / 行内码：4px，更"印章"一些 */
+  /* 正文栏宽度的取舍：75rem 时三栏挤得正文只剩 576px，90rem 又散。 */
   --page-measure: 84rem;
   --layout-page-width: var(--page-measure);
   --layout-sidebar-width: 17.5rem;
-  --cover-height: 35vh;
-  --cover-height-home: min(65vh, 760px);
+  /* 顶栏高度单独一个令牌：记忆区的 sticky 偏移、阅读进度条、以及
+     主网格的负上移都跟它对齐，改一处就全跟着走。 */
+  --nav-h: 3.5rem;               /* 56px（参考系是 72 / 71） */
+  /* 封面高度：参考系是首页 65vh（另外两家 96vh / 100vh）、内页 35vh。
+     本站压矮一档，首页 44vh、内页 26vh —— 更像"翻开的一页"而不是广告横幅。 */
+  --cover-height: 26vh;
+  --cover-height-home: min(44vh, 560px);
   --panel-lift: 3.5rem;
   --enter-delay: 150ms;
   --cover-veil: 0.8;
@@ -218,7 +226,7 @@ body.wallpaper-soft #wallpaper img { filter: blur(var(--cover-soften)); }
    并且全站没有一处 backdrop-filter。 */
 #navbar-wrapper { position: sticky; top: 0; z-index: 50; }
 #navbar {
-  max-width: var(--layout-page-width); margin: 0 auto; height: 4.5rem;
+  max-width: var(--layout-page-width); margin: 0 auto; height: var(--nav-h);
   display: flex; align-items: center; justify-content: space-between; padding: 0 1rem;
   transition: transform .3s cubic-bezier(.4,0,.2,1), opacity .3s cubic-bezier(.4,0,.2,1);
 }
@@ -269,7 +277,7 @@ body.wallpaper-soft #wallpaper img { filter: blur(var(--cover-soften)); }
    ============================================================ */
 #banner-wrapper {
   position: relative; width: 100%; height: var(--cover-height-home);
-  margin-top: -4.5rem; overflow: hidden;
+  margin-top: calc(-1 * var(--nav-h)); overflow: hidden;
 }
 #banner-wrapper img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; visibility: hidden; transition: opacity 1.5s ease, visibility 0s linear 1.5s; }
 #banner-wrapper img.on { opacity: 1; visibility: visible; transition: opacity 1.5s ease, visibility 0s; }

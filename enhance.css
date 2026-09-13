@@ -511,7 +511,7 @@ body.mj-native-cursor .ed-pen { display: none; }
    进度直接等于滚动位置（去掉了原来那层弹簧阻尼），滚动和内容严格 1:1，
    不会出现"手在滚、画面滞后"的两套节奏打架。 */
 #mj-memory { position: relative; height: min(186vh, 1760px); }
-#mj-memory .stage { position: sticky; top: 4.5rem; height: min(calc(100vh - 4.5rem), 860px); overflow: hidden; background: #0b0e13; contain: strict; }
+#mj-memory .stage { position: sticky; top: var(--nav-h); height: min(calc(100vh - var(--nav-h)), 860px); overflow: hidden; background: #0b0e13; contain: strict; }
 /* 记忆段落是整块深色（#0b0e13），直接顶着下面的浅色页面等于一条硬黑边。
    在段落末端加一条"深色 → 页面底色"的渐隐，把两个模块的接缝化开。
    渐隐只贴在段落底部，滚动到接近结尾时才进入视口。
@@ -995,7 +995,7 @@ body.mj-native-cursor .ed-pen { display: none; }
 .mj-article pre code { background: none; padding: 0; color: #d9e2ec; font-size: 1em; line-height: inherit; }
 .mj-article img { border-radius: var(--radius-cover); margin: 2em 0; }
 .mj-article hr { border: 0; border-top: 1px dashed var(--rule-hair); margin: 2em 0; }
-.mj-readbar { position: fixed; top: 4.5rem; left: 0; right: 0; height: 2.5px; z-index: 60; }
+.mj-readbar { position: fixed; top: var(--nav-h); left: 0; right: 0; height: 2.5px; z-index: 60; }
 .mj-readbar i { display: block; height: 100%; width: 0; background: var(--element); }
 
 /* ---------- Works ---------- */

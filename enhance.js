@@ -737,7 +737,7 @@
       if (dirty) {
         dirty = false;
         /* 进度 = 舞台被钉住后滚了多远 / 可钉住的总长度。
-           舞台 sticky 在 top: 4.5rem，所以板块顶边从 72px 一路走到
+           舞台 sticky 在 top: var(--nav-h)，所以板块顶边从导航栏下沿一路走到
            −(板块高 − 舞台高) 的过程，就是"模块内叙事"播放的全过程；
            走完之后板块才继续上移（模块间滚动）。 */
         const r = host.getBoundingClientRect();
