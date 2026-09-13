@@ -1848,10 +1848,13 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
     });
   });
 
-  /* ---------- 搜索占位 ---------- */
-  document.getElementById('searchBtn').addEventListener('click', function () {
-    document.getElementById('fcSetting').click();
-  });
+  /* ---------- 顶栏检索 ----------
+     ★ 这里原来是一段"搜索占位"：点一下 ⌕ 就去 .click() 设置面板 —— 因为那时搜索框
+     只是个装饰按钮。现在 enhance.js 的 mountSearch() 已经实现了真的检索框
+     （回车走百度），这段占位反而变成了 bug：点搜索会**顺带**把右下角的设置面板
+     一起弹出来。原因是两个 click 监听都挂在同一个 #searchBtn 上，
+     enhance 里那句 stopPropagation 只挡祖先，挡不住同节点上的另一个监听。
+     所以整段删掉 —— 搜索按钮现在只由 enhance.js 接管，设置面板只认 #fcSetting。 */
 })();
 </script>
 <!-- ★ 增强层运行时：必须在既有脚本之后加载，接管主栏路由与常驻模块 -->

@@ -230,12 +230,43 @@
       oc.fillText(o.sub, w / 2, h * .46 + fs * .74);
       bandSrc = { src: off, count: o.bands };
     }
+    /* ★ 关键帧缓入缓出（开场标题"元素手帐 / 记录日常 · 手帐二次元"那段）。
+       原来位移、旋转、透明度全都直接拿**线性**的 progress 当系数
+       （k = 1 - progress），于是条带匀速飞入、到点"咔"地一起停住 ——
+       这就是"僵硬"的来源：没有缓入、也没有缓出，只有一条直线。
+       现在把线性进度先过一层关键帧：
+         pos    0→0 · .20→.08 · .45→.50 · .70→.88 · 1→1
+                （前 20% 只走 8% 的路程＝缓入；最后 30% 只走 12%＝缓出）
+         alpha  0→0 · .12→.30 · .35→.86 · .55→1 · 1→1
+                （透明度比位移先到位，字先"看得见"、再稳稳落位）
+       关键帧之间用 smoothstep 插值，所以速度连续、没有折角。
+       另外每条带再按自己的 seed 错开一点相位：重组是"依次落位"，
+       不是所有切片一起刹车。收尾时每条带都到满不透明（原来的公式里
+       每条带最终透明度是 .65~1.0 随机的，装完之后标题仍是花的）。
+       ★ 进度条和百分比不走这条曲线：那是"真实进度"，不该被动画曲线带偏。 */
+    const KEY_POS = [[0, 0], [.2, .08], [.45, .5], [.7, .88], [1, 1]];
+    const KEY_ALPHA = [[0, 0], [.12, .3], [.35, .86], [.55, 1], [1, 1]];
+    const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
+    function easeKeys(keys, t) {
+      const x = clamp01(t);
+      for (let i = 1; i < keys.length; i++) {
+        if (x <= keys[i][0]) {
+          const k0 = keys[i - 1], k1 = keys[i];
+          const u = (x - k0[0]) / (k1[0] - k0[0]);
+          return k0[1] + (k1[1] - k0[1]) * (u * u * (3 - 2 * u));   // smoothstep：两端速度为 0
+        }
+      }
+      return keys[keys.length - 1][1];
+    }
     function bandTransform(i) {
-      const k = 1 - progress;
       const seed = Math.abs(Math.sin(i * 12.9898) * 43758.5453) % 1;
+      const ph = clamp01((progress - seed * .1) / .9);   // 每条带错开 0~10% 的相位
+      const e = easeKeys(KEY_POS, ph);
+      const ea = easeKeys(KEY_ALPHA, ph);
+      const k = 1 - e;
       const dir = ((i % 5) - 2) / 2;
       const push = 110 + seed * 210;
-      return { x: dir * push * k + Math.sin(t * .0011 + i) * 8 * k, y: (seed - .5) * push * .7 * k, rot: (seed - .5) * .5 * k, a: .22 + .78 * progress * (.55 + .45 * seed) };
+      return { x: dir * push * k + Math.sin(t * .0011 + i) * 8 * k, y: (seed - .5) * push * .7 * k, rot: (seed - .5) * .5 * k, a: .22 + .78 * ea, e };
     }
     function draw() {
       if (w < 2 || h < 2) return;
@@ -256,7 +287,7 @@
         ctx.globalAlpha = p.a;
         ctx.translate(w / 2 + p.x, (i + .5) * bh + p.y);
         ctx.rotate(p.rot);
-        ctx.shadowColor = o.color; ctx.shadowBlur = 14 * progress;
+        ctx.shadowColor = o.color; ctx.shadowBlur = 14 * p.e;
         ctx.drawImage(bandSrc.src, 0, i * bhSrc, sw, bhSrc, -w / 2, -bh / 2, w, bh);
         ctx.restore();
       }
