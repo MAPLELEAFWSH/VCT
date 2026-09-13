@@ -1688,7 +1688,7 @@
             <button class="mj2-btn" type="button" data-act="del">删除</button>
           </div>
           <article class="mj-article">
-            <div class="mj-tl-meta"><span>${p.date}</span><span>·</span><span>我</span></div>
+            <div class="mj-tl-meta"><span>${p.date}</span><span>·</span><span>玖音</span></div>
             <h1>${p.title}</h1>
             <p class="lede">${p.desc}</p>
             <div class="mj-chips" style="margin:1rem 0 1.6rem">${p.tags.map(t => `<span class="mj-chip">#${t}</span>`).join('')}</div>

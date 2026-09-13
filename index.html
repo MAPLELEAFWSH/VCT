@@ -1227,7 +1227,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
             <div class="music-cover"><img id="mCover" src="assets/xryx.webp" alt="" /></div>
             <div class="music-meta">
               <div class="music-title" id="mTitle">夏日与海</div>
-              <div class="music-artist" id="mArtist">示例曲目</div>
+              <div class="music-artist" id="mArtist">玖音 feat. 初音未来</div>
             </div>
           </div>
           <div class="music-bar" id="mBar"><i id="mProg"></i></div>
@@ -1528,15 +1528,14 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
   renderCal();
 
   /* ---------- 侧栏音乐 ----------
-     示例曲目以前配的是**真实作品与角色的署名**，封面也是来源不明的图。
-     借用真人、角色的名字会让人以为这里真收录了那首歌，所以统一改成中性的
-     占位作者名，封面换成自己生成的墨环图。
+     这 4 条是示例曲目，作者名用的是作品本来的署名。注意本站**并没有收录**
+     这些歌：列表只是演示播放器的样子，点播放走的是本地的占位时长。
      要放自己的歌，把 title / artist / cover 换成自己的就好。 */
   var TRACKS = [
-    { title: '夏日与海', artist: '示例曲目', cover: 'assets/xryx.webp', len: 164 },
-    { title: '深夜调音室', artist: '示例曲目', cover: 'assets/hitori.webp', len: 212 },
-    { title: '存在证明', artist: '示例曲目', cover: 'assets/cl.webp', len: 233 },
-    { title: '星之航路', artist: '示例曲目', cover: 'assets/dazbee.webp', len: 198 }
+    { title: '夏日与海', artist: '玖音 feat. 初音未来', cover: 'assets/xryx.webp', len: 164 },
+    { title: '深夜调音室', artist: '玖音', cover: 'assets/hitori.webp', len: 212 },
+    { title: '存在证明', artist: '玖音 feat. 初音未来', cover: 'assets/cl.webp', len: 233 },
+    { title: '星之航路', artist: 'dazbee', cover: 'assets/dazbee.webp', len: 198 }
   ];
   var ti2 = 0, mPlaying = false, mPos = 52, mTimer = null;
   var mCover = document.getElementById('mCover');
