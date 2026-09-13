@@ -456,8 +456,9 @@
 
      为什么不用"主题色相 + 固定偏移"（那样能跟着主题转）：offsets 只在一个主题色相
      下成立，换到别的色相就会让 cast 与图片互补、整幕发灰。记忆段这五张图的调子
-     是固定的，所以这里按图定死；"和主题同族"这件事交给上下两条 --paper 渐隐去做
-     （顶部 80px 与波浪等高，底部 46px），那两条是跟着主题变的。
+     是固定的，所以这里按图定死；"和主题同族"这件事不归这一层管 —— 舞台底色、
+     纸面纱（.tint）以及上下两条渐隐用的都是 --paper，它们跟着主题走，
+     所以整段的基调永远和波浪、和正文同族，色相坡道只管"幕与幕之间的变化"。
      el 仍保留：进度条/取景点还用它表示这一幕属于哪个元素。 */
   const MEMORY_SCENES = [
     { img: 'assets/mys/bg-03.jpg', el: 'anemo', cap: '第 01 幕 · 天刚亮，先泡一杯茶', pos: '50% 50%' },
@@ -509,11 +510,15 @@
       shiftY: REDUCED ? 0 : s.lift * local + impact * 1.5
     };
   }
+  /* 段落收尾那一下"遮罩"（#mj-blackout，现在是纸色而不是纯黑）。
+     ★ 峰值从 1 降到 .55：底色改成纸色之后，100% 就是"整屏糊成一张白纸"，
+     连同照片墙一起闪掉一下再回来，比原来的黑场更跳眼。
+     .55 只到"一层纸雾"的程度：画面沉下去、照片墙还留个影，收尾有呼吸感而不刺眼。 */
   function getMemoryBlackout(fill, intro) {
     if (intro > 0 || fill <= .735 || fill >= .975) return 0;
     const close = smooth(between(fill, .735, .825));
     const open = 1 - smooth(between(fill, .87, .975));
-    return close * open * (REDUCED ? .3 : 1);
+    return close * open * (REDUCED ? .3 : .55);
   }
 
   const Memory = (() => {
@@ -563,8 +568,9 @@
       // 改为按当前幕位置懒挂背景图，最多同时保留 3 张。
       l.dataset.img = sceneImg(i, sc.img);
       l.dataset.pos = sc.pos;
-      /* --sc = 这一幕在色相坡道上的位置（不是元素色）。放到图层上让 .wash 与
-         .tint 共用，于是"补色层"和"暗部渐变"是同一个色相，整幕才是一档色调。 */
+      /* --sc = 这一幕在色相坡道上的位置（不是元素色），由 .wash 用来给照片补色。
+         .tint 已经改成"纸面纱"（不取色相，只把照片压回纸的明度），
+         所以这一幕的色调只在这一层表达，浓淡由量过的 CAST_STRENGTH 定。 */
       l.style.setProperty('--sc', sceneCast(i));
       l.innerHTML = `<div class="shot"></div><div class="wash" style="opacity:${CAST_STRENGTH}"></div><div class="tint"></div><div class="vig"></div>`;
       layersHost.appendChild(l);

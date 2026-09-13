@@ -159,14 +159,18 @@ body.mj-native-cursor .ed-pen { display: none; }
 .mj-frame:hover .frame-pen { opacity: 1; transform: scale(1.08) rotate(-8deg); }
 
 /* ---------- 记忆段落：换照片控件 ---------- */
-/* 换图条抬到 5rem：渐隐带只有 46px，两者相隔 34px，不再有任何重叠 */
+/* ★ 换图条原来是"深色玻璃上压白字"，因为那时整个舞台是深色的。
+   舞台换成纸色之后它就成了一块黑疤 —— 现在改用站点通用的纸墨令牌：
+   底色 --panel-paper（浅色白 / 深色深）、描边 --rule-*、文字 --ink-*，
+   于是它浮在纸上像一张小标签，两套主题各自成立。
+   底下的 .ed-add 按钮不再需要覆盖成白字，直接吃 .ed-add 的默认样式即可。 */
 .mem-picker {
   position: absolute; left: 50%; bottom: 5rem; transform: translateX(-50%);
   z-index: 9; display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
   padding: .4rem .6rem; border-radius: 999px;
-  background: color-mix(in oklab, #0b0e13 78%, transparent);
-  border: 1px solid rgba(255, 255, 255, .16);
-  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, .7);
+  background: color-mix(in oklab, var(--panel-paper) 92%, transparent);
+  border: 1px solid var(--rule-line);
+  box-shadow: 0 10px 30px -16px rgba(0, 0, 0, .38);
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   opacity: 0; transition: opacity .22s ease, transform .22s cubic-bezier(.34,1.4,.64,1);
   pointer-events: none;
@@ -174,40 +178,38 @@ body.mj-native-cursor .ed-pen { display: none; }
 #mj-memory:hover .mem-picker, .mem-picker:focus-within {
   opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-2px);
 }
-.mem-picker-t { font-size: .72rem; color: rgba(255, 255, 255, .62); letter-spacing: .06em; }
+.mem-picker-t { font-size: .72rem; color: var(--ink-meta); letter-spacing: .06em; }
 .mem-picker-row { display: inline-flex; align-items: center; gap: .25rem; }
 /* "正在改哪一张"：缩略图 + 说明，最宽不超过容器的 22rem */
 .mem-picker-now {
   display: inline-flex; align-items: center; gap: .45rem; max-width: 22rem;
   padding: .18rem .5rem .18rem .22rem; border-radius: var(--radius-chip);
-  background: rgba(255, 255, 255, .08);
+  background: var(--ink-wash-hover);
 }
 .mem-now-thumb {
   width: 2.1rem; height: 1.4rem; border-radius: .22rem; object-fit: cover; flex: none;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, .25);
+  box-shadow: 0 0 0 1px var(--rule-meta);
 }
 .mem-now-txt {
-  font-size: .68rem; line-height: 1.35; color: rgba(255, 255, 255, .82);
+  font-size: .68rem; line-height: 1.35; color: var(--ink-meta);
   text-align: left; white-space: normal;
 }
 .mem-dot {
   position: relative;
-  width: 22px; height: 22px; padding: 0; border: 1px solid rgba(255, 255, 255, .3); cursor: pointer;
-  border-radius: 50%; background: transparent; color: rgba(255, 255, 255, .7);
+  width: 22px; height: 22px; padding: 0; border: 1px solid var(--rule-meta); cursor: pointer;
+  border-radius: 50%; background: transparent; color: var(--ink-meta);
   font: 600 11px/1 var(--font-mono);
   display: grid; place-items: center;
   transition: background-color .15s ease, color .15s ease, transform .15s cubic-bezier(.34,1.5,.64,1), border-color .15s ease;
 }
-.mem-dot:hover { transform: scale(1.14); border-color: #fff; color: #fff; }
-.mem-dot.sel { background: var(--element); border-color: var(--element); color: #fff; }
+.mem-dot:hover { transform: scale(1.14); border-color: var(--ink-strong); color: var(--ink-strong); }
+/* 选中的圆点用 --element-strong 而不是 --element：白字压在 --element
+   上只有 2.9:1，过不了 AA（和 .fp-switch / .mem-dot 那轮对比度修正同一个原因）。 */
+.mem-dot.sel { background: var(--element-strong); border-color: var(--element-strong); color: #fff; }
 .mem-dot.has::after {
   content: ""; position: absolute; margin: -14px -14px 0 0; width: 5px; height: 5px;
   border-radius: 50%; background: var(--element);
 }
-.mem-picker .ed-add {
-  color: rgba(255, 255, 255, .8); border-color: rgba(255, 255, 255, .3); font-size: .72rem; padding: .2rem .5rem;
-}
-.mem-picker .ed-add:hover { background: rgba(255, 255, 255, .14); color: #fff; border-color: #fff; }
 @media (max-width: 720px) { .mem-picker { display: none; } }
 
 /* ---------- 顶栏百度检索 ---------- */
@@ -513,28 +515,38 @@ body.mj-native-cursor .ed-pen { display: none; }
    进度直接等于滚动位置（去掉了原来那层弹簧阻尼），滚动和内容严格 1:1，
    不会出现"手在滚、画面滞后"的两套节奏打架。 */
 #mj-memory { position: relative; height: min(186vh, 1760px); }
-#mj-memory .stage { position: sticky; top: 4.5rem; height: min(calc(100vh - 4.5rem), 860px); overflow: hidden; background: #0b0e13; contain: strict; }
-/* 记忆段落是整块深色（#0b0e13），直接顶着下面的浅色页面等于一条硬黑边。
-   在段落末端加一条"深色 → 页面底色"的渐隐，把两个模块的接缝化开。
-   渐隐只贴在段落底部，滚动到接近结尾时才进入视口。
-   ★ 文字的冲突问题：渐隐末端几乎就是页面底色，而 cap / hint 原来是
-   bottom:44px / 14px 的浅色文字，正好落在渐隐里 —— 浅字压浅底会读不出来。
-   所以把两条文字整体抬到渐隐带之上（hint 140 / cap 168 > 渐隐 120），
-   再补一层 z-index，双保险。 */
-/* ★ 白色过渡与换图控件互相遮挡的修正
-   原来渐隐带 120px、换图条贴在 bottom:1rem，两者完全叠在一起：
-   渐隐末尾几乎就是页面底色，深色小条压在上面看着像"被糊住"。
-   第一次收到 68px 仍嫌白得太多 —— 现在只留 46px：只够化开接缝，
-   看不出"一块白"，换图条在 5rem（80px）高位，两者相隔 34px，不再重叠。 */
+/* ============================================================
+   ★ 底色为什么是 var(--paper)，而不再是写死的深色 #0b0e13
+   ------------------------------------------------------------
+   这一段原来整块写死成深夜色。它的位置很尴尬：上面是横幅下沿的波浪
+   （用的是 --paper），下面是正文区（也是 --paper）—— 于是页面读起来是
+   "浅 → 深 → 浅"两次硬切，第二幕像另贴上去的一张黑纸，两处接缝都有割裂感。
+
+   现在底色交给纸色令牌，不再写死：
+     · 浅色主题：--paper = oklch(0.95 0.01 H)，就是波浪那个纸色 ——
+       波浪 → 记忆 → 正文 三幕是**同一张纸**，浅色系一路连贯下来；
+     · 深色主题：--paper 本身就是深色（oklch(0.16 …)），整段依旧是
+       "夜里的一页"，和深色主题的页面浑然一体，观感不变。
+   一个值同时把两套主题都摆平了 —— 写死任何一个颜色都做不到这件事。
+
+   配套地，照片也不再是"暗房里一屏一屏的幻灯片"：由 .tint 的第一层
+   纸面纱把照片压回纸的明度区间（详见下面 .tint），读起来是
+   "贴在纸上的照片"，于是底色是浅的、照片也是浅的，段落才真的轻。
+   ============================================================ */
+#mj-memory .stage { position: sticky; top: 4.5rem; height: min(calc(100vh - 4.5rem), 860px); overflow: hidden; background: var(--paper); contain: strict; }
+/* 段落上/下沿各一条 --paper 渐隐。
+   底色和页面同色之后，接缝本身已经不存在了；这两条渐隐改去干另一件事：
+   把舞台里照片的上下边缘"化"进纸里 —— 照片不再有硬边框，
+   进第二幕是"从波浪里化出来"，离开是"化回正文的纸"。
+   ★ 高度不是随手定的：
+     · 顶边 80px = 横幅下沿那条波浪带子的高度，进段落时两层浅色是同一个尺度；
+     · 底边只留 46px：换图条在 5rem（80px）高位，两者相隔 34px 不重叠，
+       再高就会让换图条压在一块"纸面"上像被糊住。 */
 #mj-memory::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 46px;
   z-index: 7; pointer-events: none;
   background: linear-gradient(180deg, transparent 0%, color-mix(in oklab, var(--paper) 34%, transparent) 55%, var(--paper) 100%);
 }
-/* ★ 顶部也来一条对称的渐隐（原来只有底部有）。
-   横幅下沿那条波浪用的就是 --paper，而记忆段落第一帧是深色的；两者直接相接
-   就是一条硬边。这条 80px（和波浪等高）的渐隐把"波浪的浅色"化进"第一幕的深色"，
-   于是进段落时是柔和过去的。高度取 80px 与波浪带子对齐，不是随手定的。 */
 #mj-memory::before {
   content: ""; position: absolute; left: 0; right: 0; top: 0; height: 80px;
   z-index: 7; pointer-events: none;
@@ -542,23 +554,50 @@ body.mj-native-cursor .ed-pen { display: none; }
 }
 #mj-mem-cap, #mj-mem-hint { z-index: 8; }
 .mj-mem-layer { position: absolute; inset: 0; opacity: 0; will-change: transform, opacity; }
-.mj-mem-layer .shot { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: .55; }
+/* 照片浓度 .72：纸面纱（.tint）才是"变浅"的那个旋钮，照片本身留足信息量，
+   否则照片和纱各让一半，最后两边都没了 —— 画面糊成一片灰。 */
+.mj-mem-layer .shot { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: .72; }
 /* 色调统一层：把这一幕的色调（--sc，色相坡道上的一个点）以固定浓度压到照片上。
-   它夹在照片与 tint 之间，所以补的是"照片本身的色调"，不会动到上面那层暗部渐变。
-   --sc 的明度已经钉在 0.62：直接用元素原色会把偏灰那一幕的亮度顶上去
+   它夹在照片与 .tint 之间，所以补的是"照片本身的色调"，上面的纸面纱再决定
+   这层色调留下多少 —— 颜色浓度仍然是 JS 里量过的 CAST_STRENGTH。
+   --sc 的明度钉在 52%：直接用元素原色的明度会把偏灰那一幕整幕顶亮
    （实测第 2 幕 70 → 96，补了彩度又成了"最亮的一幕"）。 */
 .mj-mem-layer .wash { position: absolute; inset: 0; background: var(--sc); }
-.mj-mem-layer .tint { position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in oklab, var(--sc) 26%, transparent), color-mix(in oklab, var(--sc) 8%, #0b0e13) 62%, #0b0e13); }
-.mj-mem-layer .vig { position: absolute; inset: 0; background: radial-gradient(circle at 50% 46%, transparent 34%, rgba(11,14,19,.88) 100%); }
-#mj-blackout { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; }
+/* ★ 纸面纱：原来是"暗部渐变"（往下压到 #0b0e13），现在反过来 —— 把照片压进
+   **纸的明度区间**，于是整段是浅的，而且上下沿自动和页面连上。
+   竖向剖面（百分比是舞台高度）：
+     0%   62% 纸 —— 上沿还压得比较实，接上面的波浪不突兀
+     30%  40% 纸 —— 中段最薄，照片在这里最清楚
+     54%  46% 纸
+     80%  88% 纸 —— 字幕（bottom:168px ≈ 80%）就落在这里，深墨压在近乎纯纸上
+     100% 纯纸   —— 最后一行像素**正好等于页面底色**，下沿接缝为零
+   也就是说：上下的接缝不是靠"再补一条渐隐"糊过去的，而是这一层自己收敛到纸色。 */
+.mj-mem-layer .tint {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg,
+    color-mix(in oklab, var(--paper) 62%, transparent) 0%,
+    color-mix(in oklab, var(--paper) 40%, transparent) 30%,
+    color-mix(in oklab, var(--paper) 46%, transparent) 54%,
+    color-mix(in oklab, var(--paper) 88%, transparent) 80%,
+    var(--paper) 100%);
+}
+/* 暗角同样换成"纸的暗角"：四角化进纸里，中间留出照片。
+   原来是 rgba(11,14,19,.88) 的深夜色暗角。 */
+.mj-mem-layer .vig { position: absolute; inset: 0; background: radial-gradient(circle at 50% 46%, transparent 34%, color-mix(in oklab, var(--paper) 76%, transparent) 100%); }
+/* 遮黑层改成"遮纸层"：名字保留（JS 里按 mj-blackout 取节点），
+   但它现在是往纸色收，不再是往纯黑收 —— 浅色段落里闪一下黑是最刺眼的事。 */
+#mj-blackout { position: absolute; inset: 0; background: var(--paper); opacity: 0; pointer-events: none; }
+/* 字幕/提示：深墨 + 一圈纸色光晕（不是原来的白色字压深色投影）。
+   光晕用纸色而不是黑色，是因为文字底下就是纸面纱 —— 光晕和底色同族才不会显脏。 */
 #mj-mem-cap {
   position: absolute; left: 0; right: 0; bottom: 168px; text-align: center; pointer-events: none;
-  color: #fff; font-size: 15px; letter-spacing: .1em; text-shadow: 0 2px 16px rgba(0,0,0,.85);
+  color: var(--ink-strong); font-size: 15px; letter-spacing: .1em;
+  text-shadow: 0 1px 2px color-mix(in oklab, var(--paper) 92%, transparent), 0 0 14px color-mix(in oklab, var(--paper) 88%, transparent);
   opacity: 0; transition: opacity .5s;
 }
 #mj-mem-cap.on { opacity: 1; }
-#mj-mem-hint { position: absolute; left: 50%; bottom: 140px; transform: translateX(-50%); font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,.58); letter-spacing: .18em; }
-.mj-mem-bar { position: absolute; left: 0; right: 0; top: 0; height: 2px; background: rgba(255,255,255,.1); }
+#mj-mem-hint { position: absolute; left: 50%; bottom: 140px; transform: translateX(-50%); font-family: var(--font-mono); font-size: 11px; color: var(--ink-meta); letter-spacing: .18em; }
+.mj-mem-bar { position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--rule-hair); }
 .mj-mem-bar i { display: block; height: 100%; width: 0; background: var(--element); }
 /* ---------- 「走过的地方」照片墙 ----------
    6 张横向不规则摆放的照片，间距放大、单张放大，之间用线相连；
@@ -570,8 +609,9 @@ body.mj-native-cursor .ed-pen { display: none; }
   pointer-events: none; z-index: 3;
 }
 .mj-wall-title {
-  font-family: var(--font-hand, inherit); color: #fff; font-size: clamp(17px, 1.8vw, 23px);
-  letter-spacing: .24em; text-shadow: 0 2px 16px rgba(0,0,0,.9);
+  font-family: var(--font-hand, inherit); color: var(--ink-strong); font-size: clamp(17px, 1.8vw, 23px);
+  letter-spacing: .24em;
+  text-shadow: 0 1px 2px color-mix(in oklab, var(--paper) 92%, transparent), 0 0 14px color-mix(in oklab, var(--paper) 88%, transparent);
   display: flex; flex-direction: column; align-items: center; gap: .25rem;
 }
 .mj-wall-title .en {
@@ -588,22 +628,29 @@ body.mj-native-cursor .ed-pen { display: none; }
   position: absolute; inset: 0; width: 100%; height: 100%;
   overflow: visible; pointer-events: none; z-index: 0;
 }
+/* 连线：墨色虚线（原来是白色虚线 + 黑色投影）。
+   投影去掉了 —— 虚线本来就画在纸面上，再压一层黑投影会显脏；
+   靠 --ink-strong 的透明度取色，两套主题下都自动是"墨"。 */
 .mj-wall-line path {
-  stroke: rgba(255,255,255,.72); stroke-width: 2; stroke-linecap: round;
+  stroke: color-mix(in oklab, var(--ink-strong) 42%, transparent); stroke-width: 2; stroke-linecap: round;
   stroke-dasharray: 7 6;
-  filter: drop-shadow(0 1px 3px rgba(0,0,0,.7));
 }
 .mj-wall-photo {
   position: relative; z-index: 1;
   flex: 0 1 auto; width: clamp(96px, 10.6vw, 152px);   /* 单张已放大 */
   padding: 8px; border: 0; border-radius: 4px; cursor: pointer;
-  background: #fff; box-shadow: 0 16px 38px -16px rgba(0,0,0,.85);
+  background: #fff; box-shadow: 0 14px 32px -18px rgba(0,0,0,.42);
   transform: translateY(var(--dy, 0)) rotate(var(--rot, 0deg)) scale(.84);
   opacity: 0; pointer-events: none;
   transition: transform .65s cubic-bezier(.2,1.1,.35,1), opacity .55s, filter .45s;
   transition-delay: var(--delay, 0ms);
 }
-.mj-wall-photo.locked { filter: grayscale(1) brightness(.42) blur(1.6px); }
+/* ★ .locked 不是"一直看得见的灰暗态"（那时 opacity 还是 0，压根看不见），
+   它是**揭示动画的起点**：解锁时 filter 从这一档过渡到正常，照片"显影"出来。
+   所以这一档必须是两套主题都成立的中性灰，不能再用 brightness(.42) ——
+   那在浅色纸上会先冒出一团深灰，像贴歪了一块黑胶带。
+   白相框也留着 #fff：它是照片本身的框，和纸色深浅无关。 */
+.mj-wall-photo.locked { filter: grayscale(1) brightness(.82) blur(1.6px); }
 .mj-wall-photo.show { opacity: 1; pointer-events: auto; transform: translateY(var(--dy, 0)) rotate(var(--rot, 0deg)) scale(1); }
 .mj-wall-photo.show:hover { transform: translateY(calc(var(--dy, 0px) - 9px)) rotate(0deg) scale(1.07); z-index: 5; }
 .mj-wall-photo .ph {
@@ -612,9 +659,11 @@ body.mj-native-cursor .ed-pen { display: none; }
 }
 /* 照片底部不要文字说明：已收取只在右上角盖一个手绘感对勾，
    未收取靠"灰暗 + 模糊"区分，名称只保留在 aria-label 里。 */
+/* 照片顶部一点点暗角：只为了让右上角那个"已收取"的勾看得清，
+   是压在照片内部的，和页面深浅无关，所以保留黑色（浓度从 .32 收到 .24）。 */
 .mj-wall-photo .ph::after {
   content: ""; position: absolute; inset: 0; border-radius: inherit;
-  background: linear-gradient(180deg, rgba(0,0,0,.32), transparent 40%);
+  background: linear-gradient(180deg, rgba(0,0,0,.24), transparent 40%);
   opacity: 0; transition: opacity .3s;
 }
 .mj-wall-photo.got { filter: saturate(.55) brightness(.94); }
