@@ -11,7 +11,7 @@
   contain: strict;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
 }
-.card-base { position: relative; }
+.sheet { position: relative; }
 .mj-tape {
   position: absolute; top: -9px; left: 26px; width: 62px; height: 18px; z-index: 3;
   background: color-mix(in oklab, var(--element) 40%, rgba(255,255,255,.55));
@@ -956,7 +956,7 @@ body.mj-native-cursor .ed-pen { display: none; }
 .mj-tl-meta { display: flex; flex-wrap: wrap; gap: .5rem; font-size: .875rem; font-weight: 500; font-family: var(--font-mono); color: var(--ink-meta); }
 .mj-empty { padding: 2rem; text-align: center; color: var(--ink-meta); font-size: .85rem; }
 
-/* ---------- 文章页（排版对照 prose-base） ----------
+/* ---------- 文章页（排版对照正文的字阶） ----------
    正文 1rem / line-height 1.75；p 上下 1.25em；h1 2.25rem/1.111；
    h2 1.5rem/1.333 + mt 2em；h3 1.25rem/1.6 + mt 1.6em；li::marker 用主色；
    引用块是 4px 圆角主色/浅色竖条，不用整块底色；行内码 rounded-md。 */

@@ -81,7 +81,7 @@
   --rule-hair: rgba(0, 0, 0, 0.08);
   --rule-line: rgba(0, 0, 0, 0.1);
   --rule-meta: rgba(0, 0, 0, 0.2);
-  /* 次要文字是"主色 50% 透明度"（.text-50），但 50% 黑在浅底上只有
+  /* 次要文字是"主色 50% 透明度"，但 50% 黑在浅底上只有
      3.98:1，同样过不了 AA；抬到 58%（≈5.32:1）。 */
   --ink-meta: rgba(0, 0, 0, 0.58);
   --panel-paper: #ffffff;
@@ -316,11 +316,11 @@ main#content { display: flex; flex-direction: column; gap: 1.2rem; min-width: 0;
 /* ============================================================
    卡片
    ============================================================ */
-/* .card-base 只有"圆角 + 裁切 + 背景色"，没有边框也没有阴影：
+/* .sheet 只有"圆角 + 裁切 + 背景色"，没有边框也没有阴影：
    模块之间靠 --paper / --paper-card 的明度差分开，而不是靠描边。
    ★ 加了轻量的悬停/按下反馈（用户要求"方框圆框要有过渡与动画"）：
    只动 background-color 与 transform，全部走合成层，不掉帧。 */
-.card-base {
+.sheet {
   border-radius: var(--radius-card); overflow: hidden;
   background: var(--paper-card-veil);
   border: 0; box-shadow: none;
@@ -328,7 +328,7 @@ main#content { display: flex; flex-direction: column; gap: 1.2rem; min-width: 0;
 }
 /* 只有"可交互卡片"抬升：文章卡、友链卡、工程卡、时间线卡都各自声明了，
    普通容器（侧栏组件、列表容器）保持静止，避免整页都在抖。 */
-.card-base .card-base { background: var(--paper-card-veil); }
+.sheet .sheet { background: var(--paper-card-veil); }
 .card-pad { padding: 1rem; }
 
 /* 侧栏组件标题："粗体文字 + 左侧 4px 圆角主色条"，没有下划线。
@@ -421,14 +421,14 @@ main#content { display: flex; flex-direction: column; gap: 1.2rem; min-width: 0;
    到处是人家的文件名）。
    ============================================================ */
 /* ① 透明壁纸模式：卡片半透明 + 背景模糊（只有这一档会付 backdrop-filter 的代价） */
-body.wallpaper-transparent .card-base {
+body.wallpaper-transparent .sheet {
   background: color-mix(in oklab, var(--paper-card) 62%, transparent) !important;
   backdrop-filter: blur(10px) saturate(1.05);
   -webkit-backdrop-filter: blur(10px) saturate(1.05);
 }
 /* ② 卡片描边开关 */
-body.enable-card-border .card-base { border: 1px solid var(--rule-hair); }
-body.enable-card-border .mj-view .card-base { border-color: color-mix(in oklab, var(--rule-hair) 80%, transparent); }
+body.outline-cards .sheet { border: 1px solid var(--rule-hair); }
+body.outline-cards .mj-view .sheet { border-color: color-mix(in oklab, var(--rule-hair) 80%, transparent); }
 /* ③ 路由切换过渡：新视图轻微上浮淡入（只动 transform/opacity） */
 @keyframes mjViewIn {
   from { opacity: 0; transform: translateY(.6rem); }
@@ -626,8 +626,8 @@ footer.site-footer a:hover { color: var(--element-deep); }
 #floating-controls button.hidden { display: none; }
 
 /* 浮动面板（设置）
-   .float-panel = rounded-1rem + --panel-paper + shadow-xl，暗色下 shadow-none */
-.float-panel {
+   .float-sheet = rounded-1rem + --panel-paper + shadow-xl，暗色下 shadow-none */
+.float-sheet {
   position: fixed; right: 1rem; bottom: 5.2rem; z-index: 61; width: 20rem;
   border-radius: var(--radius-card); background: var(--panel-paper);
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / .1), 0 8px 10px -6px rgb(0 0 0 / .1);
@@ -635,8 +635,8 @@ footer.site-footer a:hover { color: var(--element-deep); }
   padding: 1rem; transform-origin: bottom right;
   transition: transform .15s cubic-bezier(.4,0,.2,1), opacity .15s cubic-bezier(.4,0,.2,1);
 }
-:root.dark .float-panel { box-shadow: none; }
-.float-panel.closed { transform: translateY(.5rem) scale(.96); opacity: 0; pointer-events: none; }
+:root.dark .float-sheet { box-shadow: none; }
+.float-sheet.closed { transform: translateY(.5rem) scale(.96); opacity: 0; pointer-events: none; }
 .fp-row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .35rem 0; font-size: .8rem; }
 .fp-row + .fp-row { border-top: 1px dashed var(--rule-hair); }
 .fp-seg { display: flex; gap: .2rem; background: var(--stamp-bg); padding: .15rem; border-radius: .5rem; }
@@ -645,7 +645,7 @@ footer.site-footer a:hover { color: var(--element-deep); }
 
 /* ============================================================
    入场动画
-   .onload-animation = opacity 0 → 1 + translateY → 0，300ms，
+   .enter-rise = opacity 0 → 1 + translateY → 0，300ms，
    animation-fill-mode: forwards；延迟阶梯 0 / 100 / 150 / 250 / 400ms。
    ★ 唯一偏离：位移是 2rem，但相邻模块是错开 70ms 起跑的，
    2rem 的落差会让"后一个模块的文字"在动画途中压到前一个模块的文字上
@@ -658,9 +658,9 @@ footer.site-footer a:hover { color: var(--element-deep); }
    于是 fill-mode 把元素永久按在 opacity: 0 上：从别的页面切回首页，
    主标题整段消失。
    所以：基底不写 opacity: 0（默认就是可见），动画只做入场；
-   并且入场放完后由 JS 把 .onload-animation 摘掉（见 enhance.js），
+   并且入场放完后由 JS 把 .enter-rise 摘掉（见 enhance.js），
    这样以后再来回切页面也不会重新起跑、更不会卡住。 */
-.onload-animation {
+.enter-rise {
   animation: fade-in-up 300ms cubic-bezier(.4,0,.2,1) both;
 }
 @keyframes fade-in-up {
@@ -669,8 +669,8 @@ footer.site-footer a:hover { color: var(--element-deep); }
 }
 /* 逐块延迟按 70ms 等间距递进（覆盖 HTML 上手工写的 animation-delay）。
    主栏的模块挂在 .mj-view 下（Views 把首页子节点收进视图容器）。 */
-aside.left-sidebar > .onload-animation, aside.right-sidebar > .onload-animation,
-.mj-view > .onload-animation { animation-delay: 0ms !important; }
+aside.left-sidebar > .enter-rise, aside.right-sidebar > .enter-rise,
+.mj-view > .enter-rise { animation-delay: 0ms !important; }
 aside.left-sidebar > *:nth-child(2), aside.right-sidebar > *:nth-child(2), .mj-view > *:nth-child(2) { animation-delay: 70ms !important; }
 aside.left-sidebar > *:nth-child(3), aside.right-sidebar > *:nth-child(3), .mj-view > *:nth-child(3) { animation-delay: 140ms !important; }
 aside.left-sidebar > *:nth-child(4), aside.right-sidebar > *:nth-child(4), .mj-view > *:nth-child(4) { animation-delay: 210ms !important; }
@@ -894,7 +894,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
-  .onload-animation { opacity: 1; transform: none; }
+  .enter-rise { opacity: 1; transform: none; }
   html { scroll-behavior: auto; }
   .fx-layer, #danmaku-band, #click-canvas { display: none; }
 }
@@ -965,8 +965,8 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
   <img src="assets/paper/bg-02.svg" alt="" />
   <div id="banner-overlay" aria-hidden="true"></div>
   <div id="banner-text">
-    <h1 class="onload-animation" style="animation-delay:0ms" data-ed="banner.title" data-ed-default="今天也值得记一笔">今天也值得记一笔</h1>
-    <div class="subs onload-animation" style="animation-delay:80ms">
+    <h1 class="enter-rise" style="animation-delay:0ms" data-ed="banner.title" data-ed-default="今天也值得记一笔">今天也值得记一笔</h1>
+    <div class="subs enter-rise" style="animation-delay:80ms">
       <span data-ed="banner.sub1" data-ed-default="日常、心情，和那些不想忘掉的小事">日常、心情，和那些不想忘掉的小事</span>
       <span data-ed="banner.sub2" data-ed-default="慢慢写，慢慢生活">慢慢写，慢慢生活</span>
     </div>
@@ -999,7 +999,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
     <!-- 左侧栏 -->
     <aside class="left-sidebar">
       <!-- 个人资料 -->
-      <div class="card-base card-pad onload-animation" style="animation-delay:0ms">
+      <div class="sheet card-pad enter-rise" style="animation-delay:0ms">
         <a class="profile-avatar" href="#" id="mjAvatarLink" aria-label="关于我">
           <img src="assets/paper/avatar.svg" alt="头像" id="mjAvatarImg" />
           <span class="hover-mask">▤</span>
@@ -1012,7 +1012,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
       </div>
 
       <!-- 公告（内容可增删改，存在 State.lists.announce） -->
-      <div class="card-base onload-animation" style="animation-delay:50ms">
+      <div class="sheet enter-rise" style="animation-delay:50ms">
         <div class="widget-head"><span class="w-ico">▸</span><span class="ed-label">公告</span></div>
         <div class="widget-body">
           <div class="announce" id="mjAnnounce"></div>
@@ -1023,7 +1023,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
       </div>
 
       <!-- 标签（可增删改，存在 State.lists.tags） -->
-      <div class="card-base onload-animation" style="animation-delay:150ms">
+      <div class="sheet enter-rise" style="animation-delay:150ms">
         <div class="widget-head"><span class="w-ico">▸</span><span class="ed-label">标签</span></div>
         <div class="widget-body">
           <div class="chip-row" id="mjTags"></div>
@@ -1034,7 +1034,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
       </div>
 
       <!-- 目录（可增删改，存在 State.lists.toc） -->
-      <div class="card-base onload-animation" style="animation-delay:200ms">
+      <div class="sheet enter-rise" style="animation-delay:200ms">
         <div class="widget-head"><span class="w-ico">▸</span><span class="ed-label">目录</span></div>
         <div class="widget-body">
           <div class="toc-list" id="tocList"></div>
@@ -1047,7 +1047,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 
     <!-- 主内容 -->
     <main id="content">
-      <div class="card-base list-bar onload-animation" style="animation-delay:100ms">
+      <div class="sheet list-bar enter-rise" style="animation-delay:100ms">
         <h2 class="lb-title">最新文章</h2>
         <div class="seg" role="group" aria-label="列表布局">
           <button type="button" class="on" data-layout="list">列表</button>
@@ -1055,8 +1055,8 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
         </div>
       </div>
 
-      <div id="post-list" class="onload-animation" style="animation-delay:150ms">
-        <article class="post-card card-base">
+      <div id="post-list" class="enter-rise" style="animation-delay:150ms">
+        <article class="post-card sheet">
           <span class="post-pinned">置顶</span>
           <a class="post-link" href="#">
             <div class="post-cover"><img src="assets/paper/bg-03.svg" alt="" loading="lazy" /></div>
@@ -1073,7 +1073,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
           </a>
         </article>
 
-        <article class="post-card card-base">
+        <article class="post-card sheet">
           <a class="post-link" href="#">
             <div class="post-cover"><img src="assets/paper/bg-05.svg" alt="" loading="lazy" /></div>
             <div class="post-body">
@@ -1089,7 +1089,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
           </a>
         </article>
 
-        <article class="post-card card-base">
+        <article class="post-card sheet">
           <a class="post-link" href="#">
             <div class="post-cover"><img src="assets/paper/bg-06.svg" alt="" loading="lazy" /></div>
             <div class="post-body">
@@ -1105,7 +1105,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
           </a>
         </article>
 
-        <article class="post-card card-base">
+        <article class="post-card sheet">
           <a class="post-link" href="#">
             <div class="post-cover"><img src="assets/paper/bg-07.svg" alt="" loading="lazy" /></div>
             <div class="post-body">
@@ -1123,13 +1123,13 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
       </div>
 
       <!-- ★ 歌词条 -->
-      <div class="lyric-bar onload-animation" style="animation-delay:180ms">
+      <div class="lyric-bar enter-rise" style="animation-delay:180ms">
         <div class="wave" id="lyricWave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
         <p class="lyric-text"><span id="lyricText">点击右侧播放器开始播放</span><span class="lyric-cursor" aria-hidden="true"></span></p>
         <div class="lyric-icon" id="lyricIcon" aria-hidden="true">♪</div>
       </div>
 
-      <div class="card-base pager onload-animation" style="animation-delay:200ms">
+      <div class="sheet pager enter-rise" style="animation-delay:200ms">
         <button type="button" class="on">1</button>
         <button type="button">2</button>
         <button type="button">3</button>
@@ -1137,7 +1137,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
       </div>
 
       <!-- ★ 站点仪表盘 -->
-      <div class="dashboard onload-animation" style="animation-delay:220ms">
+      <div class="dashboard enter-rise" style="animation-delay:220ms">
         <div class="flip-clock" id="flipClock">00:00:00</div>
         <div class="dash-body">
           <div class="dash-up">
@@ -1153,7 +1153,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
         </div>
       </div>
 
-      <footer class="site-footer onload-animation" style="animation-delay:250ms">
+      <footer class="site-footer enter-rise" style="animation-delay:250ms">
         <div>© 2026 <span id="footName">元素手帐</span> · 保留所有权利</div>
         <div class="f-links">
           <a href="#">GitHub</a><a href="#">哔哩哔哩</a><a href="#">RSS</a><a href="#">站点地图</a>
@@ -1164,7 +1164,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
     <!-- 右侧栏 -->
     <aside class="right-sidebar">
       <!-- 站点统计（数值全部由 Stats 模块按真实数据回填，不再写死） -->
-      <div class="card-base onload-animation" style="animation-delay:200ms">
+      <div class="sheet enter-rise" style="animation-delay:200ms">
         <div class="widget-head"><span class="w-ico">▸</span><span class="ed-label">使用情况</span></div>
         <div class="widget-body">
           <div class="stat-grid" id="mjStats">
@@ -1182,7 +1182,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
       </div>
 
       <!-- 天气预报（Open-Meteo，无需 API key） -->
-      <div class="card-base onload-animation" style="animation-delay:220ms">
+      <div class="sheet enter-rise" style="animation-delay:220ms">
         <div class="widget-head"><span class="w-ico">▸</span><span class="ed-label">天气</span></div>
         <div class="widget-body" id="mj2WeatherBody">
           <div class="mj2-loading">正在获取天气…</div>
@@ -1190,7 +1190,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
       </div>
 
       <!-- 日历 -->
-      <div class="card-base onload-animation" style="animation-delay:250ms">
+      <div class="sheet enter-rise" style="animation-delay:250ms">
         <div class="widget-head"><span class="w-ico">▸</span><span class="ed-label">日历</span></div>
         <div class="widget-body">
           <div class="cal-head">
@@ -1205,7 +1205,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
       </div>
 
       <!-- 分类（可增删改，存在 State.lists.cats） -->
-      <div class="card-base onload-animation" style="animation-delay:200ms">
+      <div class="sheet enter-rise" style="animation-delay:200ms">
         <div class="widget-head"><span class="w-ico">▸</span><span class="ed-label">分类</span></div>
         <div class="widget-body">
           <div class="cat-row" id="mjCats"></div>
@@ -1216,7 +1216,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
       </div>
 
       <!-- 侧栏音乐 -->
-      <div class="card-base onload-animation" style="animation-delay:100ms">
+      <div class="sheet enter-rise" style="animation-delay:100ms">
         <div class="widget-head"><span class="w-ico">▸</span><span class="ed-label">音乐</span></div>
         <div class="widget-body music-side">
           <div class="music-head">
@@ -1247,7 +1247,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 </div>
 
 <!-- 设置面板 -->
-<div class="float-panel closed" id="settingPanel">
+<div class="float-sheet closed" id="settingPanel">
   <div class="fp-row"><span>主题色相</span><span id="hueLabel" style="font-family:var(--font-mono)">240</span></div>
   <div class="fp-row" style="display:block">
     <input type="range" id="hueRange" min="0" max="360" value="240" aria-label="主题色相" style="width:100%" />
@@ -1326,7 +1326,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
   }
 
   /* ---------- 导航栏滚动状态 ----------
-     行为：往下滚过阈值就收起（.navbar-hidden → opacity 0 + 上移），
+     行为：往下滚过阈值就收起（opacity 0 + 上移），
      一开始往上滚立刻回来。这样长文里读正文时顶部不会一直压着一条实心条。 */
   var navbar = document.getElementById('navbar');
   var navWrap = document.getElementById('navbar-wrapper');
@@ -1431,7 +1431,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
   var borderSeg = document.getElementById('cardBorderSeg');
   if (borderSeg) {
     var setBorder = function (on) {
-      document.body.classList.toggle('enable-card-border', on);
+      document.body.classList.toggle('outline-cards', on);
       borderSeg.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', (b.dataset.cb === 'on') === on); });
     };
     borderSeg.querySelectorAll('button').forEach(function (b) {

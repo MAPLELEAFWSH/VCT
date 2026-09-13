@@ -1626,16 +1626,16 @@
       const host = el('div', 'mj-view');
       host.dataset.view = 'blog';
       host.innerHTML = `
-        <div class="card-base list-bar"><h2 class="lb-title">时间线归档</h2><span class="mj-stat" id="mjBlogCount">显示 ${posts().length} / ${posts().length} 篇</span>
+        <div class="sheet list-bar"><h2 class="lb-title">时间线归档</h2><span class="mj-stat" id="mjBlogCount">显示 ${posts().length} / ${posts().length} 篇</span>
           <button class="mj2-btn" type="button" id="mj2NewPost" style="margin-left:auto">＋ 新建文章</button></div>
-        <div class="card-base" style="padding:1rem">
+        <div class="sheet" style="padding:1rem">
           <div class="mj-tools">
             <input type="search" id="mjBlogQ" placeholder="搜索标题、摘要或标签…" aria-label="搜索文章" />
             <div class="mj-chips" id="mjBlogCats">${cats.map(c => `<button class="mj-chip ${c.id === 'all' ? 'on' : ''}" type="button" data-c="${c.id}">${c.n}</button>`).join('')}</div>
           </div>
           <div class="mj-chips" id="mjBlogTags" style="margin-top:.6rem">${tags.map(t => `<button class="mj-chip" type="button" data-t="${t}">#${t}</button>`).join('')}</div>
         </div>
-        <div class="card-base" style="padding:1.1rem"><div class="mj-timeline" id="mjBlogList"></div></div>`;
+        <div class="sheet" style="padding:1.1rem"><div class="mj-timeline" id="mjBlogList"></div></div>`;
       function render() {
         const q = st.q.trim().toLowerCase();
         const list = posts().filter(p =>
@@ -1678,10 +1678,10 @@
       const p = posts().find(x => x.slug === slug);
       const host = el('div', 'mj-view');
       host.dataset.view = 'article';
-      if (!p) { host.innerHTML = `<div class="card-base"><div class="mj-empty">没有找到这篇文章。</div></div>`; return { host, destroy() { host.remove(); } }; }
+      if (!p) { host.innerHTML = `<div class="sheet"><div class="mj-empty">没有找到这篇文章。</div></div>`; return { host, destroy() { host.remove(); } }; }
       const body = p.body || ARTICLE_BODIES[p.i] || [['p', p.desc || '正文整理中。']];
       host.innerHTML = `
-        <div class="card-base" style="padding:1.3rem">
+        <div class="sheet" style="padding:1.3rem">
           <div class="mj2-actions">
             <button class="mj2-btn" type="button" data-act="back">← 返回列表</button>
             <button class="mj2-btn" type="button" data-act="edit">编辑本文</button>
@@ -1757,11 +1757,11 @@
       const elChips = mk('div', 'mj-work-chips');
       const elGrid = mk('div', 'mj-works');
       const elCount = mk('span', 'mj-stat');
-      const bar = mk('div', 'card-base list-bar');
+      const bar = mk('div', 'sheet list-bar');
       bar.append(mk('h2', 'lb-title', '作品集'),
         mk('span', 'mj-stat', '封面可换、条目可增删、类型可筛选'),
         mk('span', 'mj-spacer'), elCount);
-      const wrap = mk('div', 'card-base mj-works-wrap');
+      const wrap = mk('div', 'sheet mj-works-wrap');
       wrap.append(elChips, elGrid);
       host.append(bar, wrap);
 
@@ -1774,7 +1774,7 @@
         if (!w) return;
         const [cover, title, cat, meta, desc] = w;
         const box = mk('div', 'mj-work-modal');
-        const card = mk('div', 'mj-work-modal-card card-base');
+        const card = mk('div', 'mj-work-modal-card sheet');
         const coverWrap = mk('div', 'mj-work-modal-cover');
         if (cover) {
           const im = mk('img');
@@ -1910,7 +1910,7 @@
         { id: 'flip', n: '记忆翻牌', d: '七对元素打乱铺开，一次翻两张', el: 'dendro' }
       ];
       host.innerHTML = `
-        <div class="card-base list-bar"><h2 class="lb-title">游乐场</h2><span class="mj-stat">四款都能玩 · 点画面获得键盘焦点</span></div>
+        <div class="sheet list-bar"><h2 class="lb-title">游乐场</h2><span class="mj-stat">四款都能玩 · 点画面获得键盘焦点</span></div>
         <div class="mj-game-tabs" id="mjGameTabs" role="tablist">
           ${TABS.map((t, i) => `<button class="ga-tab${i === 0 ? ' on' : ''}" type="button" role="tab"
             aria-selected="${i === 0}" data-g="${t.id}">
@@ -1919,7 +1919,7 @@
             <span class="ga-best" data-best="${t.id}">–</span>
           </button>`).join('')}
         </div>
-        <div class="card-base" style="padding:1rem">
+        <div class="sheet" style="padding:1rem">
           <div class="mj-stage" id="mjGameStage" tabindex="0"></div>
         </div>`;
 
@@ -2328,7 +2328,7 @@
         if (!cats.includes(cat)) cat = '全部';
         const shown = arr.map((p, i) => ({ p, i })).filter(({ p }) => cat === '全部' || String(p.cat || '').trim() === cat);
 
-        const bar = mk('div', 'card-base list-bar');
+        const bar = mk('div', 'sheet list-bar');
         bar.append(mk('h2', 'lb-title', '项目'),
           mk('span', 'mj-stat', '仿图文模式：每个项目可以有文字、图片和视频'),
           mk('span', 'mj-spacer'));
@@ -2344,7 +2344,7 @@
         });
         bar.appendChild(addBtn);
 
-        const chipBox = mk('div', 'card-base mj-proj-chips');
+        const chipBox = mk('div', 'sheet mj-proj-chips');
         cats.forEach(c => {
           const b = mk('button', 'mj-chip' + (c === cat ? ' on' : ''), c);
           b.type = 'button';
@@ -2394,7 +2394,7 @@
         const arr = list();
         const p = arr[idx];
         if (!p) { mode = 'list'; return renderList(); }
-        const back = mk('div', 'card-base list-bar');
+        const back = mk('div', 'sheet list-bar');
         const backBtn = mk('button', 'mj2-btn', '← 返回列表');
         backBtn.type = 'button';
         backBtn.addEventListener('click', () => { mode = 'list'; editing = false; render(); });
@@ -2403,7 +2403,7 @@
         editBtn.addEventListener('click', () => { editing = !editing; render(); });
         back.append(backBtn, mk('span', 'mj-spacer'), mk('span', 'mj-stat', editing ? '点文字就能改，工具条能增删挪动' : ''), editBtn);
 
-        const art = mk('article', 'card-base mj-article mj-article-bili');
+        const art = mk('article', 'sheet mj-article mj-article-bili');
         // 封面
         const cover = mk('div', 'mj-art-cover');
         if (p.cover) { const im = mk('img'); im.src = p.cover; im.alt = ''; cover.appendChild(im); }
@@ -2550,7 +2550,7 @@
 
       const savedFrame = (State.read().aboutImg) || '';
       host.innerHTML = `
-        <div class="card-base list-bar"><h2 class="lb-title">一份可以慢慢补完的自我介绍</h2><span class="mj-stat">每行都能改，也能增删</span>
+        <div class="sheet list-bar"><h2 class="lb-title">一份可以慢慢补完的自我介绍</h2><span class="mj-stat">每行都能改，也能增删</span>
           <button class="mj2-btn" id="mjEdReset" type="button" style="margin-left:auto">恢复默认</button></div>
         <div class="mj-about">
           <div class="mj-about-side">
@@ -2665,8 +2665,8 @@
       const host = el('div', 'mj-view');
       host.dataset.view = 'schedule';
       host.innerHTML = `
-        <div class="card-base list-bar"><h2 class="lb-title">课表</h2><span class="mj-stat">增删查改 · 支持 ICS 导入</span></div>
-        <div class="card-base" style="padding:1rem"><div id="mj2ScheduleBody"></div></div>`;
+        <div class="sheet list-bar"><h2 class="lb-title">课表</h2><span class="mj-stat">增删查改 · 支持 ICS 导入</span></div>
+        <div class="sheet" style="padding:1rem"><div id="mj2ScheduleBody"></div></div>`;
       const inner = host.querySelector('#mj2ScheduleBody');
       if (window.MJ2 && window.MJ2.Sched) window.MJ2.Sched.attach(inner);
       return { host, destroy() { if (window.MJ2 && window.MJ2.Sched) window.MJ2.Sched.detach(); host.remove(); } };
@@ -2714,7 +2714,7 @@
       const draw = () => {
         const arr = EdList.get('friends', seed);
         host.innerHTML = `
-          <div class="card-base list-bar"><h2 class="lb-title">友链坐标</h2><span class="mj-stat">一起写字的人 · 头像 / 名称 / 简介 / 链接都能改，条目可增删</span>
+          <div class="sheet list-bar"><h2 class="lb-title">友链坐标</h2><span class="mj-stat">一起写字的人 · 头像 / 名称 / 简介 / 链接都能改，条目可增删</span>
             <button class="mj2-btn" id="mjFriReset" type="button" style="margin-left:auto">恢复默认</button></div>
           <div class="mj-friends" id="mjFriList">${arr.map((f, i) => {
             const [n, d, url, favRaw] = Array.isArray(f) ? f : [String(f || ''), '', '', ''];
@@ -2789,7 +2789,7 @@
       if (!window.MJ2Chat || typeof window.MJ2Chat.view !== 'function') {
         const host = el('div', 'mj-view');
         host.dataset.view = 'chat';
-        const box = el('div', 'card-base list-bar');
+        const box = el('div', 'sheet list-bar');
         box.innerHTML = '<h2 class="lb-title">茶室</h2><span class="mj-stat">chat.js 没加载进来，刷新一下页面试试</span>';
         host.appendChild(box);
         return { host, destroy() { host.remove(); } };
@@ -3055,7 +3055,7 @@
     // 左栏：场景序列导轨（只列真实视图 + 说明 + 可增删改 + 可搜）
     const left = $('.left-sidebar') || $('#sidebar');
     if (left) {
-      const box = el('div', 'card-base');
+      const box = el('div', 'sheet');
       box.innerHTML = `
         <div class="widget-head"><span class="w-ico">▸</span><span class="ed-label">场景序列</span></div>
         <div class="widget-body"><div class="mj-route-list" id="mjRouteList">${routeListHTML()}</div></div>`;
@@ -3705,7 +3705,7 @@
     Router.start();
     if (!REDUCED) Perf.auto();
 
-    /* ★ 入场动画放完就把 .onload-animation 摘掉。
+    /* ★ 入场动画放完就把 .enter-rise 摘掉。
        这个类把元素的不透明度交给 CSS 动画去实现（keyframes 里 0% 是 opacity:0）。
        而 home 视图是靠 hidden 属性隐藏/显示的 —— 切走再切回来时，Chrome 会把
        这些动画重新起跑，并且可能卡在 currentTime 0（playState 却报 running），
@@ -3713,7 +3713,7 @@
        大标题整段消失**。动画本来就只是入场效果，放完就该功成身退；
        摘掉类之后，之后再怎么切页面都不会重新起跑，元素靠自身样式恒为可见。 */
     setTimeout(() => {
-      document.querySelectorAll('.onload-animation').forEach(n => n.classList.remove('onload-animation'));
+      document.querySelectorAll('.enter-rise').forEach(n => n.classList.remove('enter-rise'));
     }, 1200);
 
     // 头像连点彩蛋 → 线索 D

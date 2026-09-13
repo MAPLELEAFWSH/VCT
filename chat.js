@@ -505,7 +505,7 @@ window.MJ2Chat = (() => {
     const elCount = h('span', { class: 'mj-stat', id: 'chCount', text: '—' });
     const btnInvite = h('button', { class: 'mj2-btn', id: 'chInviteBtn', type: 'button', text: '房间码 / 邀请' });
     const btnClear = h('button', { class: 'mj2-btn', id: 'chClearBtn', type: 'button', text: '清空记录' });
-    const head = h('div', { class: 'card-base chat-bar' },
+    const head = h('div', { class: 'sheet chat-bar' },
       h('h2', { class: 'lb-title' }, '茶室 · ', elRoom),
       elMode, elCount,
       h('span', { class: 'ch-spacer' }),
@@ -513,7 +513,7 @@ window.MJ2Chat = (() => {
 
     const elMe = h('div', { class: 'ch-me' });
     const elMembers = h('ul', { class: 'ch-members', id: 'chMembers' });
-    const rail = h('aside', { class: 'ch-rail card-base' },
+    const rail = h('aside', { class: 'ch-rail sheet' },
       h('div', { class: 'ch-rail-t' }, '在场'), elMembers, elMe);
 
     const elStream = h('div', { class: 'ch-stream', id: 'chStream' });
@@ -533,16 +533,16 @@ window.MJ2Chat = (() => {
     });
     const input = h('div', { class: 'ch-input' }, taText,
       h('div', { class: 'ch-bar' }, btnSticker, btnImage, elCounter, btnSend));
-    const roomBox = h('section', { class: 'ch-room card-base' }, elStream, elTyping, elStickerPanel, input);
+    const roomBox = h('section', { class: 'ch-room sheet' }, elStream, elTyping, elStickerPanel, input);
 
     const wrap = h('div', { class: 'ch-wrap' }, rail, roomBox);
 
     /* 进门页：需要房间码、或者要确认昵称时显示 */
-    const elGateCard = h('div', { class: 'ch-gate-card card-base' });
+    const elGateCard = h('div', { class: 'ch-gate-card sheet' });
     const elGate = h('div', { class: 'ch-gate', id: 'chGate' }, elGateCard);
 
     /* 邀请面板：房间码 + 二维码 */
-    const elInviteCard = h('div', { class: 'ch-invite-card card-base' });
+    const elInviteCard = h('div', { class: 'ch-invite-card sheet' });
     const elInvite = h('div', { class: 'ch-invite', id: 'chInvite' }, elInviteCard);
 
     host.append(head, wrap, elGate, elInvite);

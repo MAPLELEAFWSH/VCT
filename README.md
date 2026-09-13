@@ -240,9 +240,9 @@ git push -u origin main
 
 | 项目 | 许可 | 版权行 | 本站参考了什么 |
 | --- | --- | --- | --- |
-| [saicaca/fuwari](https://github.com/saicaca/fuwari) | MIT | `Copyright (c) 2024 saicaca` | 设计令牌的思路：`oklch(L C var(--hue))` 的主题色方案、令牌分层方式、无边框无阴影的卡片观感 |
+| [saicaca/fuwari](https://github.com/saicaca/fuwari) | MIT | `Copyright (c) 2024 saicaca` | 设计令牌的**思路**：用一个裸数值当色相、颜色写成 `oklch(L C var(--element-hue))`、令牌按层级分圆角、卡片无边框无阴影 |
 | [CuteLeaf/Firefly](https://github.com/CuteLeaf/Firefly) | MIT | `Copyright (c) 2024 saicaca` + `Copyright (c) 2025 CuteLeaf` | 与 Fuwari 同源的令牌与布局思路（Firefly 本身是 Fuwari 的二次开发） |
-| [Mizuki](https://github.com/LyraVoid/Mizuki) | Apache-2.0 | `Copyright 2025 Matsuzaka Yuki` | 令牌的命名与组织方式（最初参考的入口是 [matsuzaka-yuki/Mizuki](https://github.com/matsuzaka-yuki/Mizuki)，那是主线仓库的 fork） |
+| [Mizuki](https://github.com/LyraVoid/Mizuki) | Apache-2.0 | `Copyright 2025 Matsuzaka Yuki` | 令牌的**组织方式**（最初参考的入口是 [matsuzaka-yuki/Mizuki](https://github.com/matsuzaka-yuki/Mizuki)，那是主线仓库的 fork） |
 | [heiehiehi/XinghuisamaBlogs](https://github.com/heiehiehi/XinghuisamaBlogs) | CC BY-NC 4.0 | —— | 衬线正文的阅读排版、细滚动条、底部应用状态栏、侧栏组件的组织形式 |
 | [Yuimi-chaya/Yuimi-chaya.github.io](https://github.com/Yuimi-chaya/Yuimi-chaya.github.io) | MIT（**仅**代码与样式） | `Copyright (c) 2026 Yuimi-chaya` | 滚动叙事开场、自定义光标、成就与线索收集的交互思路 |
 
@@ -259,6 +259,23 @@ git push -u origin main
 站点的视觉身份（手帐 / 漫画的纸感语言、七元素主题色系统）与全部文案都是自己的。
 聊天室、二维码生成、性能调度器、可编辑系统、四个小游戏、SSE 服务端、
 Electron 桌面壳也都是为这个项目手写的。
+
+### 本站做过哪些差异化
+
+参考"设计系统的做法"和"看起来像某个主题"是两回事。为了让源码层面也一眼看得出
+是两个不同的东西，这里做了这些事：
+
+| 做了什么 | 结果 |
+| --- | --- |
+| 设计令牌换成本站自己的词汇 | 纸 / 墨 / 印章三组（`--paper-card`、`--ink-strong`、`--stamp-bg`…），不再有和别人逐字同名的变量 |
+| 类名换成本站自己的词汇 | `.sheet`（卡片）、`.enter-rise`（入场）、`.float-sheet`（浮层）、`.outline-cards`（描边开关） |
+| 素材全部自己生成 | `assets/paper/` 下 14 个程序化生成的 SVG，不依赖任何第三方图片 |
+| 横幅下沿换掉 | 由常驻的波浪动画换成静态的手帐撕口 + 缝线，同时少一个合成层 |
+| 注释里的出处收口 | 不再逐条指名引用别人的文件名 / 类名，出处统一放在这一节 |
+
+两处改名都是**纯改名**，画面没有任何变化——这点不是估计，是量过的：
+同一套「按 DOM 位置取 15 条绘制属性」的指纹，在 9 个路由上改名前后的结果
+逐字节相同（令牌那轮 `efadeb1f`，类名那轮 `b9d32088`）。
 
 ### 关于许可的说明（重要）
 
