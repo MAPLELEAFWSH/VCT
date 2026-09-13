@@ -882,7 +882,11 @@
           <button class="sb-btn" id="mjSbImport" type="button" title="导入本地数据">导入</button>
           <button class="sb-btn" id="mjSbKeys" type="button" title="键盘快捷键">⌘</button>
         </div>`;
-      document.body.appendChild(bar);
+      /* ★ 挂到设置抽屉里，而不是 document.body。
+         它原来是"贴屏幕底边的一整条状态栏"（XinghuisamaBlogs / Yuimi 的形态），
+         现在作为抽屉底部的「应用信息」，不再占据屏幕底边。
+         抽屉不在（理论上不会）时退回 body，功能不至于丢。 */
+      (document.getElementById('settingPanel') || document.body).appendChild(bar);
       paint();
       // 导出 / 导入：桌面版走主进程写盘，网页版退化成下载 / 选文件
       document.getElementById('mjSbExport').addEventListener('click', async () => {

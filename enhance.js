@@ -97,12 +97,27 @@
      2. 自定义光标
      ============================================================ */
   const Cursor = (() => {
-    if (TOUCH || REDUCED) return { destroy() {} };
+    if (TOUCH || REDUCED) return { destroy() {}, setEnabled() {} };
+    /* ★ 默认关。参考的四个站都自带"环 + 点"的自绘光标，这是它们共同的辨识度
+       之一；默认打开等于先把这个特征抄过来。现在它是一项可选的外观开关
+       （设置抽屉里的「墨点光标」），想用的人自己开。 */
+    const KEY = 'mj_cursor';
+    const readPref = () => { try { return localStorage.getItem(KEY) === 'on'; } catch (e) { return false; } };
     const host = el('div', '', '<div class="ring"></div><div class="dot"></div><div class="tag"></div>');
     host.id = 'mj-cursor';
     document.body.append(host);
-    document.body.classList.add('mj-cursor-on');
     const ring = $('.ring', host), dot = $('.dot', host), tag = $('.tag', host);
+
+    function setEnabled(v) {
+      let on = !!v;
+      try { localStorage.setItem(KEY, on ? 'on' : 'off'); } catch (e) {}
+      document.body.classList.toggle('mj-cursor-on', on);
+      // 关掉时把缓动循环一起停掉，不留一个空转的订阅者
+      if (!on) park();
+      else wake();
+      return on;
+    }
+    document.body.classList.toggle('mj-cursor-on', readPref());
 
     let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my, last = 0;
     // 拖尾已移除：12 个 DOM 节点的高频增删本身就是在低帧率下加重拖动延迟的一环，
@@ -197,7 +212,7 @@
       document.body.classList.remove('mj-cursor-on', 'mj-native-cursor');
     };
     onPageGone(destroy);
-    return { destroy };
+    return { destroy, setEnabled };
   })();
 
   /* ============================================================
@@ -3776,5 +3791,5 @@
   if (document.readyState === 'loading') addEventListener('DOMContentLoaded', boot);
   else boot();
 
-  window.MJX = { Achievements, Memory, setElement, ELEMENTS, POSTS, Router, Perf, Raf, ARTICLE_BODIES, deriveCat, readPostsFromDOM, MangaFX };
+  window.MJX = { Achievements, Memory, setElement, ELEMENTS, POSTS, Router, Perf, Raf, ARTICLE_BODIES, deriveCat, readPostsFromDOM, MangaFX, Cursor };
 })();

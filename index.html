@@ -496,21 +496,26 @@ body.outline-cards .mj-view .sheet { border-color: color-mix(in oklab, var(--rul
 }
 
 /* ============================================================
-   应用状态栏（往"下载自用的桌面应用"靠拢的形态）
-   固定贴底，左侧是应用身份 + 当前页，中间是真实数据，右侧是帧率与数据操作。
+   应用信息（原来是"贴底的应用状态栏"）
+   ★ 形态改掉了：XinghuisamaBlogs 与 Yuimi-chaya 都是"固定贴屏幕底边的一整条
+   状态栏"，照做等于把那个辨识度最高的部件直接搬过来。现在它只是设置抽屉
+   底部的一段「应用信息」：视图 / 数据量 / 帧率 / 导出导入都还在，
+   但不再占据屏幕底边，也不再是常驻全站的条。内容由 modules.js 的 Stats 回填。
    ============================================================ */
 #mjStatus {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 9998;
-  display: flex; align-items: center; gap: .75rem;
-  height: 30px; padding: 0 .75rem;
-  background: var(--paper-card);
-  border-top: 1px solid var(--rule-hair);
-  font-family: var(--font-mono); font-size: 11px; line-height: 1;
+  position: static; margin-top: 1.1rem; padding-top: .85rem;
+  display: flex; flex-direction: column; align-items: stretch; gap: .55rem;
+  border-top: 1px dashed var(--rule-hair);
+  background: transparent;
+  font-family: var(--font-mono); font-size: 11px; line-height: 1.5;
   color: var(--ink-meta);
   user-select: none; -webkit-user-select: none;
 }
-#mjStatus .sb-left, #mjStatus .sb-right { display: flex; align-items: center; gap: .5rem; flex: none; }
-#mjStatus .sb-mid { display: flex; align-items: center; gap: .9rem; flex: 1 1 auto; justify-content: center; min-width: 0; overflow: hidden; white-space: nowrap; }
+#mjStatus .sb-left, #mjStatus .sb-mid, #mjStatus .sb-right {
+  display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; justify-content: flex-start;
+}
+/* 抽屉里放得下，就不必像原来那样在窄屏把中段藏起来 */
+#mjStatus .sb-mid { gap: .7rem; }
 #mjStatus .sb-app { display: inline-flex; align-items: center; gap: .35rem; color: var(--ink-strong); font-weight: 600; }
 #mjStatus .sb-dot {
   width: 7px; height: 7px; border-radius: 50%; background: var(--element);
@@ -522,21 +527,18 @@ body.outline-cards .mj-view .sheet { border-color: color-mix(in oklab, var(--rul
   padding: 1px 6px; border-radius: 999px;
   background: var(--stamp-bg); color: var(--stamp-ink);
 }
-#mjStatus .sb-sep { width: 1px; height: 14px; background: var(--rule-hair); }
+#mjStatus .sb-sep { display: none; }
 #mjStatus .sb-view { color: var(--element-deep); }
 /* 不要在这里加 opacity：--ink-meta 已经压着 4.5:1 的线，
    再叠一层 .8 不透明度会掉到 3.49:1（Lighthouse 会判 color-contrast 失败）。 */
 #mjStatus .sb-fps { font-variant-numeric: tabular-nums; }
 #mjStatus .sb-btn {
-  font: inherit; height: 20px; padding: 0 .5rem; border: 0; cursor: pointer;
+  font: inherit; height: 22px; padding: 0 .55rem; border: 0; cursor: pointer;
   border-radius: var(--radius-chip); background: var(--stamp-bg); color: var(--stamp-ink);
   transition: background-color .15s cubic-bezier(.4,0,.2,1), color .15s ease, transform .15s cubic-bezier(.4,0,.2,1);
 }
 #mjStatus .sb-btn:hover { background: var(--stamp-bg-hover); color: var(--element-deep); }
 #mjStatus .sb-btn:active { transform: scale(.94); }
-@media (max-width: 720px) {
-  #mjStatus .sb-mid { display: none; }
-}
 /* 状态栏是固定贴底的，给页面留出高度，别压住页脚 */
 #main-grid { padding-bottom: 2.6rem; }
 
@@ -675,18 +677,40 @@ footer.site-footer a:hover { color: var(--element-deep); }
 #floating-controls button:hover { transform: translateY(-2px); background: var(--stamp-bg); }
 #floating-controls button.hidden { display: none; }
 
-/* 浮动面板（设置）
-   .float-sheet = rounded-1rem + --panel-paper + shadow-xl，暗色下 shadow-none */
+/* ★ 设置书签：竖向贴在右边缘（writing-mode 竖排），点开抽屉。
+   注意它是独立元素，不在 #floating-controls 里 —— 那个容器有
+   `#floating-controls button` 这条规则（含宽度/圆角/圆形），
+   书签放进去会被它按住，形状改不动。 */
+#fcSetting {
+  position: fixed; right: 0; top: 50%; transform: translateY(-50%);
+  z-index: 62; cursor: pointer;
+  writing-mode: vertical-rl; letter-spacing: .22em;
+  padding: .95rem .42rem; border: 1px solid var(--rule-hair); border-right: 0;
+  border-radius: var(--radius-btn) 0 0 var(--radius-btn);
+  background: var(--panel-paper); color: var(--stamp-ink);
+  font-family: inherit; font-size: .76rem; font-weight: 500;
+  box-shadow: -6px 0 18px -12px rgba(0,0,0,.5);
+  transition: transform .18s cubic-bezier(.4,0,.2,1), background-color .15s;
+}
+#fcSetting:hover { transform: translateY(-50%) translateX(-3px); background: var(--stamp-bg); }
+#fcSetting:active { transform: translateY(-50%) translateX(-3px) scale(.97); }
+
+/* 浮动面板（设置抽屉）
+   从右侧边缘滑出、贴满右边缘：只有左上/左下是圆角，右侧是"插进本子"的直边。 */
 .float-sheet {
-  position: fixed; right: 1rem; bottom: 5.2rem; z-index: 61; width: 20rem;
-  border-radius: var(--radius-card); background: var(--panel-paper);
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / .1), 0 8px 10px -6px rgb(0 0 0 / .1);
-  border: 0;
-  padding: 1rem; transform-origin: bottom right;
-  transition: transform .15s cubic-bezier(.4,0,.2,1), opacity .15s cubic-bezier(.4,0,.2,1);
+  position: fixed; right: 0; top: var(--nav-h); bottom: 0; z-index: 61;
+  width: min(21rem, 92vw);
+  border-radius: var(--radius-card) 0 0 var(--radius-card);
+  background: var(--panel-paper);
+  box-shadow: -20px 0 25px -12px rgb(0 0 0 / .1), -8px 0 10px -6px rgb(0 0 0 / .1);
+  border: 0; border-left: 1px solid var(--rule-hair);
+  padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto; overscroll-behavior: contain;
+  transform-origin: right center;
+  transition: transform .22s cubic-bezier(.4,0,.2,1), opacity .22s cubic-bezier(.4,0,.2,1);
 }
 :root.dark .float-sheet { box-shadow: none; }
-.float-sheet.closed { transform: translateY(.5rem) scale(.96); opacity: 0; pointer-events: none; }
+.float-sheet.closed { transform: translateX(101%); opacity: 0; pointer-events: none; }
 .fp-row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .35rem 0; font-size: .8rem; }
 .fp-row + .fp-row { border-top: 1px dashed var(--rule-hair); }
 .fp-seg { display: flex; gap: .2rem; background: var(--stamp-bg); padding: .15rem; border-radius: .5rem; }
@@ -1296,10 +1320,15 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 <!-- 浮动控制 -->
 <div id="floating-controls">
   <button type="button" id="fcTop" class="hidden" aria-label="回到顶部">↑</button>
-  <button type="button" id="fcSetting" aria-label="显示设置">⚙</button>
 </div>
 
-<!-- 设置面板 -->
+<!-- ★ 设置：右边缘的一枚"索引书签" + 从右侧滑出的抽屉。
+     参考主题（Firefly / Mizuki）都是"右下角一个圆形齿轮按钮 + 一块浮起来的小卡片"，
+     这里换成手帐本侧面贴的书签：竖向写在右边缘，点开滑出一整条抽屉。
+     书签上写的是字而不是齿轮图标 —— 位置、形状、开合方向都和那个形态不同。 -->
+<button type="button" id="fcSetting" aria-label="打开设置" aria-expanded="false" aria-controls="settingPanel">设置</button>
+
+<!-- 设置抽屉 -->
 <div class="float-sheet closed" id="settingPanel">
   <div class="fp-row"><span>主题色相</span><span id="hueLabel" style="font-family:var(--font-mono)">240</span></div>
   <div class="fp-row" style="display:block">
@@ -1343,6 +1372,15 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
       <button type="button" data-fx="fireflies">萤火</button>
       <button type="button" data-fx="danmaku">弹幕</button>
       <button type="button" data-fx="ripple">涟漪</button>
+    </div>
+  </div>
+  <!-- ★ 自绘光标默认关：参考的四个站都自带"环 + 点"的自绘光标，
+       默认打开等于先把这个特征抄过来。想用的人在这里自己开。 -->
+  <div class="fp-row">
+    <span>墨点光标</span>
+    <div class="fp-seg" id="cursorSeg">
+      <button type="button" data-cur="off" class="on">关</button>
+      <button type="button" data-cur="on">开</button>
     </div>
   </div>
 </div>
@@ -1507,6 +1545,26 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
     try { savedSoft = localStorage.getItem('mj_wp_soft') || '0'; } catch (e) {}
     setSoft(savedSoft === '1');
   }
+  /* 墨点光标开关：默认关（参考站都自带自绘光标，默认开等于先把这个特征拿过来）。
+     真正的显隐由 enhance.js 的 Cursor.setEnabled 负责，包括停掉缓动循环；
+     这个脚本比 enhance.js 先执行，所以点击时才去取 window.MJX。 */
+  var cursorSeg = document.getElementById('cursorSeg');
+  if (cursorSeg) {
+    var paintCursor = function (on) {
+      cursorSeg.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', (b.dataset.cur === 'on') === on); });
+    };
+    cursorSeg.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var on = b.dataset.cur === 'on';
+        if (window.MJX && window.MJX.Cursor && window.MJX.Cursor.setEnabled) window.MJX.Cursor.setEnabled(on);
+        else { try { localStorage.setItem('mj_cursor', on ? 'on' : 'off'); } catch (e) {} }
+        paintCursor(on);
+      });
+    });
+    var initialCursor = false;
+    try { initialCursor = localStorage.getItem('mj_cursor') === 'on'; } catch (e) {}
+    paintCursor(initialCursor);
+  }
   document.getElementById('bgBtn').addEventListener('click', function () {
     var order = ['banner', 'fullscreen', 'none'];
     var nowEl = document.querySelector('#wpSeg button.on');
@@ -1514,14 +1572,28 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
     setWallpaperMode(order[(idx + 1) % order.length]);
   });
 
-  /* ---------- 设置面板 ---------- */
+  /* ---------- 设置抽屉（右边缘的书签开合） ---------- */
   var panel = document.getElementById('settingPanel');
-  document.getElementById('fcSetting').addEventListener('click', function () { panel.classList.toggle('closed'); });
+  var tab = document.getElementById('fcSetting');
+  tab.addEventListener('click', function () {
+    var closed = panel.classList.toggle('closed');
+    // 书签是 disclosure 的触发器，开合状态要同步给读屏
+    tab.setAttribute('aria-expanded', closed ? 'false' : 'true');
+  });
   document.addEventListener('click', function (e) {
     if (!panel.classList.contains('closed') &&
         !panel.contains(e.target) &&
-        !document.getElementById('fcSetting').contains(e.target)) {
+        !tab.contains(e.target)) {
       panel.classList.add('closed');
+      tab.setAttribute('aria-expanded', 'false');
+    }
+  });
+  // Esc 关闭
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !panel.classList.contains('closed')) {
+      panel.classList.add('closed');
+      tab.setAttribute('aria-expanded', 'false');
+      tab.focus();
     }
   });
 
