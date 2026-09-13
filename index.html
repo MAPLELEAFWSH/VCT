@@ -29,63 +29,71 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@400;600;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet" />
 <style>
 /* ============================================================
-   Mizuki 设计令牌（对照 src/styles/variables.styl）
-   oklch + --hue 驱动，hue 默认 240
+   设计令牌 · 纸 / 墨 / 印章 三组
+   ------------------------------------------------------------
+   这一层是本站自己的词汇体系，"纸"是底、"墨"是字、"印章"是可点控件。
+   主题色由一个裸数字 --element-hue 驱动，所有颜色写成
+   oklch(L C var(--element-hue))，换元素就是换一个数字。
+
+   来源说明：令牌**这套做法**（裸 hue + oklch 派生、按层级分圆角）
+   参考了 README「致谢与来源」里列出的几个开源博客主题；
+   这里没有复制它们的样式表，命名与取值都是按本站的纸墨体系重新定的。
+   完整的来源、许可与素材边界见 README.md 与 THIRD_PARTY_ASSETS.md。
    ============================================================ */
 :root {
-  /* --hue 是"裸数字"，直接当 oklch(L C var(--hue)) 的第三个参数用，
-     和 Fuwari 一致（默认 250；本站元素系统把它调成 230 = 水元素）。 */
-  --hue: 240;
-  --radius-large: 1rem;          /* 卡片：Fuwari 唯一的圆角令牌 */
-  --radius-btn: .5rem;           /* 所有按钮：rounded-lg */
-  --radius-cover: .75rem;        /* 封面 / 头像：rounded-xl */
-  --radius-chip: .375rem;        /* 小标签 / 行内码：rounded-md */
-  /* Fuwari 原值 75rem（三栏后正文只剩 576px，偏窄）；90rem 又偏宽。
-     84rem = 1344px：正文栏约 720px，导航栏同宽。 */
-  --page-width: 84rem;
-  --layout-page-width: var(--page-width);
+  /* 裸数字（不带单位），直接当 oklch(L C var(--element-hue)) 第三个参数。
+     默认 230 = 水元素；七元素的值见 enhance.js 的 ELEMENTS。 */
+  --element-hue: 240;
+  --radius-card: 1rem;           /* 卡片 */
+  --radius-btn: .5rem;           /* 按钮 */
+  --radius-cover: .75rem;        /* 封面 / 头像 */
+  --radius-chip: .375rem;        /* 小标签 / 行内码 */
+  /* 正文栏宽度的取舍：75rem 时三栏挤得正文只剩 576px，90rem 又散。
+     84rem = 1344px，正文栏约 720px，导航栏同宽。 */
+  --page-measure: 84rem;
+  --layout-page-width: var(--page-measure);
   --layout-sidebar-width: 17.5rem;
-  --banner-height: 35vh;
-  --banner-height-home: min(65vh, 760px);
-  --panel-overlap: 3.5rem;
-  --content-delay: 150ms;
-  --wallpaper-opacity: 0.8;
-  --wallpaper-blur: 1px;
-  --card-transparent-opacity: 0.92;
+  --cover-height: 35vh;
+  --cover-height-home: min(65vh, 760px);
+  --panel-lift: 3.5rem;
+  --enter-delay: 150ms;
+  --cover-veil: 0.8;
+  --cover-soften: 1px;
+  --paper-card-opacity: 0.92;
 
-  --primary: oklch(0.70 0.14 var(--hue));
-  /* 正文/徽标要落在浅底上，需要比 --primary 更暗才够对比度（W3C 4.5:1） */
-  --primary-text: oklch(0.48 0.14 var(--hue));
-  --primary-strong: oklch(0.45 0.14 var(--hue));
-  --page-bg: oklch(0.95 0.01 var(--hue));
-  --card-bg: #ffffff;
-  --card-bg-transparent: rgba(255, 255, 255, 0.92);
-  /* Fuwari 原值是 oklch(0.55 0.12)，但它压在自己的 --btn-regular-bg(0.95 0.025) 上
+  --element: oklch(0.70 0.14 var(--element-hue));
+  /* 正文/徽标要落在浅底上，需要比 --element 更暗才够对比度（W3C 4.5:1） */
+  --element-deep: oklch(0.48 0.14 var(--element-hue));
+  --element-strong: oklch(0.45 0.14 var(--element-hue));
+  --paper: oklch(0.95 0.01 var(--element-hue));
+  --paper-card: #ffffff;
+  --paper-card-veil: rgba(255, 255, 255, 0.92);
+  /* 这个值原本取 oklch(0.55 0.12)，但它压在自己的 --stamp-bg(0.95 0.025) 上
      只有 4.05:1，过不了 WCAG AA。降到 0.50（≈4.94:1）视觉几乎无差别。 */
-  --btn-content: oklch(0.50 0.12 var(--hue));
-  --btn-regular-bg: oklch(0.95 0.025 var(--hue));
-  --btn-regular-bg-hover: oklch(0.9 0.05 var(--hue));
-  --btn-regular-bg-active: oklch(0.85 0.08 var(--hue));
-  --btn-plain-bg-hover: oklch(0.95 0.025 var(--hue));
-  --btn-plain-bg-active: oklch(0.98 0.01 var(--hue));
-  --deep-text: oklch(0.25 0.02 var(--hue));
-  --title-active: oklch(0.6 0.1 var(--hue));
-  --line-divider: rgba(0, 0, 0, 0.08);
-  --line-color: rgba(0, 0, 0, 0.1);
-  --meta-divider: rgba(0, 0, 0, 0.2);
-  /* Fuwari 的次要文字是"主色 50% 透明度"（.text-50），但 50% 黑在浅底上只有
+  --stamp-ink: oklch(0.50 0.12 var(--element-hue));
+  --stamp-bg: oklch(0.95 0.025 var(--element-hue));
+  --stamp-bg-hover: oklch(0.9 0.05 var(--element-hue));
+  --stamp-bg-press: oklch(0.85 0.08 var(--element-hue));
+  --ink-wash-hover: oklch(0.95 0.025 var(--element-hue));
+  --ink-wash-press: oklch(0.98 0.01 var(--element-hue));
+  --ink-strong: oklch(0.25 0.02 var(--element-hue));
+  --title-live: oklch(0.6 0.1 var(--element-hue));
+  --rule-hair: rgba(0, 0, 0, 0.08);
+  --rule-line: rgba(0, 0, 0, 0.1);
+  --rule-meta: rgba(0, 0, 0, 0.2);
+  /* 次要文字是"主色 50% 透明度"（.text-50），但 50% 黑在浅底上只有
      3.98:1，同样过不了 AA；抬到 58%（≈5.32:1）。 */
-  --content-meta: rgba(0, 0, 0, 0.58);
-  --float-panel-bg: #ffffff;
-  --link-underline: oklch(0.93 0.04 var(--hue));
-  --link-hover: oklch(0.95 0.025 var(--hue));
-  --link-active: oklch(0.90 0.05 var(--hue));
-  --toc-item-active: oklch(0.70 0.13 var(--hue));
-  --selection-bg: oklch(0.90 0.05 var(--hue));
+  --ink-meta: rgba(0, 0, 0, 0.58);
+  --panel-paper: #ffffff;
+  --link-rule: oklch(0.93 0.04 var(--element-hue));
+  --link-wash: oklch(0.95 0.025 var(--element-hue));
+  --link-wash-press: oklch(0.90 0.05 var(--element-hue));
+  --toc-live: oklch(0.70 0.13 var(--element-hue));
+  --selection-ink: oklch(0.90 0.05 var(--element-hue));
 
   --font-body: "Noto Sans SC", "Zen Maru Gothic", system-ui, sans-serif;
   --font-cjk: "Noto Sans SC", system-ui, sans-serif;
-  /* 文章正文用衬线（借鉴 XinghuisamaBlogs 的阅读体验：正文衬线、界面无衬线） */
+  /* 文章正文用衬线 */
   --font-serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "SimSun", serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
   /* 手帐 / 漫画元素用：圆体，比正文更软，中文缺字自动回落 Noto Sans SC */
@@ -95,61 +103,61 @@
 }
 
 :root.dark {
-  --primary: oklch(0.75 0.14 var(--hue));
-  --primary-text: oklch(0.82 0.10 var(--hue));
-  --primary-strong: oklch(0.48 0.14 var(--hue));
-  --page-bg: oklch(0.16 0.014 var(--hue));
-  --card-bg: oklch(0.23 0.015 var(--hue));
-  --card-bg-transparent: rgba(31, 34, 40, 0.92);
-  --btn-content: oklch(0.75 0.1 var(--hue));
-  --btn-regular-bg: oklch(0.33 0.035 var(--hue));
-  --btn-regular-bg-hover: oklch(0.38 0.04 var(--hue));
-  --btn-regular-bg-active: oklch(0.43 0.045 var(--hue));
-  --btn-plain-bg-hover: oklch(0.30 0.035 var(--hue));
-  --btn-plain-bg-active: oklch(0.27 0.025 var(--hue));
-  /* 注意：Fuwari 的 --deep-text 在亮/暗两种模式下取值相同，因为它靠
-     prose-invert / text-* 工具类接管暗色正文。本站把 --deep-text 当主文字色用，
+  --element: oklch(0.75 0.14 var(--element-hue));
+  --element-deep: oklch(0.82 0.10 var(--element-hue));
+  --element-strong: oklch(0.48 0.14 var(--element-hue));
+  --paper: oklch(0.16 0.014 var(--element-hue));
+  --paper-card: oklch(0.23 0.015 var(--element-hue));
+  --paper-card-veil: rgba(31, 34, 40, 0.92);
+  --stamp-ink: oklch(0.75 0.1 var(--element-hue));
+  --stamp-bg: oklch(0.33 0.035 var(--element-hue));
+  --stamp-bg-hover: oklch(0.38 0.04 var(--element-hue));
+  --stamp-bg-press: oklch(0.43 0.045 var(--element-hue));
+  --ink-wash-hover: oklch(0.30 0.035 var(--element-hue));
+  --ink-wash-press: oklch(0.27 0.025 var(--element-hue));
+  /* 注意：--ink-strong 在亮/暗两种模式下取值相同，因为它靠
+     prose-invert / text-* 工具类接管暗色正文。本站把 --ink-strong 当主文字色用，
      照抄会让暗色模式变成深字压深底，所以这里保留亮色取值。 */
-  --deep-text: oklch(0.95 0.01 var(--hue));
-  --line-divider: rgba(255, 255, 255, 0.08);
-  --line-color: rgba(255, 255, 255, 0.1);
-  --meta-divider: rgba(255, 255, 255, 0.2);
-  --content-meta: rgba(255, 255, 255, 0.62);
-  --float-panel-bg: oklch(0.19 0.015 var(--hue));
-  --link-underline: oklch(0.40 0.08 var(--hue));
-  --link-hover: oklch(0.40 0.08 var(--hue));
-  --link-active: oklch(0.35 0.07 var(--hue));
-  --selection-bg: oklch(0.40 0.08 var(--hue));
+  --ink-strong: oklch(0.95 0.01 var(--element-hue));
+  --rule-hair: rgba(255, 255, 255, 0.08);
+  --rule-line: rgba(255, 255, 255, 0.1);
+  --rule-meta: rgba(255, 255, 255, 0.2);
+  --ink-meta: rgba(255, 255, 255, 0.62);
+  --panel-paper: oklch(0.19 0.015 var(--element-hue));
+  --link-rule: oklch(0.40 0.08 var(--element-hue));
+  --link-wash: oklch(0.40 0.08 var(--element-hue));
+  --link-wash-press: oklch(0.35 0.07 var(--element-hue));
+  --selection-ink: oklch(0.40 0.08 var(--element-hue));
   color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; scrollbar-gutter: stable; }
 
-/* ---------- 滚动条（借鉴 XinghuisamaBlogs / Yuimi-chaya：细、圆、主色渐显） ---------- */
+/* ---------- 滚动条 ---------- */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: color-mix(in oklab, var(--primary) 32%, transparent);
+  background: color-mix(in oklab, var(--element) 32%, transparent);
   border-radius: 9999px; border: 2px solid transparent; background-clip: content-box;
   transition: background-color .2s ease;
 }
-::-webkit-scrollbar-thumb:hover { background: color-mix(in oklab, var(--primary) 72%, transparent); background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: color-mix(in oklab, var(--element) 72%, transparent); background-clip: content-box; }
 ::-webkit-scrollbar-corner { background: transparent; }
-* { scrollbar-width: thin; scrollbar-color: color-mix(in oklab, var(--primary) 40%, transparent) transparent; }
+* { scrollbar-width: thin; scrollbar-color: color-mix(in oklab, var(--element) 40%, transparent) transparent; }
 
-/* Fuwari: 根字号 16px，正文行高 1.5（长文正文另给 1.75；文章页用衬线，见 enhance.css） */
+/* 根字号 16px，正文行高 1.5（长文正文另给 1.75；文章页用衬线，见 enhance.css） */
 body {
   margin: 0;
-  background: var(--page-bg);
-  color: var(--deep-text);
+  background: var(--paper);
+  color: var(--ink-strong);
   font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   transition: color .15s cubic-bezier(.4,0,.2,1), background-color .15s cubic-bezier(.4,0,.2,1);
 }
-::selection { background: var(--selection-bg); }
+::selection { background: var(--selection-ink); }
 a { color: inherit; text-decoration: none; }
 img { display: block; max-width: 100%; }
 
@@ -158,7 +166,7 @@ img { display: block; max-width: 100%; }
    ============================================================ */
 #wallpaper {
   position: fixed; inset: 0; z-index: -2; overflow: hidden;
-  background: var(--page-bg);
+  background: var(--paper);
 }
 /* ★ 交叉淡入淡出的关键在 visibility 的时机。
    原来只有 transition: opacity，而 visibility 是**离散**属性、不参与过渡 ——
@@ -177,8 +185,8 @@ img { display: block; max-width: 100%; }
    dpr 1.5、窗口 1426×883 → 实际光栅 2139×1325）帧时间中位数从 4.3ms 涨到
    12.4ms，p95 也跟着抖；而 1px 的模糊在照片上肉眼几乎看不出来。
    想要那种柔化质感就在设置面板里开「壁纸柔化」，那时才挂上滤镜。 */
-body.wallpaper-soft #wallpaper img { filter: blur(var(--wallpaper-blur)); }
-#wallpaper img.on { opacity: var(--wallpaper-opacity); visibility: visible; transition: opacity 1.2s ease, visibility 0s; }
+body.wallpaper-soft #wallpaper img { filter: blur(var(--cover-soften)); }
+#wallpaper img.on { opacity: var(--cover-veil); visibility: visible; transition: opacity 1.2s ease, visibility 0s; }
 
 /* 壁纸/横幅整层显隐的过渡（切换"横幅/全屏/透明/无"时用）：
    先淡出，淡完再真正 display:none —— 这样既平滑，也不会让隐藏的那层
@@ -205,7 +213,7 @@ body.wallpaper-soft #wallpaper img { filter: blur(var(--wallpaper-blur)); }
 /* ============================================================
    导航栏
    ============================================================ */
-/* Fuwari 的导航栏不是"悬浮胶囊"：它是一条贴着页面宽度的实心卡片，
+/* 导航栏不是"悬浮胶囊"：它是一条贴着页面宽度的实心卡片，
    只有下半部分圆角（上角方），高度 72px、左右内边距 16px，
    并且全站没有一处 backdrop-filter。 */
 #navbar-wrapper { position: sticky; top: 0; z-index: 50; }
@@ -214,60 +222,60 @@ body.wallpaper-soft #wallpaper img { filter: blur(var(--wallpaper-blur)); }
   display: flex; align-items: center; justify-content: space-between; padding: 0 1rem;
   transition: transform .3s cubic-bezier(.4,0,.2,1), opacity .3s cubic-bezier(.4,0,.2,1);
 }
-/* 往下滚时收起，往上滚立刻回来（Fuwari 的 .navbar-hidden） */
+/* 往下滚时收起，往上滚立刻回来 */
 #navbar-wrapper.hidden > #navbar { transform: translateY(-1rem); opacity: 0; pointer-events: none; }
 #navbar > .nav-inner {
   width: 100%; height: 100%; display: flex; align-items: center; gap: .5rem;
   padding: 0 1rem;
-  /* Fuwari 的导航栏就是一条实心卡片：上角方（贴着视口顶端）、下角 1rem 圆角 */
-  border-radius: 0 0 var(--radius-large) var(--radius-large);
-  background: var(--card-bg);
+  /* 导航栏就是一条实心卡片：上角方（贴着视口顶端）、下角 1rem 圆角 */
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  background: var(--paper-card);
   border: 0;
   transition: background-color .15s cubic-bezier(.4,0,.2,1);
 }
-#navbar.scrolled > .nav-inner, .wallpaper-none #navbar > .nav-inner { background: var(--card-bg); }
+#navbar.scrolled > .nav-inner, .wallpaper-none #navbar > .nav-inner { background: var(--paper-card); }
 .nav-brand { display: flex; align-items: center; gap: .55rem; font-weight: 700; font-size: 1.05rem; }
 .nav-logo { width: 2rem; height: 2rem; border-radius: .6rem; object-fit: cover; }
-/* 导航链接：Fuwari 用 rounded-lg(0.5rem)、h-11、px-5，hover 是
+/* 导航链接：rounded-lg(0.5rem)、h-11、px-5，hover 是
    "从 0.85 放大到 1 的填充层"，而不是直接换底色。 */
 .nav-links { display: flex; gap: .15rem; margin-left: 1rem; }
 .nav-links a {
   position: relative; display: flex; align-items: center; gap: .4rem;
   height: 2.75rem; padding: 0 1.25rem; border-radius: var(--radius-btn);
-  font-size: .875rem; font-weight: 500; color: color-mix(in oklab, var(--deep-text) 75%, transparent);
+  font-size: .875rem; font-weight: 500; color: color-mix(in oklab, var(--ink-strong) 75%, transparent);
   transition: color .15s cubic-bezier(.4,0,.2,1), transform .15s cubic-bezier(.4,0,.2,1);
 }
 .nav-links a::before {
   content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1;
-  background: var(--btn-plain-bg-hover); transform: scale(.85); transition: transform .15s ease-out;
+  background: var(--ink-wash-hover); transform: scale(.85); transition: transform .15s ease-out;
 }
-.nav-links a:hover { color: var(--primary-text); }
+.nav-links a:hover { color: var(--element-deep); }
 .nav-links a:hover::before { transform: scale(1); }
 .nav-links a:active { transform: scale(.95); }
-.nav-links a.on { color: var(--primary-text); font-weight: 700; }
+.nav-links a.on { color: var(--element-deep); font-weight: 700; }
 .nav-right { display: flex; align-items: center; gap: .35rem; margin-left: auto; }
-/* 图标按钮：Fuwari 固定 44×44，rounded-lg */
+/* 图标按钮：44×44，rounded-lg */
 .icon-btn {
   width: 2.75rem; height: 2.75rem; display: grid; place-items: center; border: 0; cursor: pointer;
-  border-radius: var(--radius-btn); background: transparent; color: color-mix(in oklab, var(--deep-text) 75%, transparent);
+  border-radius: var(--radius-btn); background: transparent; color: color-mix(in oklab, var(--ink-strong) 75%, transparent);
   transition: color .15s cubic-bezier(.4,0,.2,1), background-color .15s cubic-bezier(.4,0,.2,1), transform .15s cubic-bezier(.4,0,.2,1);
   font-size: 1rem;
 }
-.icon-btn:hover { color: var(--primary-text); background: var(--btn-plain-bg-hover); }
+.icon-btn:hover { color: var(--element-deep); background: var(--ink-wash-hover); }
 .icon-btn:active { transform: scale(.9); }
 
 /* ============================================================
    Banner
    ============================================================ */
 #banner-wrapper {
-  position: relative; width: 100%; height: var(--banner-height-home);
+  position: relative; width: 100%; height: var(--cover-height-home);
   margin-top: -4.5rem; overflow: hidden;
 }
 #banner-wrapper img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; visibility: hidden; transition: opacity 1.5s ease, visibility 0s linear 1.5s; }
 #banner-wrapper img.on { opacity: 1; visibility: visible; transition: opacity 1.5s ease, visibility 0s; }
 #banner-overlay {
   position: absolute; inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,.32) 0%, rgba(0,0,0,.12) 45%, color-mix(in oklab, var(--page-bg) 85%, transparent) 100%);
+  background: linear-gradient(to bottom, rgba(0,0,0,.32) 0%, rgba(0,0,0,.12) 45%, color-mix(in oklab, var(--paper) 85%, transparent) 100%);
 }
 #banner-text {
   position: absolute; inset: 0; display: flex; flex-direction: column;
@@ -278,8 +286,8 @@ body.wallpaper-soft #wallpaper img { filter: blur(var(--wallpaper-blur)); }
 #banner-text .subs { margin-top: .6rem; display: flex; flex-direction: column; gap: .15rem; font-size: clamp(.8rem, 1.5vw, .95rem); opacity: .92; }
 /* 原来这里还有一枚右上角的「© 图片来源」胶囊角标，已按要求去掉 */
 /* 波浪 */
-#waves { position: absolute; left: 0; right: 0; bottom: -1px; height: 5rem; color: var(--page-bg); }
-#waves svg { width: 100%; height: 100%; display: block; }
+#paper-edge { position: absolute; left: 0; right: 0; bottom: -1px; height: 5rem; color: var(--paper); }
+#paper-edge svg { width: 100%; height: 100%; display: block; }
 
 /* ============================================================
    主网格（三栏）
@@ -308,25 +316,25 @@ main#content { display: flex; flex-direction: column; gap: 1.2rem; min-width: 0;
 /* ============================================================
    卡片
    ============================================================ */
-/* Fuwari 的 .card-base 只有"圆角 + 裁切 + 背景色"，没有边框也没有阴影：
-   模块之间靠 --page-bg / --card-bg 的明度差分开，而不是靠描边。
+/* .card-base 只有"圆角 + 裁切 + 背景色"，没有边框也没有阴影：
+   模块之间靠 --paper / --paper-card 的明度差分开，而不是靠描边。
    ★ 加了轻量的悬停/按下反馈（用户要求"方框圆框要有过渡与动画"）：
    只动 background-color 与 transform，全部走合成层，不掉帧。 */
 .card-base {
-  border-radius: var(--radius-large); overflow: hidden;
-  background: var(--card-bg-transparent);
+  border-radius: var(--radius-card); overflow: hidden;
+  background: var(--paper-card-veil);
   border: 0; box-shadow: none;
   transition: background-color .2s cubic-bezier(.4,0,.2,1);
 }
 /* 只有"可交互卡片"抬升：文章卡、友链卡、工程卡、时间线卡都各自声明了，
    普通容器（侧栏组件、列表容器）保持静止，避免整页都在抖。 */
-.card-base .card-base { background: var(--card-bg-transparent); }
+.card-base .card-base { background: var(--paper-card-veil); }
 .card-pad { padding: 1rem; }
 
-/* 侧栏组件标题：Fuwari 是"粗体文字 + 左侧 4px 圆角主色条"，没有下划线。
+/* 侧栏组件标题："粗体文字 + 左侧 4px 圆角主色条"，没有下划线。
    ★ 越界修正：主色条原来贴在 left:0（卡片最左缘），视觉上像"捅出卡片边界"，
    而且正好压在 1rem 圆角上。改成条子在 1rem 处、文字再让开 0.5rem，
-   和 Fuwari 的 ml-8 + before:left-[-16px] 是同一个间距关系。 */
+   和 ml-8 + before:left-[-16px] 是同一个间距关系。 */
 .widget-head {
   display: flex; align-items: center; gap: .5rem;
   padding: 1rem 1rem .5rem 1.5rem; position: relative;
@@ -335,12 +343,12 @@ main#content { display: flex; flex-direction: column; gap: 1.2rem; min-width: 0;
 .widget-head::before {
   content: ""; position: absolute; left: 1rem; top: 1.35rem;
   width: 4px; height: 1rem; border-radius: var(--radius-chip);
-  background: var(--primary);
+  background: var(--element);
 }
 .widget-head .w-ico {
   width: 1.5rem; height: 1.5rem; border-radius: var(--radius-chip);
-  background: var(--btn-regular-bg); display: grid; place-items: center;
-  font-size: .7rem; color: var(--btn-content); flex: none;
+  background: var(--stamp-bg); display: grid; place-items: center;
+  font-size: .7rem; color: var(--stamp-ink); flex: none;
 }
 .widget-body { padding: .25rem 1rem 1rem; }
 
@@ -355,37 +363,37 @@ main#content { display: flex; flex-direction: column; gap: 1.2rem; min-width: 0;
 }
 .profile-avatar:hover .hover-mask { background: rgba(0,0,0,.3); opacity: 1; }
 .profile-name { font-weight: 700; font-size: 1.25rem; text-align: center; margin: .75rem 0 .25rem; }
-.profile-bar { height: .25rem; width: 1.25rem; background: var(--primary); border-radius: 999px; margin: 0 auto .5rem; transition: background-color .15s; }
-.profile-bio { text-align: center; color: color-mix(in oklab, var(--deep-text) 64%, transparent); font-size: .85rem; margin-bottom: .7rem; min-height: 2.6em; }
+.profile-bar { height: .25rem; width: 1.25rem; background: var(--element); border-radius: 999px; margin: 0 auto .5rem; transition: background-color .15s; }
+.profile-bio { text-align: center; color: color-mix(in oklab, var(--ink-strong) 64%, transparent); font-size: .85rem; margin-bottom: .7rem; min-height: 2.6em; }
 .profile-bio .caret { display: inline-block; width: 1px; background: currentColor; animation: blink 1s steps(2) infinite; }
 @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
 .social-row { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; }
 .btn-regular {
   display: flex; align-items: center; justify-content: center;
-  background: var(--btn-regular-bg); color: var(--btn-content);
+  background: var(--stamp-bg); color: var(--stamp-ink);
   transition: background-color .15s cubic-bezier(.4,0,.2,1), color .15s cubic-bezier(.4,0,.2,1), transform .15s cubic-bezier(.4,0,.2,1);
 }
-.btn-regular:hover { background: var(--btn-regular-bg-hover); }
-.btn-regular:active { background: var(--btn-regular-bg-active); transform: scale(.9); }
-/* Fuwari：社交按钮 h-10(2.5rem) w-10 / h-10 px-3，rounded-lg */
+.btn-regular:hover { background: var(--stamp-bg-hover); }
+.btn-regular:active { background: var(--stamp-bg-press); transform: scale(.9); }
+/* 社交按钮 h-10(2.5rem) w-10 / h-10 px-3，rounded-lg */
 .social-row .btn-regular { height: 2.5rem; min-width: 2.5rem; padding: 0 .75rem; border-radius: var(--radius-btn); font-size: .76rem; font-weight: 600; }
 
 /* 公告 */
-.announce { font-size: .85rem; line-height: 1.8; color: color-mix(in oklab, var(--deep-text) 82%, transparent); }
+.announce { font-size: .85rem; line-height: 1.8; color: color-mix(in oklab, var(--ink-strong) 82%, transparent); }
 .announce p { margin: 0 0 .4rem; }
 
 /* 标签 / 分类
    注意点击目标尺寸：原来 padding .25rem .6rem 让 chip 只有约 26px 高、
    相邻间隙 6.4px，Lighthouse 的 target-size 会判"安全点击直径 13.6px < 24px"。
-   现在高度按 24px 起、间隙 8px，既合 Fuwari 的 rounded-md 观感也过审计。 */
+   现在高度按 24px 起、间隙 8px，既合 rounded-md 观感也过审计。 */
 .chip-row { display: flex; flex-wrap: wrap; gap: .5rem; }
 .chip {
   display: inline-flex; align-items: center; gap: .3rem;
   min-height: 1.75rem; padding: .3rem .625rem; border-radius: var(--radius-chip);
-  background: var(--btn-regular-bg); color: var(--btn-content); font-size: .78rem; font-weight: 500;
+  background: var(--stamp-bg); color: var(--stamp-ink); font-size: .78rem; font-weight: 500;
   transition: background-color .15s cubic-bezier(.4,0,.2,1), transform .15s cubic-bezier(.4,0,.2,1);
 }
-.chip:hover { background: var(--btn-regular-bg-hover); }
+.chip:hover { background: var(--stamp-bg-hover); }
 .chip:active { transform: scale(.94); }
 .chip .n { opacity: .75; font-size: .7rem; font-weight: 400; }
 .cat-row { display: flex; flex-direction: column; gap: .15rem; }
@@ -393,33 +401,34 @@ main#content { display: flex; flex-direction: column; gap: 1.2rem; min-width: 0;
   display: flex; align-items: center; justify-content: space-between; padding: .4rem .55rem;
   border-radius: .5rem; font-size: .85rem; transition: background-color .15s, color .15s;
 }
-.cat-row a:hover { background: var(--btn-plain-bg-hover); color: var(--primary-text); }
+.cat-row a:hover { background: var(--ink-wash-hover); color: var(--element-deep); }
 .cat-row a .n { font-family: var(--font-mono); font-size: .72rem; opacity: .8; }
 
 /* 站点统计 → 使用情况 */
 .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
-.stat-cell { background: var(--btn-regular-bg); border-radius: var(--radius-chip); padding: .5rem .6rem; text-align: center; }
-.stat-cell b { display: block; font-family: var(--font-mono); font-size: 1.05rem; color: var(--btn-content); font-weight: 600; }
-.stat-cell span { font-size: .75rem; color: color-mix(in oklab, var(--deep-text) 68%, transparent); }
-.stat-line { margin-top: .6rem; font-family: var(--font-mono); font-size: .72rem; line-height: 1.5; color: var(--content-meta); }
+.stat-cell { background: var(--stamp-bg); border-radius: var(--radius-chip); padding: .5rem .6rem; text-align: center; }
+.stat-cell b { display: block; font-family: var(--font-mono); font-size: 1.05rem; color: var(--stamp-ink); font-weight: 600; }
+.stat-cell span { font-size: .75rem; color: color-mix(in oklab, var(--ink-strong) 68%, transparent); }
+.stat-line { margin-top: .6rem; font-family: var(--font-mono); font-size: .72rem; line-height: 1.5; color: var(--ink-meta); }
 
 /* ============================================================
-   三套参考主题的"特色"在这里融合（只借技法与思路，不照搬取值/素材）
-   · Fuwari      → 令牌体系：oklch(L C var(--hue))、--radius-large、无边框无阴影卡片
-   · Mizuki      → 壁纸多模式、卡片描边开关、透明模式 backdrop 模糊、顶部渐变高光、页面切换过渡
-   · Xinghuisama → 衬线正文、细滚动条、云端杂谈式弹幕、底部应用状态栏
-   · 本站自己的  → 手帐/漫画墨线语言 + 元素色相系统（这两条是识别度所在，不外借）
-   下面三条是新增的"融合层"，全部默认关闭或极轻量，不影响 60fps 基线。
+   融合层：把参考主题里"值得留下的技法"落到手帐这个身份上
+   · 壁纸多模式 / 卡片描边开关 / 透明模式的背景模糊 / 顶部渐变高光
+   · 衬线正文、细滚动条、底部状态栏、弹幕
+   · 本站自己的：手帐与漫画的墨线语言 + 七元素色相系统（识别度在这里，不外借）
+   下面三条是新增的融合层，全部默认关闭或极轻量，不影响 60fps 基线。
+   来源与许可见 README「致谢与来源」（这里不再逐条标注，避免注释里
+   到处是人家的文件名）。
    ============================================================ */
 /* ① 透明壁纸模式：卡片半透明 + 背景模糊（只有这一档会付 backdrop-filter 的代价） */
 body.wallpaper-transparent .card-base {
-  background: color-mix(in oklab, var(--card-bg) 62%, transparent) !important;
+  background: color-mix(in oklab, var(--paper-card) 62%, transparent) !important;
   backdrop-filter: blur(10px) saturate(1.05);
   -webkit-backdrop-filter: blur(10px) saturate(1.05);
 }
-/* ② 卡片描边开关（Mizuki 的 enable-card-border） */
-body.enable-card-border .card-base { border: 1px solid var(--line-divider); }
-body.enable-card-border .mj-view .card-base { border-color: color-mix(in oklab, var(--line-divider) 80%, transparent); }
+/* ② 卡片描边开关 */
+body.enable-card-border .card-base { border: 1px solid var(--rule-hair); }
+body.enable-card-border .mj-view .card-base { border-color: color-mix(in oklab, var(--rule-hair) 80%, transparent); }
 /* ③ 路由切换过渡：新视图轻微上浮淡入（只动 transform/opacity） */
 @keyframes mjViewIn {
   from { opacity: 0; transform: translateY(.6rem); }
@@ -427,7 +436,7 @@ body.enable-card-border .mj-view .card-base { border-color: color-mix(in oklab, 
 }
 .mj-view { animation: mjViewIn .26s cubic-bezier(.4,0,.2,1) both; }
 @media (prefers-reduced-motion: reduce) { .mj-view { animation: none; } }
-/* ④ 顶部渐变高光：折进壁纸层做背景，不额外起图层（Mizuki 原本是独立 fixed 层） */
+/* ④ 顶部渐变高光：折进壁纸层做背景，不额外起图层 */
 #wallpaper::after, #banner-wrapper::after {
   content: ""; position: absolute; left: 0; right: 0; top: 0; height: 180px; pointer-events: none;
   background: linear-gradient(to bottom, rgba(255,255,255,.5) 0%, rgba(255,255,255,.3) 30%, rgba(255,255,255,.15) 60%, rgba(255,255,255,.05) 80%, transparent 100%);
@@ -444,36 +453,36 @@ body.enable-card-border .mj-view .card-base { border-color: color-mix(in oklab, 
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 9998;
   display: flex; align-items: center; gap: .75rem;
   height: 30px; padding: 0 .75rem;
-  background: var(--card-bg);
-  border-top: 1px solid var(--line-divider);
+  background: var(--paper-card);
+  border-top: 1px solid var(--rule-hair);
   font-family: var(--font-mono); font-size: 11px; line-height: 1;
-  color: var(--content-meta);
+  color: var(--ink-meta);
   user-select: none; -webkit-user-select: none;
 }
 #mjStatus .sb-left, #mjStatus .sb-right { display: flex; align-items: center; gap: .5rem; flex: none; }
 #mjStatus .sb-mid { display: flex; align-items: center; gap: .9rem; flex: 1 1 auto; justify-content: center; min-width: 0; overflow: hidden; white-space: nowrap; }
-#mjStatus .sb-app { display: inline-flex; align-items: center; gap: .35rem; color: var(--deep-text); font-weight: 600; }
+#mjStatus .sb-app { display: inline-flex; align-items: center; gap: .35rem; color: var(--ink-strong); font-weight: 600; }
 #mjStatus .sb-dot {
-  width: 7px; height: 7px; border-radius: 50%; background: var(--primary);
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 22%, transparent);
+  width: 7px; height: 7px; border-radius: 50%; background: var(--element);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--element) 22%, transparent);
   animation: sbPulse 2.6s ease-in-out infinite;
 }
 @keyframes sbPulse { 0%, 100% { opacity: .55; transform: scale(.9); } 50% { opacity: 1; transform: scale(1); } }
 #mjStatus .sb-tag {
   padding: 1px 6px; border-radius: 999px;
-  background: var(--btn-regular-bg); color: var(--btn-content);
+  background: var(--stamp-bg); color: var(--stamp-ink);
 }
-#mjStatus .sb-sep { width: 1px; height: 14px; background: var(--line-divider); }
-#mjStatus .sb-view { color: var(--primary-text); }
-/* 不要在这里加 opacity：--content-meta 已经压着 4.5:1 的线，
+#mjStatus .sb-sep { width: 1px; height: 14px; background: var(--rule-hair); }
+#mjStatus .sb-view { color: var(--element-deep); }
+/* 不要在这里加 opacity：--ink-meta 已经压着 4.5:1 的线，
    再叠一层 .8 不透明度会掉到 3.49:1（Lighthouse 会判 color-contrast 失败）。 */
 #mjStatus .sb-fps { font-variant-numeric: tabular-nums; }
 #mjStatus .sb-btn {
   font: inherit; height: 20px; padding: 0 .5rem; border: 0; cursor: pointer;
-  border-radius: var(--radius-chip); background: var(--btn-regular-bg); color: var(--btn-content);
+  border-radius: var(--radius-chip); background: var(--stamp-bg); color: var(--stamp-ink);
   transition: background-color .15s cubic-bezier(.4,0,.2,1), color .15s ease, transform .15s cubic-bezier(.4,0,.2,1);
 }
-#mjStatus .sb-btn:hover { background: var(--btn-regular-bg-hover); color: var(--primary-text); }
+#mjStatus .sb-btn:hover { background: var(--stamp-bg-hover); color: var(--element-deep); }
 #mjStatus .sb-btn:active { transform: scale(.94); }
 @media (max-width: 720px) {
   #mjStatus .sb-mid { display: none; }
@@ -485,14 +494,14 @@ body.enable-card-border .mj-view .card-base { border-color: color-mix(in oklab, 
 .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .5rem; }
 .cal-head b { font-size: .85rem; font-family: var(--font-mono); }
 .cal-nav { display: flex; gap: .25rem; }
-.cal-nav button { width: 1.6rem; height: 1.6rem; border: 0; border-radius: .45rem; cursor: pointer; background: var(--btn-regular-bg); color: var(--btn-content); font-size: .7rem; display: grid; place-items: center; }
-.cal-nav button:hover { background: var(--btn-regular-bg-hover); }
+.cal-nav button { width: 1.6rem; height: 1.6rem; border: 0; border-radius: .45rem; cursor: pointer; background: var(--stamp-bg); color: var(--stamp-ink); font-size: .7rem; display: grid; place-items: center; }
+.cal-nav button:hover { background: var(--stamp-bg-hover); }
 .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; text-align: center; font-size: .72rem; }
-.cal-grid .wd { color: color-mix(in oklab, var(--deep-text) 66%, transparent); font-weight: 700; padding: .15rem 0; }
+.cal-grid .wd { color: color-mix(in oklab, var(--ink-strong) 66%, transparent); font-weight: 700; padding: .15rem 0; }
 .cal-grid .d { padding: .22rem 0; border-radius: .4rem; font-family: var(--font-mono); }
-.cal-grid .d.has { background: var(--btn-regular-bg); color: var(--btn-content); cursor: pointer; }
-.cal-grid .d.has:hover { background: var(--btn-regular-bg-hover); }
-.cal-grid .d.today { background: var(--primary-strong); color: #fff; font-weight: 700; }
+.cal-grid .d.has { background: var(--stamp-bg); color: var(--stamp-ink); cursor: pointer; }
+.cal-grid .d.has:hover { background: var(--stamp-bg-hover); }
+.cal-grid .d.today { background: var(--element-strong); color: #fff; font-weight: 700; }
 .cal-grid .d.blank { visibility: hidden; }
 
 /* 侧栏音乐 */
@@ -509,51 +518,51 @@ body.enable-card-border .mj-view .card-base { border-color: color-mix(in oklab, 
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .music-artist {
-  font-size: .72rem; margin-top: .2rem; color: color-mix(in oklab, var(--deep-text) 72%, transparent);
+  font-size: .72rem; margin-top: .2rem; color: color-mix(in oklab, var(--ink-strong) 72%, transparent);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.music-bar { height: .3rem; border-radius: 999px; background: var(--btn-regular-bg); overflow: hidden; cursor: pointer; }
-.music-bar i { display: block; height: 100%; width: 32%; background: var(--primary); }
+.music-bar { height: .3rem; border-radius: 999px; background: var(--stamp-bg); overflow: hidden; cursor: pointer; }
+.music-bar i { display: block; height: 100%; width: 32%; background: var(--element); }
 .music-time { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: .65rem; opacity: .72; }
 .music-ctrl { display: flex; align-items: center; justify-content: center; gap: .6rem; }
-.music-ctrl .mb { width: 2.2rem; height: 2.2rem; border-radius: 50%; display: grid; place-items: center; border: 0; cursor: pointer; background: var(--btn-regular-bg); color: var(--btn-content); transition: background-color .15s, transform .1s; }
-.music-ctrl .mb:hover { background: var(--btn-regular-bg-hover); }
+.music-ctrl .mb { width: 2.2rem; height: 2.2rem; border-radius: 50%; display: grid; place-items: center; border: 0; cursor: pointer; background: var(--stamp-bg); color: var(--stamp-ink); transition: background-color .15s, transform .1s; }
+.music-ctrl .mb:hover { background: var(--stamp-bg-hover); }
 .music-ctrl .mb:active { transform: scale(.92); }
-.music-ctrl .mb.play { width: 2.6rem; height: 2.6rem; background: var(--primary-strong); color: #fff; }
+.music-ctrl .mb.play { width: 2.6rem; height: 2.6rem; background: var(--element-strong); color: #fff; }
 .music-ctrl .tri { width: 0; height: 0; border-left: .55rem solid currentColor; border-top: .35rem solid transparent; border-bottom: .35rem solid transparent; margin-left: .12rem; }
 .music-ctrl .bars { display: flex; gap: 2px; align-items: flex-end; height: .85rem; }
 .music-ctrl .bars i { width: 2.5px; background: currentColor; border-radius: 2px; }
 
 /* 目录 */
 .toc-list { display: flex; flex-direction: column; gap: .1rem; font-size: .82rem; }
-.toc-list a { padding: .3rem .5rem; border-radius: .45rem; color: color-mix(in oklab, var(--deep-text) 76%, transparent); border-left: 2px solid transparent; transition: .15s; }
-.toc-list a:hover { background: var(--btn-plain-bg-hover); color: var(--primary-text); }
-.toc-list a.on { color: var(--primary-text); border-left-color: var(--primary-strong); font-weight: 700; background: var(--btn-regular-bg); }
+.toc-list a { padding: .3rem .5rem; border-radius: .45rem; color: color-mix(in oklab, var(--ink-strong) 76%, transparent); border-left: 2px solid transparent; transition: .15s; }
+.toc-list a:hover { background: var(--ink-wash-hover); color: var(--element-deep); }
+.toc-list a.on { color: var(--element-deep); border-left-color: var(--element-strong); font-weight: 700; background: var(--stamp-bg); }
 .toc-list a.lv3 { padding-left: 1.2rem; font-size: .78rem; }
 
 /* ============================================================
    文章列表
    ============================================================ */
-/* Fuwari 的卡片标题是 text-lg(1.125rem)/1.75rem + 左侧主色条
+/* 卡片标题是 text-lg(1.125rem)/1.75rem + 左侧主色条
    （同样把条子从卡片最左缘移到 1rem 处，避免看起来越界） */
 .list-bar { display: flex; align-items: center; gap: .5rem; padding: .75rem 1rem .75rem 1.5rem; position: relative; }
 .list-bar .lb-title { font-weight: 700; font-size: 1.125rem; line-height: 1.75rem; }
 .list-bar::before {
   content: ""; position: absolute; left: 1rem; top: 1.1rem;
-  width: 4px; height: 1.25rem; border-radius: var(--radius-chip); background: var(--primary);
+  width: 4px; height: 1.25rem; border-radius: var(--radius-chip); background: var(--element);
 }
-.list-bar .seg { display: flex; gap: .2rem; margin-left: auto; background: var(--btn-regular-bg); padding: .2rem; border-radius: var(--radius-btn); }
+.list-bar .seg { display: flex; gap: .2rem; margin-left: auto; background: var(--stamp-bg); padding: .2rem; border-radius: var(--radius-btn); }
 .list-bar .seg button {
   min-height: 1.75rem; border: 0; cursor: pointer; padding: .28rem .75rem; border-radius: var(--radius-chip);
-  font-size: .8125rem; font-weight: 500; background: transparent; color: var(--btn-content);
+  font-size: .8125rem; font-weight: 500; background: transparent; color: var(--stamp-ink);
   transition: background-color .15s cubic-bezier(.4,0,.2,1), color .15s cubic-bezier(.4,0,.2,1);
 }
-.list-bar .seg button:hover { background: var(--btn-plain-bg-hover); }
-.list-bar .seg button.on { background: var(--card-bg); color: var(--primary-text); }
+.list-bar .seg button:hover { background: var(--ink-wash-hover); }
+.list-bar .seg button.on { background: var(--paper-card); color: var(--element-deep); }
 
 #post-list { display: flex; flex-direction: column; gap: 1rem; }
 #post-list.grid-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-/* Fuwari 的卡片没有阴影，hover 也不抬升；这里保留"不投影"，
+/* 卡片没有阴影，hover 也不抬升；这里保留"不投影"，
    但给文章卡一个更明显的悬停位移 + 按下回弹（用户要求的交互动效）。 */
 .post-card { position: relative; transition: transform .22s cubic-bezier(.34,1.4,.64,1); }
 .post-card:hover { transform: translateY(-3px); }
@@ -566,39 +575,39 @@ body.enable-card-border .mj-view .card-base { border-color: color-mix(in oklab, 
 .post-card:hover .post-cover img { transform: scale(1.04); }
 .grid-mode .post-cover img { aspect-ratio: 16/9; min-height: 0; }
 .post-body { padding: 1rem 1.25rem 1.25rem; display: flex; flex-direction: column; gap: .4rem; min-width: 0; flex: 1; }
-/* 标题：字重 700、行高收到 1.3（Fuwari 的标题行高比正文紧） */
+/* 标题：字重 700、行高收到 1.3 */
 .post-title { font-weight: 700; font-size: 1.375rem; line-height: 1.3; transition: color .15s cubic-bezier(.4,0,.2,1); }
-.post-card:hover .post-title { color: var(--primary-text); }
+.post-card:hover .post-title { color: var(--element-deep); }
 .grid-mode .post-title { font-size: 1.125rem; }
 .post-desc {
-  font-size: .9375rem; line-height: 1.6; color: color-mix(in oklab, var(--deep-text) 70%, transparent);
+  font-size: .9375rem; line-height: 1.6; color: color-mix(in oklab, var(--ink-strong) 70%, transparent);
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .grid-mode .post-desc { -webkit-line-clamp: 2; }
-/* 元信息：Fuwari 的 text-sm font-medium + 50% 透明度 */
-.post-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; font-size: .875rem; font-weight: 500; line-height: 1.25rem; color: var(--content-meta); margin-top: auto; padding-top: .35rem; }
+/* 元信息：text-sm font-medium + 50% 透明度 */
+.post-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; font-size: .875rem; font-weight: 500; line-height: 1.25rem; color: var(--ink-meta); margin-top: auto; padding-top: .35rem; }
 .post-meta .m { display: inline-flex; align-items: center; gap: .25rem; }
-.post-meta .sep { width: 3px; height: 3px; border-radius: 50%; background: var(--meta-divider); }
+.post-meta .sep { width: 3px; height: 3px; border-radius: 50%; background: var(--rule-meta); }
 .post-tags { display: flex; flex-wrap: wrap; gap: .3rem; }
 .post-tags .chip { font-size: .75rem; padding: .25rem .5rem; border-radius: var(--radius-chip); }
-.post-pinned { position: absolute; top: .5rem; right: .5rem; z-index: 2; font-size: .65rem; font-weight: 700; padding: .15rem .45rem; border-radius: .35rem; background: var(--primary-strong); color: #fff; }
+.post-pinned { position: absolute; top: .5rem; right: .5rem; z-index: 2; font-size: .65rem; font-weight: 700; padding: .15rem .45rem; border-radius: .35rem; background: var(--element-strong); color: #fff; }
 
 /* 分页 */
 .pager { display: flex; justify-content: center; gap: .35rem; padding: .9rem; }
-.pager button { min-width: 2rem; height: 2rem; border: 0; cursor: pointer; border-radius: .5rem; background: var(--btn-regular-bg); color: var(--btn-content); font-size: .8rem; font-family: var(--font-mono); transition: .15s; }
-.pager button:hover { background: var(--btn-regular-bg-hover); }
-.pager button.on { background: var(--primary-strong); color: #fff; font-weight: 700; }
+.pager button { min-width: 2rem; height: 2rem; border: 0; cursor: pointer; border-radius: .5rem; background: var(--stamp-bg); color: var(--stamp-ink); font-size: .8rem; font-family: var(--font-mono); transition: .15s; }
+.pager button:hover { background: var(--stamp-bg-hover); }
+.pager button.on { background: var(--element-strong); color: #fff; font-weight: 700; }
 
 /* 页脚 */
 footer.site-footer {
-  border: 1px dashed color-mix(in oklab, var(--deep-text) 15%, transparent);
+  border: 1px dashed color-mix(in oklab, var(--ink-strong) 15%, transparent);
   border-radius: 1rem; padding: 1.4rem 1rem; margin-bottom: 1rem;
   display: flex; flex-direction: column; align-items: center; gap: .5rem;
-  font-size: .8rem; color: color-mix(in oklab, var(--deep-text) 72%, transparent);
+  font-size: .8rem; color: color-mix(in oklab, var(--ink-strong) 72%, transparent);
 }
 footer.site-footer .f-links { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
 footer.site-footer a { transition: color .15s; }
-footer.site-footer a:hover { color: var(--primary-text); }
+footer.site-footer a:hover { color: var(--element-deep); }
 
 /* ============================================================
    浮动控制
@@ -608,19 +617,19 @@ footer.site-footer a:hover { color: var(--primary-text); }
   display: flex; flex-direction: column; gap: .5rem;
 }
 #floating-controls button {
-  width: 2.6rem; height: 2.6rem; border: 1px solid var(--line-divider); cursor: pointer;
-  border-radius: 50%; background: var(--float-panel-bg); color: var(--btn-content);
+  width: 2.6rem; height: 2.6rem; border: 1px solid var(--rule-hair); cursor: pointer;
+  border-radius: 50%; background: var(--panel-paper); color: var(--stamp-ink);
   display: grid; place-items: center; font-size: .95rem;
   box-shadow: 0 8px 22px -12px rgba(0,0,0,.45); transition: transform .18s, background-color .15s;
 }
-#floating-controls button:hover { transform: translateY(-2px); background: var(--btn-regular-bg); }
+#floating-controls button:hover { transform: translateY(-2px); background: var(--stamp-bg); }
 #floating-controls button.hidden { display: none; }
 
 /* 浮动面板（设置）
-   Fuwari: .float-panel = rounded-1rem + --float-panel-bg + shadow-xl，暗色下 shadow-none */
+   .float-panel = rounded-1rem + --panel-paper + shadow-xl，暗色下 shadow-none */
 .float-panel {
   position: fixed; right: 1rem; bottom: 5.2rem; z-index: 61; width: 20rem;
-  border-radius: var(--radius-large); background: var(--float-panel-bg);
+  border-radius: var(--radius-card); background: var(--panel-paper);
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / .1), 0 8px 10px -6px rgb(0 0 0 / .1);
   border: 0;
   padding: 1rem; transform-origin: bottom right;
@@ -629,16 +638,16 @@ footer.site-footer a:hover { color: var(--primary-text); }
 :root.dark .float-panel { box-shadow: none; }
 .float-panel.closed { transform: translateY(.5rem) scale(.96); opacity: 0; pointer-events: none; }
 .fp-row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .35rem 0; font-size: .8rem; }
-.fp-row + .fp-row { border-top: 1px dashed var(--line-divider); }
-.fp-seg { display: flex; gap: .2rem; background: var(--btn-regular-bg); padding: .15rem; border-radius: .5rem; }
-.fp-seg button { border: 0; cursor: pointer; padding: .22rem .5rem; border-radius: .35rem; font-size: .7rem; background: transparent; color: var(--btn-content); }
-.fp-seg button.on { background: var(--card-bg); color: var(--primary-text); font-weight: 700; }
+.fp-row + .fp-row { border-top: 1px dashed var(--rule-hair); }
+.fp-seg { display: flex; gap: .2rem; background: var(--stamp-bg); padding: .15rem; border-radius: .5rem; }
+.fp-seg button { border: 0; cursor: pointer; padding: .22rem .5rem; border-radius: .35rem; font-size: .7rem; background: transparent; color: var(--stamp-ink); }
+.fp-seg button.on { background: var(--paper-card); color: var(--element-deep); font-weight: 700; }
 
 /* ============================================================
    入场动画
-   Fuwari：.onload-animation = opacity 0 → 1 + translateY → 0，300ms，
+   .onload-animation = opacity 0 → 1 + translateY → 0，300ms，
    animation-fill-mode: forwards；延迟阶梯 0 / 100 / 150 / 250 / 400ms。
-   ★ 唯一偏离：Fuwari 的位移是 2rem，但相邻模块是错开 70ms 起跑的，
+   ★ 唯一偏离：位移是 2rem，但相邻模块是错开 70ms 起跑的，
    2rem 的落差会让"后一个模块的文字"在动画途中压到前一个模块的文字上
    （用户明确要求装饰/动画不能和边界文字打架），所以收到 .75rem。
    ============================================================ */
@@ -669,12 +678,10 @@ aside.left-sidebar > *:nth-child(5), aside.right-sidebar > *:nth-child(5), .mj-v
 aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-delay: 350ms !important; }
 .mj-view > *:nth-child(7) { animation-delay: 420ms !important; }
 
-/* 波浪动画 */
-@keyframes waveMove { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-#waves svg { width: 200%; animation: waveMove 14s linear infinite; }
+/* 横幅下沿的撕口是静态的 —— 不再有常驻的波浪动画层 */
 
 /* ============================================================
-   ★ 并入自 XinghuisamaBlogs：气氛层与交互层
+   ★ 气氛层与交互层
    ============================================================ */
 
 /* 磨砂白纱：已折进 #wallpaper 容器，z-index 改为在图片之上 */
@@ -752,7 +759,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 #danmaku-band span {
   position: absolute; right: -100%; white-space: nowrap;
   font-weight: 700; font-size: 1.1rem; letter-spacing: .05em;
-  color: color-mix(in oklab, var(--deep-text) 30%, transparent);
+  color: color-mix(in oklab, var(--ink-strong) 30%, transparent);
   user-select: none;
 }
 :root.dark #danmaku-band span { color: rgba(255,255,255,.1); }
@@ -818,11 +825,11 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 .dashboard:hover .flip-clock { color: #818cf8; }
 .flip-clock::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(255,255,255,.1), transparent); pointer-events: none; }
 .flip-clock::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: rgba(0,0,0,.5); }
-.dash-body { flex: 1; padding: .75rem 1.5rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; font-size: .8rem; font-weight: 700; color: color-mix(in oklab, var(--deep-text) 78%, transparent); }
+.dash-body { flex: 1; padding: .75rem 1.5rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; font-size: .8rem; font-weight: 700; color: color-mix(in oklab, var(--ink-strong) 78%, transparent); }
 .dash-up { display: flex; align-items: center; gap: .5rem; }
 .dash-dot { width: .5rem; height: .5rem; border-radius: 50%; background: #22c55e; animation: pulseDot 2s infinite; }
 @keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
-.dash-up b { color: var(--primary-text); font-weight: 900; }
+.dash-up b { color: var(--element-deep); font-weight: 900; }
 .badges { display: flex; gap: .5rem; flex-wrap: wrap; }
 .badges span {
   padding: .25rem .5rem; border-radius: .375rem; background: rgba(255,255,255,.5);
@@ -831,8 +838,8 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 }
 :root.dark .badges span { background: rgba(51,65,85,.5); border-color: rgba(148,163,184,.3); }
 .badges span em { font-style: normal; width: .5rem; height: .5rem; border-radius: .15rem; }
-.dash-icp { color: color-mix(in oklab, var(--deep-text) 70%, transparent); border-bottom: 1px dashed currentColor; padding-bottom: 1px; }
-.dash-icp:hover { color: var(--primary-text); }
+.dash-icp { color: color-mix(in oklab, var(--ink-strong) 70%, transparent); border-bottom: 1px dashed currentColor; padding-bottom: 1px; }
+.dash-icp:hover { color: var(--element-deep); }
 
 /* 效果开关
    ★ 之前开/关只差一个 opacity: .45，看着像"按钮按下去了没弹回来"，
@@ -843,7 +850,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 .fp-switch button {
   position: relative; border: 1px solid transparent; cursor: pointer;
   padding: .25rem .55rem .25rem 1.25rem; border-radius: .45rem; font-size: .7rem;
-  background: var(--btn-regular-bg); color: var(--btn-content); font-weight: 600;
+  background: var(--stamp-bg); color: var(--stamp-ink); font-weight: 600;
   transition: background-color .16s ease, color .16s ease, border-color .16s ease,
               opacity .16s ease, transform .12s cubic-bezier(.34,1.5,.64,1);
 }
@@ -854,11 +861,11 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
   border: 2px solid currentColor; background: transparent;
   transition: background-color .16s ease, border-color .16s ease;
 }
-.fp-switch button:not(.off) { background: var(--primary); color: #fff; border-color: var(--primary); }
+.fp-switch button:not(.off) { background: var(--element); color: #fff; border-color: var(--element); }
 .fp-switch button:not(.off)::before { background: #fff; border-color: #fff; }
-.fp-switch button:not(.off):hover { background: color-mix(in oklab, var(--primary) 84%, #000); }
-.fp-switch button.off { opacity: .62; background: transparent; border-color: var(--line-divider); }
-.fp-switch button.off:hover { opacity: 1; background: var(--btn-regular-bg-hover); }
+.fp-switch button:not(.off):hover { background: color-mix(in oklab, var(--element) 84%, #000); }
+.fp-switch button.off { opacity: .62; background: transparent; border-color: var(--rule-hair); }
+.fp-switch button.off:hover { opacity: 1; background: var(--stamp-bg-hover); }
 /* 按下去缩一下，松手回弹（transition 在 button 上，不会卡在按下态） */
 .fp-switch button:active { transform: scale(.94); }
 
@@ -879,7 +886,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
   .post-cover { width: 100%; }
   .post-cover img { aspect-ratio: 16/9; min-height: 0; }
   #post-list.grid-mode { grid-template-columns: 1fr; }
-  /* 移端隐藏高负载特效（对齐 Xinghuisama 的 mobile 策略） */
+  /* 移端隐藏高负载特效 */
   #danmaku-band, .fx-layer, #click-canvas { display: none; }
   .dashboard { flex-direction: column; }
   .flip-clock { padding: 1rem; }
@@ -901,12 +908,12 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 
 <!-- 全屏壁纸 -->
 <div id="wallpaper" aria-hidden="true">
-  <img src="assets/mys/bg-01.jpg" alt="" class="on" />
-  <img src="assets/mys/bg-02.jpg" alt="" />
+  <img src="assets/paper/bg-01.svg" alt="" class="on" />
+  <img src="assets/paper/bg-02.svg" alt="" />
   <div class="gradient-breathe"></div>
 </div>
 
-<!-- ★ 气氛层：磨砂白纱 + 双层模糊光晕（并入自 Xinghuisama layout.tsx） -->
+<!-- ★ 气氛层：磨砂白纱 + 双层模糊光晕 -->
 <div id="atmosphere" aria-hidden="true">
   <div class="bg-overlay"></div>
   <div class="glow-orb a"></div>
@@ -929,7 +936,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
   <nav id="navbar" aria-label="主导航">
     <div class="nav-inner">
       <a class="nav-brand" href="#">
-        <img class="nav-logo" src="assets/sakura.webp" alt="" />
+        <img class="nav-logo" src="assets/paper/petal.svg" alt="" />
         <span id="navBrandName">元素手帐</span>
       </a>
       <div class="nav-links">
@@ -954,8 +961,8 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 
 <!-- Banner -->
 <div id="banner-wrapper">
-  <img src="assets/mys/bg-01.jpg" alt="" class="on" />
-  <img src="assets/mys/bg-02.jpg" alt="" />
+  <img src="assets/paper/bg-01.svg" alt="" class="on" />
+  <img src="assets/paper/bg-02.svg" alt="" />
   <div id="banner-overlay" aria-hidden="true"></div>
   <div id="banner-text">
     <h1 class="onload-animation" style="animation-delay:0ms" data-ed="banner.title" data-ed-default="今天也值得记一笔">今天也值得记一笔</h1>
@@ -964,10 +971,14 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
       <span data-ed="banner.sub2" data-ed-default="慢慢写，慢慢生活">慢慢写，慢慢生活</span>
     </div>
   </div>
-  <div id="waves" aria-hidden="true">
+  <!-- ★ 横幅下沿：以前是一条 14s 无限循环的波浪（那是博客主题里很常见的装饰，
+       而且是一条常驻的合成层）。现在换成手帐本子撕口 + 缝线：
+       静态、不用动画，也更贴合"一页纸"的身份。 -->
+  <div id="paper-edge" aria-hidden="true">
     <svg viewBox="0 0 2400 120" preserveAspectRatio="none">
-      <path fill="currentColor" d="M0,64 C150,96 300,32 450,48 C600,64 750,112 900,104 C1050,96 1200,32 1350,40 C1500,48 1650,104 1800,104 C1950,104 2100,56 2250,48 C2325,44 2362,52 2400,60 L2400,120 L0,120 Z"/>
-      <path fill="currentColor" opacity=".55" d="M0,80 C150,112 300,56 450,72 C600,88 750,120 900,112 C1050,104 1200,56 1350,64 C1500,72 1650,112 1800,112 C1950,112 2100,80 2250,72 C2325,68 2362,74 2400,80 L2400,120 L0,120 Z"/>
+      <path fill="currentColor" d="M0,60 L90,48 L180,64 L270,42 L360,58 L450,70 L540,50 L630,40 L720,62 L810,46 L900,66 L990,52 L1080,38 L1170,60 L1260,48 L1350,68 L1440,44 L1530,58 L1620,40 L1710,64 L1800,50 L1890,42 L1980,66 L2070,52 L2160,60 L2250,44 L2340,58 L2400,54 L2400,120 L0,120 Z"/>
+      <path fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="12 9" stroke-linecap="round" opacity=".45"
+        d="M0,86 L2400,80" transform="translate(0,4)"/>
     </svg>
   </div>
 </div>
@@ -990,7 +1001,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
       <!-- 个人资料 -->
       <div class="card-base card-pad onload-animation" style="animation-delay:0ms">
         <a class="profile-avatar" href="#" id="mjAvatarLink" aria-label="关于我">
-          <img src="assets/avatar-user.jpg" alt="头像" id="mjAvatarImg" />
+          <img src="assets/paper/avatar.svg" alt="头像" id="mjAvatarImg" />
           <span class="hover-mask">▤</span>
         </a>
         <div class="profile-name">元素手帐</div>
@@ -1048,7 +1059,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
         <article class="post-card card-base">
           <span class="post-pinned">置顶</span>
           <a class="post-link" href="#">
-            <div class="post-cover"><img src="assets/mys/bg-03.jpg" alt="" loading="lazy" /></div>
+            <div class="post-cover"><img src="assets/paper/bg-03.svg" alt="" loading="lazy" /></div>
             <div class="post-body">
               <div class="post-title">搬进来之后的第一件事</div>
               <div class="post-desc">空房间最麻烦的不是没有家具，而是不知道光从哪边进来。住了两周才把桌子挪到对的位置。</div>
@@ -1064,7 +1075,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 
         <article class="post-card card-base">
           <a class="post-link" href="#">
-            <div class="post-cover"><img src="assets/mys/bg-05.jpg" alt="" loading="lazy" /></div>
+            <div class="post-cover"><img src="assets/paper/bg-05.svg" alt="" loading="lazy" /></div>
             <div class="post-body">
               <div class="post-title">关于早起这件小事</div>
               <div class="post-desc">试过很多方法，最后有用的只有一条：把闹钟放到必须下床才能关的地方。附一份我用了半年的晨间流程。</div>
@@ -1080,7 +1091,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 
         <article class="post-card card-base">
           <a class="post-link" href="#">
-            <div class="post-cover"><img src="assets/mys/bg-06.jpg" alt="" loading="lazy" /></div>
+            <div class="post-cover"><img src="assets/paper/bg-06.svg" alt="" loading="lazy" /></div>
             <div class="post-body">
               <div class="post-title">一本读完想立刻重读的书</div>
               <div class="post-desc">有些书是拿来"用"的，这本是拿来反复翻的。记下几个被打动的段落，以及我为什么在最后一章停了很久。</div>
@@ -1096,7 +1107,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 
         <article class="post-card card-base">
           <a class="post-link" href="#">
-            <div class="post-cover"><img src="assets/mys/bg-07.jpg" alt="" loading="lazy" /></div>
+            <div class="post-cover"><img src="assets/paper/bg-07.svg" alt="" loading="lazy" /></div>
             <div class="post-body">
               <div class="post-title">周末做一次慢炖</div>
               <div class="post-desc">不用守着锅，两小时之后它自己就好了。写清楚配比与时间，下次照着做不会失手。</div>
@@ -1111,7 +1122,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
         </article>
       </div>
 
-      <!-- ★ 歌词条（并入自 Xinghuisama LyricBar，与右侧栏播放器共用状态） -->
+      <!-- ★ 歌词条 -->
       <div class="lyric-bar onload-animation" style="animation-delay:180ms">
         <div class="wave" id="lyricWave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
         <p class="lyric-text"><span id="lyricText">点击右侧播放器开始播放</span><span class="lyric-cursor" aria-hidden="true"></span></p>
@@ -1125,7 +1136,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
         <button type="button">›</button>
       </div>
 
-      <!-- ★ 站点仪表盘（并入自 Xinghuisama SiteDashboard） -->
+      <!-- ★ 站点仪表盘 -->
       <div class="dashboard onload-animation" style="animation-delay:220ms">
         <div class="flip-clock" id="flipClock">00:00:00</div>
         <div class="dash-body">
@@ -1209,10 +1220,10 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
         <div class="widget-head"><span class="w-ico">▸</span><span class="ed-label">音乐</span></div>
         <div class="widget-body music-side">
           <div class="music-head">
-            <div class="music-cover"><img id="mCover" src="assets/xryx.webp" alt="" /></div>
+            <div class="music-cover"><img id="mCover" src="assets/paper/cover-01.svg" alt="" /></div>
             <div class="music-meta">
               <div class="music-title" id="mTitle">夏日与海</div>
-              <div class="music-artist" id="mArtist">玖音 feat. 初音未来</div>
+              <div class="music-artist" id="mArtist">示例曲目</div>
             </div>
           </div>
           <div class="music-bar" id="mBar"><i id="mProg"></i></div>
@@ -1315,7 +1326,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
   }
 
   /* ---------- 导航栏滚动状态 ----------
-     Fuwari 的行为：往下滚过阈值就收起（.navbar-hidden → opacity 0 + 上移），
+     行为：往下滚过阈值就收起（.navbar-hidden → opacity 0 + 上移），
      一开始往上滚立刻回来。这样长文里读正文时顶部不会一直压着一条实心条。 */
   var navbar = document.getElementById('navbar');
   var navWrap = document.getElementById('navbar-wrapper');
@@ -1378,9 +1389,9 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
   });
 
   /* ---------- 壁纸模式 ----------
-     借鉴 Mizuki 的多模式思路（横幅 / 全屏 / 无），另外补了两档：
-     「透明」= 卡片改用半透明 + backdrop 模糊（Mizuki 的 wallpaper-transparent）；
-     「描边」不是模式而是开关，给卡片加 1px 描边（Mizuki 的 enable-card-border）。
+     多模式思路（横幅 / 全屏 / 无），另外补了两档：
+     「透明」= 卡片改用半透明 + backdrop 模糊；
+     「描边」不是模式而是开关，给卡片加 1px 描边。
      这两档都是默认关闭的，避免常驻 backdrop-filter 带来的合成开销。 */
   var bannerWrapper = document.getElementById('banner-wrapper');
   var mainOuter = document.getElementById('main-outer');
@@ -1465,7 +1476,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
   var hueRange = document.getElementById('hueRange');
   var hueLabel = document.getElementById('hueLabel');
   hueRange.addEventListener('input', function () {
-    root.style.setProperty('--hue', hueRange.value);
+    root.style.setProperty('--element-hue', hueRange.value);
     hueLabel.textContent = hueRange.value;
   });
 
@@ -1473,13 +1484,13 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
   var opRange = document.getElementById('opRange');
   var cardRange = document.getElementById('cardRange');
   opRange.addEventListener('input', function () {
-    root.style.setProperty('--wallpaper-opacity', opRange.value / 100);
+    root.style.setProperty('--cover-veil', opRange.value / 100);
   });
   cardRange.addEventListener('input', function () {
     var v = cardRange.value / 100;
     var dark = root.classList.contains('dark');
-    root.style.setProperty('--card-transparent-opacity', v);
-    root.style.setProperty('--card-bg-transparent',
+    root.style.setProperty('--paper-card-opacity', v);
+    root.style.setProperty('--paper-card-veil',
       dark ? 'rgba(23,23,23,' + v + ')' : 'rgba(255,255,255,' + v + ')');
   });
 
@@ -1512,12 +1523,16 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
   });
   renderCal();
 
-  /* ---------- 侧栏音乐 ---------- */
+  /* ---------- 侧栏音乐 ----------
+     示例曲目以前配的是**真实作品与角色的署名**，封面也是来源不明的图。
+     借用真人、角色的名字会让人以为这里真收录了那首歌，所以统一改成中性的
+     占位作者名，封面换成自己生成的墨环图。
+     要放自己的歌，把 title / artist / cover 换成自己的就好。 */
   var TRACKS = [
-    { title: '夏日与海', artist: '玖音 feat. 初音未来', cover: 'assets/xryx.webp', len: 164 },
-    { title: '深夜调音室', artist: '玖音', cover: 'assets/hitori.webp', len: 212 },
-    { title: '存在证明', artist: '玖音 feat. 初音未来', cover: 'assets/cl.webp', len: 233 },
-    { title: '星之航路', artist: 'dazbee', cover: 'assets/dazbee.webp', len: 198 }
+    { title: '夏日与海', artist: '示例曲目', cover: 'assets/paper/cover-01.svg', len: 164 },
+    { title: '深夜调音室', artist: '示例曲目', cover: 'assets/paper/cover-02.svg', len: 212 },
+    { title: '存在证明', artist: '示例曲目', cover: 'assets/paper/cover-03.svg', len: 233 },
+    { title: '星之航路', artist: '示例曲目', cover: 'assets/paper/cover-04.svg', len: 198 }
   ];
   var ti2 = 0, mPlaying = false, mPos = 52, mTimer = null;
   var mCover = document.getElementById('mCover');
@@ -1565,7 +1580,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
   renderTrack();
 
   /* ============================================================
-     ★ 并入自 XinghuisamaBlogs 的气氛与交互层
+     ★ 气氛与交互层
      ============================================================ */
 
   /* ---------- 站点名 / 页脚署名 ----------

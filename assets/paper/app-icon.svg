@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="元素手帐">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#7280cb"/>
+      <stop offset="1" stop-color="#563fa2"/>
+    </linearGradient>
+    <linearGradient id="pg" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eff0f5"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <g transform="rotate(-7 256 268)">
+    <rect x="150" y="120" width="212" height="272" rx="18" fill="url(#pg)"/>
+    <rect x="150" y="120" width="212" height="272" rx="18" fill="none" stroke="#707ec2" stroke-width="4" opacity="0.35"/>
+    <path d="M186 190h140M186 232h140M186 274h96" stroke="#5464b6" stroke-width="12" stroke-linecap="round" opacity="0.55"/>
+    <path d="M186 330c26-14 52 10 78-2s44-2 62 6" fill="none" stroke="#6b39d0" stroke-width="13" stroke-linecap="round"/>
+  </g>
+  <g transform="rotate(38 372 158)">
+    <rect x="362" y="60" width="22" height="150" rx="9" fill="#7531b9"/>
+    <path d="M362 210h22l-11 30Z" fill="#472b64"/>
+  </g>
+</svg>

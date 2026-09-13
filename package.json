@@ -1,7 +1,7 @@
 {
   "name": "elemental-journal",
   "version": "1.0.0",
-  "description": "元素手帐 · 米哈游二次元手帐博客（桌面版）",
+  "description": "元素手帐 · 可以完全自由改的个人手帐站（桌面版）",
   "main": "electron/main.js",
   "private": true,
   "scripts": {

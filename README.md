@@ -235,22 +235,47 @@ git push -u origin main
 
 ## 致谢与来源
 
-这个站在实现过程中参考了三个开源项目，**借的是技术手段，不是外观**：
+这个站在实现过程中参考了下面这些开源项目，**借的是设计思路与技术手段**。
+为了不引起误会，这里把「参考了什么」和「各自的许可」写清楚：
 
-- **[Fuwari](https://github.com/saicaca/fuwari)** —— 设计令牌体系
-  （`oklch(L C var(--hue))` 的主题色方案、`--radius-large` 等圆角令牌、无边框无阴影的卡片观感）
-- **[XinghuisamaBlogs](https://www.xinghuisama.top)** —— 衬线正文的阅读排版、细滚动条、
-  底部应用状态栏、侧栏组件的组织形式
-- **[Yuimi-chaya.github.io](https://github.com/Yuimi-chaya/Yuimi-chaya.github.io)** —— 滚动叙事开场、
-  自定义光标、成就与线索收集的交互思路
+| 项目 | 许可 | 版权行 | 本站参考了什么 |
+| --- | --- | --- | --- |
+| [saicaca/fuwari](https://github.com/saicaca/fuwari) | MIT | `Copyright (c) 2024 saicaca` | 设计令牌的思路：`oklch(L C var(--hue))` 的主题色方案、令牌分层方式、无边框无阴影的卡片观感 |
+| [CuteLeaf/Firefly](https://github.com/CuteLeaf/Firefly) | MIT | `Copyright (c) 2024 saicaca` + `Copyright (c) 2025 CuteLeaf` | 与 Fuwari 同源的令牌与布局思路（Firefly 本身是 Fuwari 的二次开发） |
+| [Mizuki](https://github.com/LyraVoid/Mizuki) | Apache-2.0 | `Copyright 2025 Matsuzaka Yuki` | 令牌的命名与组织方式（最初参考的入口是 [matsuzaka-yuki/Mizuki](https://github.com/matsuzaka-yuki/Mizuki)，那是主线仓库的 fork） |
+| [heiehiehi/XinghuisamaBlogs](https://github.com/heiehiehi/XinghuisamaBlogs) | CC BY-NC 4.0 | —— | 衬线正文的阅读排版、细滚动条、底部应用状态栏、侧栏组件的组织形式 |
+| [Yuimi-chaya/Yuimi-chaya.github.io](https://github.com/Yuimi-chaya/Yuimi-chaya.github.io) | MIT（**仅**代码与样式） | `Copyright (c) 2026 Yuimi-chaya` | 滚动叙事开场、自定义光标、成就与线索收集的交互思路 |
 
-站点的视觉身份（手帐 / 漫画的纸感语言、七元素主题色系统）与全部内容都是自己的。
-上面这几处借鉴在源码注释里也逐条标注了出处。
+其中 Firefly 的 README 里有一句请求：「如果你参考或使用了 Firefly 的组件设计和
+相关代码，请注明来自 Firefly。」—— 本站**没有使用它的组件或代码**，但既然它在
+设计上被我们参考过，这里一并注明，算是对这条请求的正面回应。
 
-聊天室、二维码生成、性能调度器、可编辑系统、四个小游戏、SSE 服务端等都是为这个项目手写的。
+**本站没有搬运上述项目的源码。** 上面的参考都发生在「设计系统」这一层
+（令牌的名字和取值、排版的度量、交互要做什么），没有整段复制它们的组件、
+页面脚本或音频流程。Yuimi-chaya 的仓库里也专门写过一条二次开发建议：
+「复刻时建议先定义单个效果的输入、输出和清理时机，再使用自己的文案、素材与
+状态模型重写」—— 本站的光标、开场、成就都是按这个方式自己实现的。
+
+站点的视觉身份（手帐 / 漫画的纸感语言、七元素主题色系统）与全部文案都是自己的。
+聊天室、二维码生成、性能调度器、可编辑系统、四个小游戏、SSE 服务端、
+Electron 桌面壳也都是为这个项目手写的。
+
+### 关于许可的说明（重要）
+
+上面几个项目的许可**只覆盖我们自己写的这部分工作的来源关系**，请注意两点：
+
+1. **本站代码以 MIT 发布，但这不表示可以从本站取用上面那些项目的素材。**
+   第三方素材（图片、角色美术、音乐、字体）不在它们的代码许可范围内，
+   详见 [第三方素材说明](THIRD_PARTY_ASSETS.md)。
+2. **XinghuisamaBlogs 是 CC BY-NC 4.0（禁止商业使用）。** 本站只参考了它的
+   设计思路、没有复制它的代码，所以本站的 MIT 许可能覆盖全部代码；
+   但如果你要在这个项目基础上做商业用途，请自行确认这一条。
 
 ---
 
 ## 许可
 
-[MIT](LICENSE)
+本站自己写的代码以 [MIT](LICENSE) 发布。
+
+**素材（`assets/` 下的图片、字体等）不在 MIT 的授权范围内**，
+它们的来源与使用边界见 [第三方素材说明](THIRD_PARTY_ASSETS.md)。

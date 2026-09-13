@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" role="img">
+<defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#f6f6f9"/>
+      <stop offset="0.55" stop-color="#eeeff3"/>
+      <stop offset="1" stop-color="#e4e6ec"/>
+    </linearGradient>
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path d="M 36 0 L 0 0 0 36" fill="none" stroke="#b2b7d2" stroke-width="1" opacity="0.34"/>
+    </pattern>
+    <pattern id="dots" width="12" height="12" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="0.7" fill="#818bbb" opacity="0.10"/>
+    </pattern>
+    <radialGradient id="vig" cx="0.5" cy="0.45" r="0.75">
+      <stop offset="0.55" stop-color="#c0c4d8" stop-opacity="0"/>
+      <stop offset="1" stop-color="#a5abca" stop-opacity="0.20"/>
+    </radialGradient>
+<radialGradient id="ink0" cx="0.1" cy="0.3" r="0.3">
+      <stop offset="0" stop-color="#c6c6e7" stop-opacity="0.3"/>
+      <stop offset="0.6" stop-color="#d5d6eb" stop-opacity="0.1"/>
+      <stop offset="1" stop-color="#e5e7f1" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ink1" cx="0.3" cy="0.8" r="0.5">
+      <stop offset="0" stop-color="#bec5e3" stop-opacity="0.3"/>
+      <stop offset="0.6" stop-color="#cecfe8" stop-opacity="0.1"/>
+      <stop offset="1" stop-color="#dee0ed" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ink2" cx="0.6" cy="0.2" r="0.6">
+      <stop offset="0" stop-color="#cacfe8" stop-opacity="0.2"/>
+      <stop offset="0.6" stop-color="#d9dced" stop-opacity="0.1"/>
+      <stop offset="1" stop-color="#e8eaf3" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ink3" cx="0.9" cy="0.4" r="0.3">
+      <stop offset="0" stop-color="#c8cce7" stop-opacity="0.3"/>
+      <stop offset="0.6" stop-color="#d8deec" stop-opacity="0.1"/>
+      <stop offset="1" stop-color="#e7e8f2" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+<rect width="1920" height="1080" fill="url(#paper)"/>
+<rect width="1920" height="1080" fill="url(#ink0)"/>
+<rect width="1920" height="1080" fill="url(#ink1)"/>
+<rect width="1920" height="1080" fill="url(#ink2)"/>
+<rect width="1920" height="1080" fill="url(#ink3)"/>
+<rect width="1920" height="1080" fill="url(#dots)"/>
+<rect width="1920" height="1080" fill="url(#grid)"/>
+<g transform="rotate(0.8 1271.6 137.6)" opacity="0.72">
+    <rect x="1113.6" y="115.6" width="316.0" height="44" rx="3" fill="#d0d6f0"/>
+    <rect x="1113.6" y="115.6" width="316.0" height="44" rx="3" fill="none" stroke="#b0b8dd" stroke-width="1" opacity="0.5"/>
+    <path d="M 1113.6 123.6 H 1429.7 M 1113.6 145.6 H 1429.7"
+      stroke="#bfc5e3" stroke-width="0.8" opacity="0.6"/>
+  </g>
+<g><circle cx="1511.1" cy="908.3" r="4.5" fill="#3a4a9c" opacity="0.1"/><circle cx="1574.1" cy="867.9" r="4.3" fill="#3a4a9c" opacity="0.1"/><circle cx="1532.8" cy="797.7" r="2.2" fill="#3a4a9c" opacity="0.1"/><circle cx="1565.3" cy="880.2" r="3.4" fill="#3a4a9c" opacity="0.2"/><circle cx="1517.1" cy="822.3" r="4.8" fill="#3a4a9c" opacity="0.1"/><circle cx="1560.8" cy="823.9" r="5.2" fill="#3a4a9c" opacity="0.2"/></g>
+<g opacity="0.5">
+    <path d="M 203.9 961.1 C 576.0 954.1 1190.4 969.1 1672.8 959.1"
+      fill="none" stroke="#6b79bd" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+<rect width="1920" height="1080" fill="url(#vig)"/>
+<rect x="0" y="1074" width="1920" height="6" fill="#c6cadc" opacity="0.5"/>
+</svg>

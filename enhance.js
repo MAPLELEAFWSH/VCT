@@ -1,9 +1,10 @@
 /* ============================================================
-   enhance.js · 在现有 Mizuki 外壳上叠加的运行时
-   原则：不重写既有页面，只做增强与重组
+   enhance.js · 站点的运行时层（路由、开场、可编辑系统、小游戏、粒子、性能调度）
+   原则：不重写 index.html 里已有的骨架，只做增强与重组
      · 既有 main#content 的子节点被收进 home 视图，其余视图由本文件构建
-     · 元素力直接映射到既有主题的 --hue，不新建色彩系统
+     · 元素力直接映射到主题的 --element-hue，不另起一套色彩系统
      · 每个模块：输入 → 输出 → 清理（cleanup 可重入）
+   来源与许可见 README.md「致谢与来源」。
    ============================================================ */
 (() => {
   'use strict';
@@ -70,8 +71,8 @@
   }
 
   /* ============================================================
-     1. 元素力 → 既有 --hue
-     输入：点击色点   输出：--hue 变化 + 全站主题色跟随
+     1. 元素力 → 既有 --element-hue
+     输入：点击色点   输出：--element-hue 变化 + 全站主题色跟随
      ============================================================ */
   const ELEMENTS = [
     { id: 'anemo', name: '风', hue: 175, c: '#74c2a8' },
@@ -86,7 +87,7 @@
   let currentEl = State.read().el || 'hydro';
   function setElement(id) {
     const e = elById(id); currentEl = e.id;
-    document.documentElement.style.setProperty('--hue', String(e.hue));
+    document.documentElement.style.setProperty('--element-hue', String(e.hue));
     $$('.mj-els button').forEach(b => b.classList.toggle('on', b.dataset.el === e.id));
     State.write({ el: e.id });
     if (window.__mjRig) window.__mjRig.setColor(e.c);
@@ -329,13 +330,13 @@
     /* 头像跟随用户自己改过的头像（Profile 模块存在 localStorage.mj2_profile 里） */
     (() => {
       const im = $('#mjOpenAvatar', host); if (!im) return;
-      let src = 'assets/avatar-user.jpg';
+      let src = 'assets/paper/avatar.svg';
       try {
         const saved = JSON.parse(localStorage.getItem('mj2_profile') || '{}');
         if (saved && saved.avatar) src = saved.avatar;
       } catch (e) {}
       im.src = src;
-      im.addEventListener('error', () => { im.src = 'assets/avatar-user.jpg'; }, { once: true });
+      im.addEventListener('error', () => { im.src = 'assets/paper/avatar.svg'; }, { once: true });
     })();
 
     const core = $('#mjOpenCore', host), label = $('#mjGateLabel', host), hint = $('#mjOpenHint', host);
@@ -345,7 +346,7 @@
     const rig = TitleRig($('#mj-title-canvas', host), {
       text: '元素手帐', sub: '记录日常 · 手帐二次元',
       // 与浅色纸感主题统一：墨色标题 + 深色网格（原来固定白字，在浅底上看不见）
-      fill: cssVar('--deep-text', '#1c1e26'), grid: 'rgba(28,30,38,.06)'
+      fill: cssVar('--ink-strong', '#1c1e26'), grid: 'rgba(28,30,38,.06)'
     });
     window.__mjRig = rig;
 
@@ -435,24 +436,24 @@
     { start: .60, enterEnd: .68, leaveStart: .78, end: .84, drift: 10, lift: -8 },
     { start: .84, enterEnd: .90, leaveStart: 1, end: 1, drift: 0, lift: 0, persistent: true }
   ];
-  /* 场景与文案都按"MMD 制作者的一天"来写：从建模、绑骨到 MME 调光、出片。
-     背景图只用 refs/1 里选出的 7 张无人物无场景水印图，同组内不复用。 */
+  /* 场景与文案都按"一个普通人的一天"来写：起床泡茶、出门、做饭、读书、睡前写下今天。
+     背景图是程序化生成的纸感墨晕（assets/paper/），不依赖任何第三方素材。 */
   const MEMORY_SCENES = [
-    { img: 'assets/mys/bg-03.jpg', el: 'anemo', cap: '第 01 幕 · 天刚亮，先泡一杯茶', pos: '50% 50%' },
-    { img: 'assets/mys/bg-04.jpg', el: 'geo', cap: '第 02 幕 · 出门走走，随手拍了几张', pos: '44% 52%' },
-    { img: 'assets/mys/bg-05.jpg', el: 'hydro', cap: '第 03 幕 · 回来做饭，锅里咕嘟咕嘟', pos: '48% 54%' },
-    { img: 'assets/mys/bg-06.jpg', el: 'electro', cap: '第 04 幕 · 下午读一会儿书', pos: '50% 46%' },
-    { img: 'assets/mys/bg-07.jpg', el: 'cryo', cap: '第 05 幕 · 夜里把今天写下来', pos: '50% 50%' }
+    { img: 'assets/paper/bg-03.svg', el: 'anemo', cap: '第 01 幕 · 天刚亮，先泡一杯茶', pos: '50% 50%' },
+    { img: 'assets/paper/bg-04.svg', el: 'geo', cap: '第 02 幕 · 出门走走，随手拍了几张', pos: '44% 52%' },
+    { img: 'assets/paper/bg-05.svg', el: 'hydro', cap: '第 03 幕 · 回来做饭，锅里咕嘟咕嘟', pos: '48% 54%' },
+    { img: 'assets/paper/bg-06.svg', el: 'electro', cap: '第 04 幕 · 下午读一会儿书', pos: '50% 46%' },
+    { img: 'assets/paper/bg-07.svg', el: 'cryo', cap: '第 05 幕 · 夜里把今天写下来', pos: '50% 50%' }
   ];
   /* 按"媒体时间"释放：真实视频接入时把 clock 换成 video.currentTime 即可。
      照片墙展示 6 张，用另外 6 张背景图（与上面 5 幕不重复）。 */
   const RELEASE_TRACK = [
-    { at: 2.6, kind: 'photo', label: '清晨', scene: 0, img: 'assets/mys/bg-01.jpg' },
-    { at: 6.4, kind: 'clue', label: '线索 A', scene: 0, img: 'assets/mys/bg-02.jpg', clue: 'A' },
-    { at: 10.2, kind: 'photo', label: '路上', scene: 1, img: 'assets/mys/bg-03.jpg' },
-    { at: 14.0, kind: 'clue', label: '线索 B', scene: 2, img: 'assets/mys/bg-04.jpg', clue: 'B' },
-    { at: 17.8, kind: 'reward', label: '隐藏奖励', scene: 3, img: 'assets/mys/bg-06.jpg' },
-    { at: 21.6, kind: 'reward', label: '夜里', scene: 4, img: 'assets/mys/bg-07.jpg' }
+    { at: 2.6, kind: 'photo', label: '清晨', scene: 0, img: 'assets/paper/bg-01.svg' },
+    { at: 6.4, kind: 'clue', label: '线索 A', scene: 0, img: 'assets/paper/bg-02.svg', clue: 'A' },
+    { at: 10.2, kind: 'photo', label: '路上', scene: 1, img: 'assets/paper/bg-03.svg' },
+    { at: 14.0, kind: 'clue', label: '线索 B', scene: 2, img: 'assets/paper/bg-04.svg', clue: 'B' },
+    { at: 17.8, kind: 'reward', label: '隐藏奖励', scene: 3, img: 'assets/paper/bg-06.svg' },
+    { at: 21.6, kind: 'reward', label: '夜里', scene: 4, img: 'assets/paper/bg-07.svg' }
   ];
   const MEDIA_DURATION = 24;
 
@@ -929,7 +930,7 @@
         slug: 'post-' + i,
         title: ($('.post-title', c) || {}).textContent?.trim() || ('文章 ' + (i + 1)),
         desc: ($('.post-desc', c) || {}).textContent?.trim() || '',
-        cover: ($('.post-cover img', c) || {}).getAttribute?.('src') || 'assets/mys/bg-03.jpg',
+        cover: ($('.post-cover img', c) || {}).getAttribute?.('src') || 'assets/paper/bg-03.svg',
         tags,
         cat: deriveCat(tags),
         date: ($('.post-meta .m', c) || {}).textContent?.trim() || '',
@@ -937,7 +938,7 @@
       };
     });
     if (out.length) return out;
-    return [{ i: 0, slug: 'post-0', title: '示例文章', desc: '正文待补充。', cover: 'assets/mys/bg-03.jpg', tags: [], cat: 'tech', date: '2026-01-01', pinned: false }];
+    return [{ i: 0, slug: 'post-0', title: '示例文章', desc: '正文待补充。', cover: 'assets/paper/bg-03.svg', tags: [], cat: 'tech', date: '2026-01-01', pinned: false }];
   }
   const POSTS = readPostsFromDOM();
   /* 四篇都是"普通人也会遇到的生活小事"，不指向任何专业领域，
@@ -1687,7 +1688,7 @@
             <button class="mj2-btn" type="button" data-act="del">删除</button>
           </div>
           <article class="mj-article">
-            <div class="mj-tl-meta"><span>${p.date}</span><span>·</span><span>玖音</span></div>
+            <div class="mj-tl-meta"><span>${p.date}</span><span>·</span><span>我</span></div>
             <h1>${p.title}</h1>
             <p class="lede">${p.desc}</p>
             <div class="mj-chips" style="margin:1rem 0 1.6rem">${p.tags.map(t => `<span class="mj-chip">#${t}</span>`).join('')}</div>
@@ -1742,12 +1743,12 @@
         return n;
       };
       const seed = () => ([
-        ['assets/mys/bg-03.jpg', '海边的一天', '摄影', '2026 · 一组照片', '阴天去的，风很大，反而拍到了想要的灰蓝色。挑出九张放在这里。'],
-        ['assets/mys/bg-06.jpg', '一个人的晚饭', '料理', '2026', '三道菜的配比与时间，附一份采购清单，一个人做也不会浪费。'],
-        ['assets/mys/bg-05.jpg', '今年读过的书', '阅读', '2025', '十二本书的短评，最后挑出最想推荐的三本。'],
-        ['assets/mys/bg-04.jpg', '旧木桌翻新', '手作', '2025', '打磨、上油、换把手，一个周末做完，比买新的有成就感。'],
-        ['assets/mys/bg-07.jpg', '城市散步地图', '日常', '2024', '把常走的那几条小路画成了一张手绘地图，标着哪里能坐下来。'],
-        ['assets/mys/bg-01.jpg', '第一次做面包', '料理', '2024', '失败两次之后终于发起来了，把配比和温度都记了下来。']
+        ['assets/paper/bg-03.svg', '海边的一天', '摄影', '2026 · 一组照片', '阴天去的，风很大，反而拍到了想要的灰蓝色。挑出九张放在这里。'],
+        ['assets/paper/bg-06.svg', '一个人的晚饭', '料理', '2026', '三道菜的配比与时间，附一份采购清单，一个人做也不会浪费。'],
+        ['assets/paper/bg-05.svg', '今年读过的书', '阅读', '2025', '十二本书的短评，最后挑出最想推荐的三本。'],
+        ['assets/paper/bg-04.svg', '旧木桌翻新', '手作', '2025', '打磨、上油、换把手，一个周末做完，比买新的有成就感。'],
+        ['assets/paper/bg-07.svg', '城市散步地图', '日常', '2024', '把常走的那几条小路画成了一张手绘地图，标着哪里能坐下来。'],
+        ['assets/paper/bg-01.svg', '第一次做面包', '料理', '2024', '失败两次之后终于发起来了，把配比和温度都记了下来。']
       ]);
       EdList.register('works', seed);
       const rows = () => EdList.get('works', seed);
@@ -2117,36 +2118,36 @@
       };
       const seed = () => ([
         {
-          cover: 'assets/mys/bg-03.jpg', title: '海边的一天', cat: '摄影', date: '2026-03',
+          cover: 'assets/paper/bg-03.svg', title: '海边的一天', cat: '摄影', date: '2026-03',
           tags: ['照片', '阴天', '散步'],
           summary: '阴天去的，风很大，反而拍到了想要的灰蓝色。把这一天的照片、走过的路线和当时的想法整理成一篇图文。',
           blocks: [
             { t: 'text', v: '本来想等一个晴天再去，后来想通了：阴天的海是灰蓝色的，和晴天完全两种东西。到了之后发现人很少，风把浪推得很高。' },
-            { t: 'image', src: 'assets/mys/bg-05.jpg', cap: '涨潮前的那二十分钟' },
+            { t: 'image', src: 'assets/paper/bg-05.svg', cap: '涨潮前的那二十分钟' },
             { t: 'text', v: '拍了大概六十张，回来只留下九张。留下的标准不是"好看"，而是"能让我想起当时站在那儿的感觉"。' },
             { t: 'video', src: '', cap: '这一天的短片（把 B 站链接填进来就会内嵌播放）' }
           ]
         },
         {
-          cover: 'assets/mys/bg-06.jpg', title: '一个人的晚饭', cat: '料理', date: '2026-02',
+          cover: 'assets/paper/bg-06.svg', title: '一个人的晚饭', cat: '料理', date: '2026-02',
           tags: ['食谱', '配比'],
           summary: '三道菜的配比与时间，附一份采购清单 —— 一个人做饭最容易浪费，这份清单按一人份算。',
           blocks: [
             { t: 'text', v: '一个人做饭最大的问题不是麻烦，是买多了用不完。所以这份清单只写一人份的量，剩下的食材也会给一个去处。' },
-            { t: 'image', src: 'assets/mys/bg-04.jpg', cap: '三道菜的成品' }
+            { t: 'image', src: 'assets/paper/bg-04.svg', cap: '三道菜的成品' }
           ]
         },
         {
-          cover: 'assets/mys/bg-05.jpg', title: '今年读过的书', cat: '阅读', date: '2025-12',
+          cover: 'assets/paper/bg-05.svg', title: '今年读过的书', cat: '阅读', date: '2025-12',
           tags: ['书单', '短评'],
           summary: '十二本书的短评，不抄句子，只写"在哪一页停了下来、为什么停"。',
           blocks: [
             { t: 'text', v: '比起摘抄，我更想留下的是"当时读到哪一句停了一下"。那种停顿过半年再看还在，摘抄就不一定了。' },
-            { t: 'image', src: 'assets/mys/bg-07.jpg', cap: '今年读完的一摞' }
+            { t: 'image', src: 'assets/paper/bg-07.svg', cap: '今年读完的一摞' }
           ]
         },
         {
-          cover: 'assets/mys/bg-04.jpg', title: '旧木桌翻新', cat: '手作', date: '2025-08',
+          cover: 'assets/paper/bg-04.svg', title: '旧木桌翻新', cat: '手作', date: '2025-08',
           tags: ['动手', '周末'],
           summary: '打磨、上油、换把手，一个周末做完。记下用了什么、花了多久、哪一步最容易做坏。',
           blocks: [
@@ -2557,7 +2558,7 @@
               <div class="ph" id="mjFrameImg" style="${savedFrame ? `background-image:url('${savedFrame}');background-size:cover;background-position:center` : ph('hydro', 1)}"></div>
               <span class="frame-pen" aria-hidden="true">✎</span>
             </div>
-            <div style="text-align:center;font-size:.74rem;color:var(--content-meta);margin-top:.5rem">
+            <div style="text-align:center;font-size:.74rem;color:var(--ink-meta);margin-top:.5rem">
               <span data-ed="about.frame.cap" data-ed-default="记录日常的人 · 写字 / 拍照">记录日常的人 · 写字 / 拍照</span>
             </div>
             <div class="ed-bar" style="justify-content:center">

@@ -1,6 +1,6 @@
 /* ============================================================
    chat.css · 「茶室」样式
-   沿用站点的 Fuwari 令牌（--card-bg / --radius-* / --primary 等），
+   沿用站点自己的纸墨令牌（--paper-card / --radius-* / --element 等），
    视觉语言接手帐那一套：消息是贴在纸上的一条条便签，
    左侧一条元素色书脊，自己的话靠右、染成自己元素的浅色。
    卡片本身依旧无边框无阴影（和全站一致），只靠底色差分层。
@@ -10,16 +10,16 @@
 .chat-bar { display: flex; align-items: center; gap: .6rem; padding: .7rem 1.5rem .7rem 1.5rem; position: relative; }
 .chat-bar::before {
   content: ""; position: absolute; left: 1rem; top: .7rem; bottom: .7rem; width: 3px;
-  border-radius: 2px; background: var(--primary);
+  border-radius: 2px; background: var(--element);
 }
 .chat-bar .lb-title { margin: 0; font-size: 1rem; font-weight: 900; }
 .chat-bar .ch-spacer { flex: 1 1 auto; }
 .ch-mode {
   font-family: var(--font-mono); font-size: .7rem; letter-spacing: .06em;
   padding: .1rem .45rem; border-radius: var(--radius-chip);
-  color: var(--content-meta); background: color-mix(in oklab, var(--primary) 12%, transparent);
+  color: var(--ink-meta); background: color-mix(in oklab, var(--element) 12%, transparent);
 }
-.ch-mode.ok { color: var(--primary-text); }
+.ch-mode.ok { color: var(--element-deep); }
 .ch-mode.warn { color: #8a6d1f; background: color-mix(in oklab, #d9a441 18%, transparent); }
 .ch-mode.bad { color: #a33; background: color-mix(in oklab, #d33 14%, transparent); }
 
@@ -29,13 +29,13 @@
 
 /* ---------- 左栏：在场 ---------- */
 .ch-rail { position: sticky; top: 5.2rem; padding: 1rem; }
-.ch-rail-t { font-size: .72rem; letter-spacing: .1em; color: var(--content-meta); margin-bottom: .6rem; }
+.ch-rail-t { font-size: .72rem; letter-spacing: .1em; color: var(--ink-meta); margin-bottom: .6rem; }
 .ch-members { list-style: none; margin: 0 0 .9rem; padding: 0; display: flex; flex-direction: column; gap: .1rem; max-height: 34vh; overflow: auto; }
 .ch-member { display: flex; align-items: center; gap: .45rem; padding: .28rem .35rem; border-radius: var(--radius-chip); font-size: .84rem; min-width: 0; }
-.ch-member.typing { background: color-mix(in oklab, var(--primary) 10%, transparent); }
+.ch-member.typing { background: color-mix(in oklab, var(--element) 10%, transparent); }
 .ch-mname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ch-member.me .ch-mname { font-weight: 700; }
-.ch-msig { font-size: .68rem; color: var(--content-meta); margin-left: auto; flex: none; font-family: var(--font-mono); }
+.ch-msig { font-size: .68rem; color: var(--ink-meta); margin-left: auto; flex: none; font-family: var(--font-mono); }
 .ch-member .ch-av { flex: none; }
 
 /* 元素色头像：色相来自每个成员选/分到的元素 */
@@ -46,11 +46,11 @@
   box-shadow: 0 1px 4px -1px color-mix(in oklab, oklch(0.5 0.13 var(--h, 230)) 60%, transparent);
 }
 /* 自选头像：同样的圆形槽位，图片铺满 */
-img.ch-av { object-fit: cover; background: var(--card-bg-transparent); box-shadow: 0 1px 4px -1px rgba(0,0,0,.28); }
+img.ch-av { object-fit: cover; background: var(--paper-card-veil); box-shadow: 0 1px 4px -1px rgba(0,0,0,.28); }
 
 /* 自己那个可点的头像钮 */
 .ch-avbtn { position: relative; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 50%; line-height: 0; }
-.ch-avbtn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.ch-avbtn:focus-visible { outline: 2px solid var(--element); outline-offset: 2px; }
 .ch-avbtn .ch-av { width: 1.9rem; height: 1.9rem; font-size: .8rem; }
 .ch-avpen {
   position: absolute; right: -2px; bottom: -2px; width: 1rem; height: 1rem; border-radius: 50%;
@@ -61,8 +61,8 @@ img.ch-av { object-fit: cover; background: var(--card-bg-transparent); box-shado
 .ch-avbtn:hover .ch-avpen { opacity: 1; }
 
 /* ---------- 我 ---------- */
-.ch-me { border-top: 1px dashed var(--line-divider); padding-top: .7rem; }
-.ch-me-t { font-size: .72rem; letter-spacing: .1em; color: var(--content-meta); margin-bottom: .4rem; }
+.ch-me { border-top: 1px dashed var(--rule-hair); padding-top: .7rem; }
+.ch-me-t { font-size: .72rem; letter-spacing: .1em; color: var(--ink-meta); margin-bottom: .4rem; }
 .ch-me-row { display: flex; align-items: center; gap: .5rem; min-width: 0; }
 .ch-nick { font-size: .9rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ch-elems { display: flex; gap: .22rem; margin-top: .5rem; flex-wrap: wrap; }
@@ -85,13 +85,13 @@ img.ch-av { object-fit: cover; background: var(--card-bg-transparent); box-shado
   scrollbar-width: thin;
 }
 .ch-stream::-webkit-scrollbar { width: 8px; }
-.ch-stream::-webkit-scrollbar-thumb { background: var(--line-divider); border-radius: 4px; }
+.ch-stream::-webkit-scrollbar-thumb { background: var(--rule-hair); border-radius: 4px; }
 
 /* 便签：左侧一条元素色书脊 */
 .ch-msg {
   display: flex; gap: .55rem; align-items: flex-start; max-width: 82%;
   padding: .5rem .7rem .55rem; border-radius: var(--radius-cover);
-  background: color-mix(in oklab, var(--card-bg) 88%, oklch(0.7 0.14 var(--h, 230)) 12%);
+  background: color-mix(in oklab, var(--paper-card) 88%, oklch(0.7 0.14 var(--h, 230)) 12%);
   border-left: 3px solid oklch(0.72 0.14 var(--h, 230));
   animation: chIn .26s cubic-bezier(.34,1.3,.64,1) both;
 }
@@ -100,23 +100,23 @@ img.ch-av { object-fit: cover; background: var(--card-bg-transparent); box-shado
 .ch-msg .ch-body { min-width: 0; }
 .ch-head { display: flex; align-items: baseline; gap: .45rem; margin-bottom: .12rem; }
 .ch-head b { font-size: .78rem; color: oklch(0.48 0.13 var(--h, 230)); }
-.ch-head time { font-family: var(--font-mono); font-size: .64rem; color: var(--content-meta); }
+.ch-head time { font-family: var(--font-mono); font-size: .64rem; color: var(--ink-meta); }
 .ch-text { font-size: .9rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
 /* 同一个人连着说话：收起头像和信息行，视觉上连成一段 */
 .ch-msg.cont { margin-top: -.34rem; }
 .ch-msg.cont .ch-av, .ch-msg.cont .ch-head { display: none; }
 /* 自己的话靠右，染成自己元素的浅色 */
 .ch-msg.mine { align-self: flex-end; flex-direction: row-reverse; border-left: 0; border-right: 3px solid oklch(0.72 0.14 var(--h, 230));
-  background: color-mix(in oklab, var(--card-bg) 74%, oklch(0.78 0.12 var(--h, 230)) 26%); }
+  background: color-mix(in oklab, var(--paper-card) 74%, oklch(0.78 0.12 var(--h, 230)) 26%); }
 .ch-msg.mine .ch-head { flex-direction: row-reverse; }
 .ch-msg.failed { outline: 2px dashed #d9534f; outline-offset: 2px; }
-.ch-sys { align-self: center; font-size: .72rem; color: var(--content-meta); font-family: var(--font-mono); padding: .1rem 0; }
+.ch-sys { align-self: center; font-size: .72rem; color: var(--ink-meta); font-family: var(--font-mono); padding: .1rem 0; }
 
 /* ---------- 图片 / 表情 / 动图 ---------- */
 .ch-pic-wrap { margin: .2rem 0 .1rem; }
 .ch-pic {
   display: block; max-width: min(220px, 100%); max-height: 220px; width: auto; height: auto;
-  border-radius: var(--radius-cover); background: var(--card-bg-transparent);
+  border-radius: var(--radius-cover); background: var(--paper-card-veil);
 }
 /* 表情走小尺寸：贴纸本来就该是"贴"上去的感觉 */
 .ch-pic.is-sticker { max-width: 96px; max-height: 96px; border-radius: var(--radius-chip); }
@@ -125,42 +125,42 @@ img.ch-av { object-fit: cover; background: var(--card-bg-transparent); box-shado
 
 /* ---------- 表情面板 ---------- */
 .ch-sticker-panel {
-  display: none; border-top: 1px dashed var(--line-divider);
+  display: none; border-top: 1px dashed var(--rule-hair);
   padding: .6rem 0 .2rem; max-height: 15rem; overflow-y: auto; overscroll-behavior: contain;
 }
 .ch-sticker-panel.on { display: block; }
 .ch-sticker-sec { margin-bottom: .5rem; }
 .ch-sticker-sec:empty { display: none; }
-.ch-sticker-t { display: block; font-size: .7rem; letter-spacing: .08em; color: var(--content-meta); margin-bottom: .3rem; }
+.ch-sticker-t { display: block; font-size: .7rem; letter-spacing: .08em; color: var(--ink-meta); margin-bottom: .3rem; }
 .ch-sticker-grid { display: flex; flex-wrap: wrap; gap: .3rem; }
 .ch-sticker {
   width: 2.9rem; height: 2.9rem; padding: 0; border: 1px solid transparent; border-radius: var(--radius-chip);
-  background: var(--card-bg-transparent); cursor: pointer; overflow: hidden;
+  background: var(--paper-card-veil); cursor: pointer; overflow: hidden;
   transition: transform .16s cubic-bezier(.34,1.5,.64,1), border-color .16s, background-color .16s;
 }
 .ch-sticker img { width: 100%; height: 100%; object-fit: contain; display: block; }
-.ch-sticker:hover { transform: translateY(-2px) scale(1.06); border-color: var(--primary); background: var(--card-bg); }
-.ch-sticker:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.ch-sticker:hover { transform: translateY(-2px) scale(1.06); border-color: var(--element); background: var(--paper-card); }
+.ch-sticker:focus-visible { outline: 2px solid var(--element); outline-offset: 1px; }
 .ch-sticker-bar { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; margin-top: .3rem; }
 .ch-sticker-btn { padding: .3rem .6rem; font-size: 1rem; line-height: 1; }
-.ch-sticker-btn[aria-expanded="true"] { border-color: var(--primary); color: var(--primary-text); }
+.ch-sticker-btn[aria-expanded="true"] { border-color: var(--element); color: var(--element-deep); }
 @media (max-width: 720px) { .ch-sticker { width: 2.5rem; height: 2.5rem; } }
 
 /* ---------- 正在输入 ---------- */
-.ch-typing { min-height: 1.3rem; font-size: .72rem; color: var(--content-meta); padding: .1rem .2rem; opacity: 0; transition: opacity .2s; }
+.ch-typing { min-height: 1.3rem; font-size: .72rem; color: var(--ink-meta); padding: .1rem .2rem; opacity: 0; transition: opacity .2s; }
 .ch-typing.on { opacity: 1; }
 
 /* ---------- 输入区 ---------- */
-.ch-input { border-top: 1px dashed var(--line-divider); padding-top: .6rem; }
+.ch-input { border-top: 1px dashed var(--rule-hair); padding-top: .6rem; }
 .ch-input textarea {
   width: 100%; resize: none; font: inherit; font-size: .9rem; line-height: 1.6;
   padding: .55rem .7rem; border-radius: var(--radius-btn);
-  background: var(--card-bg-transparent); color: var(--content); border: 1px solid var(--line-divider);
+  background: var(--paper-card-veil); color: var(--content); border: 1px solid var(--rule-hair);
   transition: border-color .18s;
 }
-.ch-input textarea:focus { outline: none; border-color: var(--primary); }
+.ch-input textarea:focus { outline: none; border-color: var(--element); }
 .ch-bar { display: flex; align-items: center; gap: .5rem; margin-top: .45rem; }
-.ch-counter { font-family: var(--font-mono); font-size: .68rem; color: var(--content-meta); margin-right: auto; }
+.ch-counter { font-family: var(--font-mono); font-size: .68rem; color: var(--ink-meta); margin-right: auto; }
 .ch-send { padding: .34rem 1.1rem; }
 
 /* ---------- 进门 / 邀请 ---------- */
@@ -173,31 +173,31 @@ img.ch-av { object-fit: cover; background: var(--card-bg-transparent); box-shado
 .ch-gate.on, .ch-invite.on { opacity: 1; visibility: visible; transition-delay: 0s; }
 .ch-gate-card, .ch-invite-card {
   width: min(400px, calc(100vw - 2rem)); max-height: 82vh; overflow: auto;
-  padding: 1.3rem 1.4rem; border-radius: var(--radius-large);
+  padding: 1.3rem 1.4rem; border-radius: var(--radius-card);
   animation: chIn .28s cubic-bezier(.34,1.3,.64,1) both;
 }
 .ch-gate-card h3, .ch-invite-card h3 { margin: 0 0 .9rem; font-size: 1.05rem; font-weight: 900; }
 .ch-field { display: flex; align-items: center; gap: .6rem; margin-bottom: .7rem; }
-.ch-field > span { flex: none; width: 3.4rem; font-size: .82rem; color: var(--content-meta); }
+.ch-field > span { flex: none; width: 3.4rem; font-size: .82rem; color: var(--ink-meta); }
 .ch-field input {
   flex: 1 1 auto; min-width: 0; font: inherit; font-size: .9rem; padding: .45rem .6rem;
-  border-radius: var(--radius-btn); border: 1px solid var(--line-divider);
-  background: var(--card-bg-transparent); color: var(--content);
+  border-radius: var(--radius-btn); border: 1px solid var(--rule-hair);
+  background: var(--paper-card-veil); color: var(--content);
 }
-.ch-field input:focus { outline: none; border-color: var(--primary); }
+.ch-field input:focus { outline: none; border-color: var(--element); }
 .ch-code-in { font-family: var(--font-mono); letter-spacing: .3em; font-size: 1.05rem !important; text-align: center; }
 .ch-err { color: #b3413f; font-size: .78rem; margin: -.3rem 0 .7rem; }
 .ch-inv-row { display: flex; align-items: center; gap: .6rem; margin-bottom: .5rem; flex-wrap: wrap; }
-.ch-inv-l { flex: none; width: 3rem; font-size: .78rem; color: var(--content-meta); }
+.ch-inv-l { flex: none; width: 3rem; font-size: .78rem; color: var(--ink-meta); }
 .ch-inv-row code { font-family: var(--font-mono); font-size: .78rem; word-break: break-all; user-select: all; }
-.ch-code { font-family: var(--font-mono); font-size: 1.2rem; letter-spacing: .22em; color: var(--primary-text); }
+.ch-code { font-family: var(--font-mono); font-size: 1.2rem; letter-spacing: .22em; color: var(--element-deep); }
 .ch-qr { display: grid; place-items: center; gap: .4rem; margin: .6rem 0 .2rem; }
 .ch-qr-cv { width: 168px; height: 168px; border-radius: var(--radius-cover); image-rendering: pixelated; box-shadow: 0 6px 20px -12px rgba(0,0,0,.5); }
 @media (max-width: 720px) { .ch-qr-cv { width: 140px; height: 140px; } }
 
 /* 暗色下把便签压深一点，避免白得刺眼 */
-:root.dark .ch-msg { background: color-mix(in oklab, var(--card-bg) 84%, oklch(0.6 0.1 var(--h, 230)) 16%); }
-:root.dark .ch-msg.mine { background: color-mix(in oklab, var(--card-bg) 70%, oklch(0.55 0.1 var(--h, 230)) 30%); }
+:root.dark .ch-msg { background: color-mix(in oklab, var(--paper-card) 84%, oklch(0.6 0.1 var(--h, 230)) 16%); }
+:root.dark .ch-msg.mine { background: color-mix(in oklab, var(--paper-card) 70%, oklch(0.55 0.1 var(--h, 230)) 30%); }
 :root.dark .ch-edot { background: oklch(0.45 0.08 var(--h)); color: oklch(0.9 0.06 var(--h)); }
 :root.dark .ch-edot.on { background: oklch(0.62 0.14 var(--h)); color: #fff; }
 :root.dark .ch-head b { color: oklch(0.82 0.12 var(--h, 230)); }
