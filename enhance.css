@@ -433,14 +433,14 @@ body.mj-native-cursor .ed-pen { display: none; }
 .mj-ripples { position: absolute; inset: 0; z-index: 0; display: grid; place-items: center; pointer-events: none; }
 .mj-ripples span {
   /* ★ 只动 transform / opacity，绝不动 width/height。
-     原来这里动画的是 width/height（130px → 660px）—— 那是在**逐帧改布局**：
-     4 个圆环每帧都要重新排版，而且开场结束时覆盖层一撤，圆环从 660px 弹回
-     基础尺寸，被 LayoutShift 完整记成一笔 0.18 的位移（手机上圆环几乎和屏幕
-     一样宽，占比极大；实测手机 CLS 0.257，其中 0.18 就来自这里）。
+     原来这里动画的是 width/height（130px → 660px，4 个圆环无限循环）——
+     那是在**逐帧改布局**：开场整段每次重绘都要重新排版。而且开场结束时
+     覆盖层一撤，圆环从 660px 直接弹回基础尺寸，被 LayoutShift 完整记成一笔
+     0.18 的位移（实测手机 CLS 0.257，其中 0.18 来自这里）。
      现在改成固定 260px 的盒子 + scale(.5 → 2.54)：260×.5 = 130、260×2.54 ≈ 660，
-     视觉与原来看不出差别，但整段动画不进布局、也不再产生位移。
-     border-width 走 2.5px → .2px：因为整块被放大了 2.54 倍，
-     画出来的线宽 ≈ 2.5px → 0.5px，和原来"越来越细的涟漪"一致。 */
+     视觉看不出差别，但整段动画不进布局、也不再产生位移。
+     border-width 走 2.5px → .2px：整块被放大 2.54 倍，
+     画出来的线宽约 2.5px → 0.5px，和原来"越来越细的涟漪"一致。 */
   position: absolute; width: 260px; height: 260px; border-radius: 50%;
   border: 2px solid color-mix(in oklab, var(--element) 62%, #ffffff); opacity: 0;
   transform: scale(.5);
@@ -584,10 +584,7 @@ body.mj-native-cursor .ed-pen { display: none; }
    纸面纱把照片压回纸的明度区间（详见下面 .tint），读起来是
    "贴在纸上的照片"，于是底色是浅的、照片也是浅的，段落才真的轻。
    ============================================================ */
-/* 高度用 dvh（动态视口）：手机上地址栏收放时 vh 不变、dvh 跟着变，
-   否则舞台会比真正看得见的区域高一截，字幕和提示会被地址栏压在下面。
-   前一行是 vh 兜底，不支持 dvh 的浏览器忽略第二行。 */
-#mj-memory .stage { position: sticky; top: 4.5rem; height: min(calc(100vh - 4.5rem), 860px); height: min(calc(100dvh - 4.5rem), 860px); overflow: hidden; background: var(--paper); contain: strict; }
+#mj-memory .stage { position: sticky; top: 4.5rem; height: min(calc(100vh - 4.5rem), 860px); overflow: hidden; background: var(--paper); contain: strict; }
 /* 段落上/下沿各一条 --paper 渐隐。
    底色和页面同色之后，接缝本身已经不存在了；这两条渐隐改去干另一件事：
    把舞台里照片的上下边缘"化"进纸里 —— 照片不再有硬边框，
@@ -607,6 +604,15 @@ body.mj-native-cursor .ed-pen { display: none; }
   background: linear-gradient(0deg, transparent 0%, color-mix(in oklab, var(--paper) 30%, transparent) 55%, var(--paper) 100%);
 }
 #mj-mem-cap, #mj-mem-hint { z-index: 8; }
+/* ★ 这一段"播不动"时的样子：窄窗口（≤720px 时 CSS 把段落压成 62vh，
+   比舞台还矮 → 可钉住长度是负数）或者用户开了「减少动态效果」。
+   这时进度条恒为 0%、照片墙永远不会揭示（它由进度驱动），
+   与其留一块空白 + 一句"向下滚动 · 记忆开始播放"的假提示，
+   不如把第 1 幕当作一张静态图钉住。提示文字由 JS 换成实话。
+   第 1 幕那层的不透明度/可见性是 JS 每帧写 inline 的，所以要 !important 才压得住。 */
+#mj-memory.mj-mem-flat .mj-mem-bar,
+#mj-memory.mj-mem-flat .mj-wall-box { display: none; }
+#mj-memory.mj-mem-flat .mj-mem-layer:first-child { opacity: 1 !important; visibility: visible !important; }
 .mj-mem-layer { position: absolute; inset: 0; opacity: 0; will-change: transform, opacity; }
 /* 照片浓度 .72：纸面纱（.tint）才是"变浅"的那个旋钮，照片本身留足信息量，
    否则照片和纱各让一半，最后两边都没了 —— 画面糊成一片灰。 */
@@ -823,34 +829,6 @@ body.mj-native-cursor .ed-pen { display: none; }
 }
 #gaCanvas[width="300"] { aspect-ratio: 5 / 8; max-width: 300px; }
 .mj-stage .mj-flip { max-width: 560px; margin: 0 auto; }
-/* ---------- 触屏控制盘（手机上的游戏操作） ----------
-   手机没有键盘，三个 canvas 游戏原本完全没法操作（见 enhance.js 里那段注释）。
-   控制盘只在"触屏"或"窄屏"出现 —— 桌面上保持原来的纯键盘界面，不添乱。
-   按键 48px（≥ 44px 的推荐触控目标）；touch-action: manipulation 去掉双击缩放
-   带来的点击延迟；-webkit-tap-highlight-color 关掉安卓那个灰色高亮方块。 */
-.ga-pad { display: none; }
-@media (hover: none), (max-width: 720px) {
-  .ga-pad { display: flex; align-items: center; justify-content: space-between; gap: .8rem; flex-wrap: wrap; }
-  .ga-pad-dir { display: grid; grid-template-columns: repeat(3, 48px); grid-auto-rows: 48px; gap: 4px; }
-  .ga-pad-dir [data-ga-key="ArrowUp"] { grid-column: 2; grid-row: 1; }
-  .ga-pad-dir [data-ga-key="ArrowLeft"] { grid-column: 1; grid-row: 2; }
-  .ga-pad-dir [data-ga-key="ArrowDown"] { grid-column: 2; grid-row: 2; }
-  .ga-pad-dir [data-ga-key="ArrowRight"] { grid-column: 3; grid-row: 2; }
-  /* 打砖块只有左右两个方向：排成一行，别留一个空格子 */
-  .ga-pad-dir:not(:has([data-ga-key="ArrowUp"])) { grid-template-columns: repeat(2, 48px); }
-  .ga-pad-dir:not(:has([data-ga-key="ArrowUp"])) [data-ga-key="ArrowLeft"] { grid-column: 1; grid-row: 1; }
-  .ga-pad-dir:not(:has([data-ga-key="ArrowUp"])) [data-ga-key="ArrowRight"] { grid-column: 2; grid-row: 1; }
-  .ga-pad-act { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: flex-end; }
-  .ga-key {
-    min-width: 48px; height: 48px; padding: 0 .5rem; border: 0; cursor: pointer;
-    border-radius: .6rem; background: var(--stamp-bg); color: var(--stamp-ink);
-    font: 600 .95rem/1 var(--font-body); display: inline-grid; place-items: center;
-    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-    transition: background-color .12s ease, transform .12s ease;
-  }
-  .ga-key.ga-act { min-width: 88px; font-size: .82rem; }
-  .ga-key.down, .ga-key:active { background: var(--element-strong); color: #fff; transform: scale(.94); }
-}
 @media (max-width: 720px) {
   .mj-game-tabs { grid-template-columns: 1fr 1fr; }
   .ga-tab-tx em { display: none; }
@@ -1352,52 +1330,17 @@ body.mj-native-cursor .ed-pen { display: none; }
   .mj-toast::after { left: 50%; margin-left: -11px; top: auto; bottom: -15px; border: 0; border-left: 11px solid transparent; border-right: 11px solid transparent; border-top: 15px solid #2b2a26; }
   .mj-toast::before { left: 50%; margin-left: -9px; top: auto; bottom: -10px; border: 0; border-left: 9px solid transparent; border-right: 9px solid transparent; border-top: 11px solid #fff; }
   #mj-panel { left: .6rem; right: .6rem; width: auto; bottom: 5rem; }
-  /* ★ 记忆段落原来在这里写的是 height: 62vh —— 但舞台本身有 860px 高，
-     段落（62vh ≈ 611px）比舞台还矮，于是"可钉住的长度 = 段落高 − 舞台高"
-     是负数，进度恒为 0：字幕永远停在第 1 幕、进度条永远 0%、
-     提示写着"向下滚动 · 记忆开始播放"却什么都不会发生（实测手机上就是如此）。
-     手机上要的是"舞台矮一点、段落长一点"，叙事才真的播得动：
-       舞台最多 620px —— 446px 宽的手机上，6 张照片墙 + 字幕 + 提示都装得下；
-       段落 150vh（手机 ≈ 1479px），于是可钉住长度 ≈ 859px。 */
-  #mj-memory { height: 150vh; }
-  #mj-memory .stage { height: min(calc(100dvh - 5.5rem), 620px); }
-  /* ★ 照片墙六张一行在这个宽度上排不下：.mj-wall-box 是 align-items:center，
-     墙宽取内容宽度 = 460px，比 444px 的舞台还宽，两端会被 overflow:hidden 切掉；
-     而且为了挤进一行，每张只剩 57px，基本看不清。
-     改成网格两行三张 —— 宽度定死，不靠 flex 收缩碰运气，单张约 85px。
-     连线是跟着 DOM 实际位置画的（drawLine 读 getBoundingClientRect），
-     换行之后会自动绕成两行，不用改 JS。 */
-  .mj-wall { display: grid; grid-template-columns: repeat(3, 1fr); gap: .9rem .8rem; width: 100%; max-width: 17.5rem; margin: 0 auto; padding: 0; }
-  .mj-wall-photo { width: 100%; }
-  .mj-wall-box { top: 7%; gap: 1.4rem; }
-  /* 字幕/提示整体下移，把上方让给两行照片（原来 bottom:168/140 会和第二行撞上） */
-  #mj-mem-cap { bottom: 118px; }
-  #mj-mem-hint { bottom: 94px; }
+  /* ★ 窄窗口（≤720px）下段落被压成 62vh，而舞台原来是 860px ——
+     段落比舞台还矮，"可钉住长度"是负数：这一段不会播（进度恒 0、
+     照片墙永远不揭示），更糟的是**舞台会从段落里溢出去**，
+     压在下面的正文列表上（实测 444px 宽时舞台 860px 装在 611px 的段落里，
+     多出 248px）。把舞台一起收矮，段落才是个完整的 62vh 静态画面；
+     配套的可读性处理（收进度条/照片墙、提示改实话）见 .mj-mem-flat 那一段。
+     减动效那一支本来就已经这么写了（见下面 prefers-reduced-motion 块）。 */
+  #mj-memory { height: 62vh; }
+  #mj-memory .stage { height: min(calc(100vh - 4.5rem), 62vh); }
 }
 @media (prefers-reduced-motion: reduce) {
   #mj-opening { display: none; }
-  /* 减动效时不再滚动，就停在第 1 幕当一张静态图 —— 但舞台必须跟着一起收矮，
-     否则 860px 的舞台会从 611px 的段落里溢出去、压到下面的正文。 */
   #mj-memory { height: 62vh; }
-  #mj-memory .stage { height: 62vh; }
-}
-
-/* ============================================================
-   ★ 触屏（手机 / 平板）专项
-   ------------------------------------------------------------
-   桌面上这条站点有大量"悬停才显形"的控件；触屏没有悬停这回事，
-   于是它们永远停在 opacity:0 —— 元素在、也点得到，但用户看不见，
-   表现就是"手机上整页都没法增删条目"。实测 447px 宽的视口下，
-   首页有 36 个、关于页有 73 个这样的控件停在 opacity 0。
-   触屏上一律常显，和 .mj-proj-tools / .mj-work-tools / .mj-blk-bar
-   在各自位置已有的 (hover: none) 处理是同一个思路。
-   ★ 这一块必须放在**文件最后**：.frame-pen / .xp-pen / .fav-pen 的
-   `opacity: 0` 写在上面（同特异度、更靠后就会覆盖这里），
-   靠后放置才压得住它们。
-   .ed-mini 本身是 24×24，满足 WCAG 2.2 的触控目标下限（2.5.8）。
-   ============================================================ */
-@media (hover: none) {
-  .ed-tools, .frame-pen, .xp-pen, .fav-pen { opacity: 1; }
-  /* 开场第一屏的"暂停自动 / 跳过开场"只有 34px 高 —— 这是手机上最先碰到的两个按钮 */
-  .mj-opening-ctrl button { min-height: 44px; padding-top: .55rem; padding-bottom: .55rem; }
 }

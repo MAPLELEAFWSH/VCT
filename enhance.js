@@ -704,6 +704,20 @@
     let target = 0, progress = 0, velocity = 0, intro = 1, last = 0, activeIdx = -1, dirty = true, painted = -1;
     const released = new Set(got);
     let pickerRow = null, pickIdx = 0;
+    /* 这一段"播不动"的状态（窄窗口 / 减动效）：收掉进度条与照片墙、
+       提示改成实话、把第 1 幕当静态图钉住。见 frame() 里的调用点。 */
+    let isFlat = false;
+    function syncFlat(range) {
+      const flat = REDUCED || range <= 0;
+      if (flat === isFlat) return;
+      isFlat = flat;
+      host.classList.toggle('mj-mem-flat', flat);
+      if (flat) {
+        hint.textContent = REDUCED
+          ? '已按「减少动态效果」收起这段滚动'
+          : '窗口太窄 · 拉宽窗口这一段会滚动播放';
+      }
+    }
 
     /* ---------- 场景照片替换 ----------
        5 幕各有一张默认图，用户点一下就能换成自己的照片。
@@ -823,6 +837,13 @@
         const range = r.height - stage.offsetHeight;
         const top = parseFloat(getComputedStyle(stage).top) || 0;
         target = range > 0 ? unit((top - r.top) / range) : 0;
+        /* ★ 这一段在两种情况下根本不会播：窗口窄到 ≤720px（CSS 把段落压成
+           62vh，比 860px 的舞台还矮，可钉住长度是负数），或者用户开了
+           "减少动态效果"。这时进度条恒为 0%、提示还写着"向下滚动 · 记忆开始播放" ——
+           界面在骗人；照片墙也不会揭示（它由进度驱动），只会剩一片空白。
+           所以把这两种情况标出来：进度条收掉、照片墙收掉、提示换成实话。
+           窄窗口拉宽（或减动效关掉）后 range 变正，下面的每帧提示会自己写回去。 */
+        syncFlat(range);
       }
       if (!last) last = now;
       const dt = Math.min(50, now - last); last = now;
@@ -874,7 +895,8 @@
           delete shot.dataset.on;
         }
       });
-      hint.textContent = fill >= .995 ? '记忆播放完毕 · 继续向下' : '向下滚动 · 记忆开始播放';
+      /* 播不动的时候（窄窗口 / 减动效）由 syncFlat 写提示，这里不要再覆盖它 */
+      if (!isFlat) hint.textContent = fill >= .995 ? '记忆播放完毕 · 继续向下' : '向下滚动 · 记忆开始播放';
 
       const clock = fill * MEDIA_DURATION;
       RELEASE_TRACK.forEach((o, i) => {
@@ -2005,7 +2027,6 @@
       const stage = $('#mjGameStage', host);
       let active = null, activeId = '', offVis = null, unsub = null, raf = 0, lastT = 0;
       let keyHandler = null, moveHandler = null, resizeHandler = null;
-      let padStop = null;   /* 触屏方向盘的"松手/长按连发"清理函数 */
 
       const paintBest = () => {
         TABS.forEach(t => {
@@ -2026,7 +2047,6 @@
         if (keyHandler) { stage.removeEventListener('keydown', keyHandler); keyHandler = null; }
         if (moveHandler) { stage.removeEventListener('mousemove', moveHandler); moveHandler = null; }
         if (resizeHandler) { removeEventListener('resize', resizeHandler); resizeHandler = null; }
-        if (padStop) { padStop(); padStop = null; }
         // 记忆翻牌是纯 DOM 的，没有 game 对象
         if (active && active.s === undefined) { /* noop */ }
         active = null;
@@ -2053,67 +2073,6 @@
           stage.addEventListener('mousemove', moveHandler);
           stage.addEventListener('touchmove', e => { if (e.touches[0]) g.onMove(e.touches[0].clientX); }, { passive: true });
         }
-        /* ★ 触屏控制盘：手机上没有键盘，贪吃蛇与俄罗斯方块原本**完全没法操作**
-           （打砖块的挡板能靠拖屏幕动，但发球/暂停仍然只能按空格）。
-           按钮走的是**同一条输入通路** —— 直接把"按键"喂给 g.keys()，
-           和下面"暂停/继续"按钮现成的做法一模一样（g.keys({ key: ' ' })），
-           所以三个游戏内部一行都不用改。
-           只在触屏或窄屏出现（见 CSS 里 .ga-pad 的媒体查询），桌面保持原样。 */
-        const PAD = {
-          snake: { keys: ['ArrowLeft', 'ArrowUp', 'ArrowDown', 'ArrowRight'], act: [['⏸', ' ', '暂停']], rep: [] },
-          /* 只有俄罗斯方块需要长按连发（连续挪格子），而且旋转(↑)绝对不能连发 */
-          tetris: { keys: ['ArrowLeft', 'ArrowUp', 'ArrowDown', 'ArrowRight'], act: [['⤓', ' ', '直落'], ['⏸', 'p', '暂停']], rep: ['ArrowLeft', 'ArrowRight', 'ArrowDown'] },
-          breakout: { keys: ['ArrowLeft', 'ArrowRight'], act: [['⏸', ' ', '发球 / 暂停']], rep: ['ArrowLeft', 'ArrowRight'] }
-        }[g.s.o.key];
-        if (PAD) {
-          const GLYPH = { ArrowLeft: '◀', ArrowUp: '▲', ArrowDown: '▼', ArrowRight: '▶' };
-          const NAME = { ArrowLeft: '向左', ArrowUp: '向上', ArrowDown: '向下', ArrowRight: '向右' };
-          const pad = el('div', 'ga-pad');
-          const dirBox = el('div', 'ga-pad-dir');
-          PAD.keys.forEach(k => {
-            const b = el('button', 'ga-key', GLYPH[k]);
-            b.type = 'button';
-            b.dataset.gaKey = k;
-            b.dataset.rep = PAD.rep.includes(k) ? '1' : '0';
-            b.setAttribute('aria-label', NAME[k]);
-            dirBox.appendChild(b);
-          });
-          const actBox = el('div', 'ga-pad-act');
-          PAD.act.forEach(([glyph, k, label]) => {
-            const b = el('button', 'ga-key ga-act', `${glyph} ${label}`);
-            b.type = 'button';
-            b.dataset.gaKey = k;
-            b.dataset.rep = '0';
-            actBox.appendChild(b);
-          });
-          pad.append(dirBox, actBox);
-          stage.appendChild(pad);
-
-          let holdT = 0, holdIv = 0;
-          const fire = k => g.keys({ key: k, preventDefault() {} });
-          const release = () => {
-            clearTimeout(holdT); clearInterval(holdIv); holdT = holdIv = 0;
-            $$('.ga-key.down', pad).forEach(b => b.classList.remove('down'));
-          };
-          /* pointerdown 而不是 click：手机上的 click 要等抬手，游戏里手感差一截。
-             pointerdown 也就不会有 300ms 的点击延迟。 */
-          pad.addEventListener('pointerdown', e => {
-            const b = e.target.closest('[data-ga-key]');
-            if (!b) return;
-            e.preventDefault();
-            const k = b.dataset.gaKey;
-            b.classList.add('down');
-            fire(k);
-            if (b.dataset.rep === '1') {
-              clearTimeout(holdT); clearInterval(holdIv);
-              holdT = setTimeout(() => { holdIv = setInterval(() => fire(k), 90); }, 260);
-            }
-          });
-          pad.addEventListener('pointerup', release);
-          pad.addEventListener('pointercancel', release);
-          pad.addEventListener('pointerleave', release);
-          padStop = release;
-        }
         resizeHandler = () => { g.s.remeasure(); };
         addEventListener('resize', resizeHandler);
         // 点画面就把焦点收进来：键盘只在舞台有焦点时才被接管，不会抢走页面滚动
@@ -2126,8 +2085,8 @@
         stage.querySelectorAll('[data-ga]').forEach(b => b.addEventListener('click', () => {
           if (b.dataset.ga === 'restart') { g.reset(); lastT = 0; }
           /* ★ 暂停键要按游戏给不同的键：俄罗斯方块的"空格"是**直落**不是暂停
-             （见它自己的 keys：空格 = 一路落到底），所以那个游戏的暂停键
-             一直是坏的 —— 点"暂停 / 继续"实际会把方块砸下去。
+             （见它自己的 keys：空格 = 一路落到底），所以那个游戏的"暂停 / 继续"
+             按钮一直是坏的 —— 点它不会暂停，只会把方块砸下去。
              它自己的暂停键是 p。 */
           else g.keys({ key: g.s.o.key === 'tetris' ? 'p' : ' ', preventDefault() {} });
         }));

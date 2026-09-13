@@ -74,11 +74,6 @@ img.ch-av { object-fit: cover; background: var(--paper-card-veil); box-shadow: 0
 }
 .ch-edot:hover { transform: scale(1.14); }
 .ch-edot.on { border-color: oklch(0.55 0.14 var(--h)); background: oklch(0.7 0.14 var(--h)); color: #fff; }
-/* ★ 触屏上要够大：1.35rem = 21.6px，低于 WCAG 2.2 的 24×24 触控目标下限。
-   只在触屏设备上放大，桌面的圆点尺寸保持不变。 */
-@media (hover: none) {
-  .ch-edot { width: 1.75rem; height: 1.75rem; font-size: .78rem; }
-}
 
 /* ---------- 房间 ---------- */
 .ch-room { display: flex; flex-direction: column; padding: 1rem 1rem .8rem; min-width: 0; }
