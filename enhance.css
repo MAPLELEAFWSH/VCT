@@ -531,9 +531,23 @@ body.mj-native-cursor .ed-pen { display: none; }
   z-index: 7; pointer-events: none;
   background: linear-gradient(180deg, transparent 0%, color-mix(in oklab, var(--paper) 34%, transparent) 55%, var(--paper) 100%);
 }
+/* ★ 顶部也来一条对称的渐隐（原来只有底部有）。
+   横幅下沿那条波浪用的就是 --paper，而记忆段落第一帧是深色的；两者直接相接
+   就是一条硬边。这条 80px（和波浪等高）的渐隐把"波浪的浅色"化进"第一幕的深色"，
+   于是进段落时是柔和过去的。高度取 80px 与波浪带子对齐，不是随手定的。 */
+#mj-memory::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 80px;
+  z-index: 7; pointer-events: none;
+  background: linear-gradient(0deg, transparent 0%, color-mix(in oklab, var(--paper) 30%, transparent) 55%, var(--paper) 100%);
+}
 #mj-mem-cap, #mj-mem-hint { z-index: 8; }
 .mj-mem-layer { position: absolute; inset: 0; opacity: 0; will-change: transform, opacity; }
 .mj-mem-layer .shot { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: .55; }
+/* 色调统一层：把这一幕的色调（--sc，色相坡道上的一个点）以固定浓度压到照片上。
+   它夹在照片与 tint 之间，所以补的是"照片本身的色调"，不会动到上面那层暗部渐变。
+   --sc 的明度已经钉在 0.62：直接用元素原色会把偏灰那一幕的亮度顶上去
+   （实测第 2 幕 70 → 96，补了彩度又成了"最亮的一幕"）。 */
+.mj-mem-layer .wash { position: absolute; inset: 0; background: var(--sc); }
 .mj-mem-layer .tint { position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in oklab, var(--sc) 26%, transparent), color-mix(in oklab, var(--sc) 8%, #0b0e13) 62%, #0b0e13); }
 .mj-mem-layer .vig { position: absolute; inset: 0; background: radial-gradient(circle at 50% 46%, transparent 34%, rgba(11,14,19,.88) 100%); }
 #mj-blackout { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; }

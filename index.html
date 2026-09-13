@@ -57,6 +57,14 @@
   --cover-height-home: min(65vh, 760px);
   --panel-lift: 3.5rem;
   --enter-delay: 150ms;
+  /* 底部状态栏高度 + 右下角悬浮球的尺寸。这两个是"互相让位"的关系：
+     球列要坐在状态栏上面，设置面板又要坐在球列上面，所以三者用同一组令牌算，
+     改了尺寸不会各自漂移。--fab-stack 取 3 个球（探索进度 / 回到顶部 / 设置）
+     这个最高情形。 */
+  --status-h: 30px;
+  --fab-size: 2.6rem;
+  --fab-gap: .5rem;
+  --fab-stack: calc(3 * var(--fab-size) + 2 * var(--fab-gap));
   --cover-veil: 0.8;
   --cover-soften: 1px;
   --paper-card-opacity: 0.92;
@@ -464,7 +472,9 @@ body.outline-cards .mj-view .sheet { border-color: color-mix(in oklab, var(--rul
 #mjStatus {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 9998;
   display: flex; align-items: center; gap: .75rem;
-  height: 30px; padding: 0 .75rem;
+  /* 高度走 --status-h：右下角那串悬浮球要按它让位（见 #floating-controls），
+     写死两处就会各自漂移。 */
+  height: var(--status-h); padding: 0 .75rem;
   background: var(--paper-card);
   border-top: 1px solid var(--rule-hair);
   font-family: var(--font-mono); font-size: 11px; line-height: 1;
@@ -624,12 +634,17 @@ footer.site-footer a:hover { color: var(--element-deep); }
 /* ============================================================
    浮动控制
    ============================================================ */
+/* ★ 右下角悬浮球：必须让开底部状态栏。
+   实测（1100×800）原来 bottom: 1.5rem(24px)，而状态栏占 0–30px 且 z-index 9998，
+   于是球的**下沿 6px 被状态栏盖住**（42×6 的重叠），看着像被切了一刀；
+   面板打开时还会压住球本身（42×40 的重叠），导致想再点一次球关掉面板却点不到。
+   现在统一按两个令牌算：--status-h（状态栏高）+ --fab-stack（球列最高高度，3 个时）。 */
 #floating-controls {
-  position: fixed; right: 1rem; bottom: 1.5rem; z-index: 60;
-  display: flex; flex-direction: column; gap: .5rem;
+  position: fixed; right: 1rem; bottom: calc(var(--status-h) + .75rem); z-index: 60;
+  display: flex; flex-direction: column; gap: var(--fab-gap);
 }
 #floating-controls button {
-  width: 2.6rem; height: 2.6rem; border: 1px solid var(--rule-hair); cursor: pointer;
+  width: var(--fab-size); height: var(--fab-size); border: 1px solid var(--rule-hair); cursor: pointer;
   border-radius: 50%; background: var(--panel-paper); color: var(--stamp-ink);
   display: grid; place-items: center; font-size: .95rem;
   box-shadow: 0 8px 22px -12px rgba(0,0,0,.45); transition: transform .18s, background-color .15s;
@@ -638,9 +653,16 @@ footer.site-footer a:hover { color: var(--element-deep); }
 #floating-controls button.hidden { display: none; }
 
 /* 浮动面板（设置）
-   .float-sheet = rounded-1rem + --panel-paper + shadow-xl，暗色下 shadow-none */
+   .float-sheet = rounded-1rem + --panel-paper + shadow-xl，暗色下 shadow-none
+   ★ bottom 不再写死 5.2rem：那个值比球列还矮，面板打开时会压住球
+   （实测 42×40 的重叠），于是"再点一次球把面板关掉"点不到。
+   现在按 状态栏 + 球列 + 两段间距 算，面板始终坐在球列上方。
+   max-height 兜住小窗口：面板本身可滚动，不会顶出屏幕。 */
 .float-sheet {
-  position: fixed; right: 1rem; bottom: 5.2rem; z-index: 61; width: 20rem;
+  position: fixed; right: 1rem; z-index: 61; width: 20rem;
+  bottom: calc(var(--status-h) + .75rem + var(--fab-stack) + .75rem);
+  max-height: calc(100vh - var(--status-h) - var(--fab-stack) - 3rem);
+  overflow-y: auto; overscroll-behavior: contain;
   border-radius: var(--radius-card); background: var(--panel-paper);
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / .1), 0 8px 10px -6px rgb(0 0 0 / .1);
   border: 0;

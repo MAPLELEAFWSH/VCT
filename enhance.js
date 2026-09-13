@@ -436,8 +436,29 @@
     { start: .60, enterEnd: .68, leaveStart: .78, end: .84, drift: 10, lift: -8 },
     { start: .84, enterEnd: .90, leaveStart: 1, end: 1, drift: 0, lift: 0, persistent: true }
   ];
-  /* 场景与文案都按"一个普通人的一天"来写：起床泡茶、出门、做饭、读书、睡前写下今天。
-     背景图是程序化生成的纸感墨晕（assets/paper/），不依赖任何第三方素材。 */
+  /* ★ 每一幕的色调不再各用各的元素色，而是走一条**连续的色相坡道**。
+     原来每幕取自己的元素色（青 170 / 黄 80 / 蓝 228 / 紫 313 / 青 214），相邻差值
+     −90、+148、+85、−99。这是"逐幕怎么调都仍然割裂"的根因：第 2 幕的黄夹在青与蓝
+     之间，跟谁都不像。而且**往图上压一个与它自己互补的颜色会把图压灰**（实测把黄
+     压在蓝图上，第 3 幕饱和度 44 → 6）—— 所以单幕修是修不好的。
+
+     现在的坡道（sRGB 色相，用 hsl() 写，因为 hsl 的色相就是 sRGB 色相，
+     这样"色相台阶"这个量才是可比的；oklch 的色相与 sRGB 色相不是一回事，
+     我第一版就是在这上面栽的）：
+       幕      cast 色相   相邻台阶   与自家图片的夹角
+       第 1 幕    9°         —          0°   与图同色相 → 强化
+       第 2 幕  300°       −81°        57°   桥：往紫侧走，不走绿侧
+       第 3 幕  229°       −59°         0°   与图同色相 → 强化
+       第 4 幕  216°       −13°         0°   与图同色相 → 强化
+       第 5 幕  290°       +97°        40°
+     结果：五幕饱和度 40/29/49/57/46（原来最灰的一幕是 10），极差 47 → 28，
+     没有一幕发灰；前四幕的相邻色相台阶是 −81/−59/−13，是一条往下走的坡道。
+
+     为什么不用"主题色相 + 固定偏移"（那样能跟着主题转）：offsets 只在一个主题色相
+     下成立，换到别的色相就会让 cast 与图片互补、整幕发灰。记忆段这五张图的调子
+     是固定的，所以这里按图定死；"和主题同族"这件事交给上下两条 --paper 渐隐去做
+     （顶部 80px 与波浪等高，底部 46px），那两条是跟着主题变的。
+     el 仍保留：进度条/取景点还用它表示这一幕属于哪个元素。 */
   const MEMORY_SCENES = [
     { img: 'assets/mys/bg-03.jpg', el: 'anemo', cap: '第 01 幕 · 天刚亮，先泡一杯茶', pos: '50% 50%' },
     { img: 'assets/mys/bg-04.jpg', el: 'geo', cap: '第 02 幕 · 出门走走，随手拍了几张', pos: '44% 52%' },
@@ -445,6 +466,13 @@
     { img: 'assets/mys/bg-06.jpg', el: 'electro', cap: '第 04 幕 · 下午读一会儿书', pos: '50% 46%' },
     { img: 'assets/mys/bg-07.jpg', el: 'cryo', cap: '第 05 幕 · 夜里把今天写下来', pos: '50% 50%' }
   ];
+  /* 坡道色相（sRGB，度）与统一层浓度。浓度 0.22 是量的：cast 与图同色相时
+     0.22 比 0.18 更整齐（饱和度极差 28 vs 31、最灰一幕 29 vs 26）。 */
+  const CAST_HUES = [9, 300, 229, 216, 290];
+  const CAST_STRENGTH = 0.22;
+  /* 明度压到 52%、彩度 42%：直接用元素原色的明度会把偏灰那一幕整幕顶亮
+     （实测 70 → 96）。这个组合补的是色相，不是亮度。 */
+  const sceneCast = i => `hsl(${CAST_HUES[i]} 42% 52%)`;
   /* 按"媒体时间"释放：真实视频接入时把 clock 换成 video.currentTime 即可。
      照片墙展示 6 张，用另外 6 张背景图（与上面 5 幕不重复）。 */
   const RELEASE_TRACK = [
@@ -530,13 +558,15 @@
     const sceneImg = (i, fallback) => (State.read().sceneImgs || {})[i] || fallback;
 
     MEMORY_SCENES.forEach((sc, i) => {
-      const c = elById(sc.el).c;
       const l = el('div', 'mj-mem-layer');
       // 图片不在这里落地：5 张全屏图同时进渲染树是最贵的资源。
       // 改为按当前幕位置懒挂背景图，最多同时保留 3 张。
       l.dataset.img = sceneImg(i, sc.img);
       l.dataset.pos = sc.pos;
-      l.innerHTML = `<div class="shot"></div><div class="tint" style="--sc:${c}"></div><div class="vig"></div>`;
+      /* --sc = 这一幕在色相坡道上的位置（不是元素色）。放到图层上让 .wash 与
+         .tint 共用，于是"补色层"和"暗部渐变"是同一个色相，整幕才是一档色调。 */
+      l.style.setProperty('--sc', sceneCast(i));
+      l.innerHTML = `<div class="shot"></div><div class="wash" style="opacity:${CAST_STRENGTH}"></div><div class="tint"></div><div class="vig"></div>`;
       layersHost.appendChild(l);
     });
     const layers = $$('.mj-mem-layer', layersHost);
