@@ -695,7 +695,7 @@ footer.site-footer a:hover { color: var(--element-deep); }
    并且入场放完后由 JS 把 .enter-rise 摘掉（见 enhance.js），
    这样以后再来回切页面也不会重新起跑、更不会卡住。 */
 .enter-rise {
-  animation: fade-in-up 300ms cubic-bezier(.4,0,.2,1) both;
+  animation: fade-in-up 360ms cubic-bezier(.22,1,.36,1) both;
 }
 @keyframes fade-in-up {
   0% { transform: translateY(.75rem); opacity: 0; }
@@ -711,6 +711,41 @@ aside.left-sidebar > *:nth-child(4), aside.right-sidebar > *:nth-child(4), .mj-v
 aside.left-sidebar > *:nth-child(5), aside.right-sidebar > *:nth-child(5), .mj-view > *:nth-child(5) { animation-delay: 280ms !important; }
 aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-delay: 350ms !important; }
 .mj-view > *:nth-child(7) { animation-delay: 420ms !important; }
+
+/* ★ 开屏大标题单独一套入场：比其它模块"慢半拍、软一档"。
+   它原来和所有模块共用 .enter-rise（300ms + cubic-bezier(.4,0,.2,1)，只做
+   translateY(.75rem)）。那条曲线是 Material 的"标准缓动"——起步快、收尾也快，
+   配上 12px 的小位移，读起来是"啪"地弹一下，所以显得僵硬。
+   这里只改"怎么进场"，不动布局，也不会和相邻文字打架：
+     · 时长 300ms → 760ms：从"弹一下"变成"落下来"；
+     · 缓动换成 cubic-bezier(.16,1,.3,1)：先快、后极慢的长收尾，
+       这是"硬"和"软"差别最大的一个旋钮（前 25% 就走完大半路程）；
+     · 位移保留方向、幅度 1.1rem（仍小于相邻模块间距，不会压到别人）；
+     · 加一点 blur(6px → 0)：中文笔画密，先散焦再合焦比单纯平移更像"浮现"，
+       而不是"一整块字从下面滑上来"；
+     · 再叠一个极轻的 scale(.985 → 1) 做"合焦"感。不做大缩放，
+       大缩放会让文字在动画途中发虚。
+   ★ 一次性动画、不跟滚动，所以不会长期占着合成层：.enter-rise 在 1200ms 后
+   由 JS 摘掉（见 enhance.js 的 boot），滤镜/变换随之一起消失。
+   ★ 减动效时上面那条 `*{animation-duration:.001ms}` 会把它压成瞬间完成，
+   同时下面 reduced-motion 块里显式写了 filter: none，不会留下任何滤镜。 */
+#banner-text h1.enter-rise {
+  animation: banner-title-in 760ms cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes banner-title-in {
+  0%   { opacity: 0; transform: translateY(1.1rem) scale(.985); filter: blur(6px); }
+  55%  { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+/* 副标题跟着同一套节奏，只是更轻：它比大标题晚 80ms（HTML 上的 animation-delay），
+   两者叠在一起才是"一次呼吸"，而不是两条各自弹一下。 */
+#banner-text .subs.enter-rise {
+  animation: banner-subs-in 620ms cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes banner-subs-in {
+  0%   { opacity: 0; transform: translateY(.85rem); filter: blur(4px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
 
 /* 波浪的位移与循环写在 #waves 那段（见上面"波浪"一节） */
 
@@ -931,6 +966,11 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
   .enter-rise { opacity: 1; transform: none; }
+  /* 开屏标题那两条用了 filter: blur()，这里显式清掉：
+     上面那条规则会把时长压到 .001ms，动画会停在 100% 的 fill 状态，
+     而 100% 写的是 blur(0)——虽然等于没有，但显式写 none 更清楚，
+     也免得以后有人把 100% 改成别的值时留下一个常驻滤镜。 */
+  #banner-text h1.enter-rise, #banner-text .subs.enter-rise { animation: none; filter: none; }
   html { scroll-behavior: auto; }
   .fx-layer, #danmaku-band, #click-canvas { display: none; }
 }
@@ -1180,11 +1220,13 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
             <span>系统已稳定运行：<b id="uptime">0 天 0 小时</b></span>
           </div>
           <div class="badges">
-            <span><em style="background:#3b82f6"></em>原生 JS</span>
-            <span><em style="background:#0ea5e9"></em>零构建</span>
-            <span><em style="background:#14b8a6"></em>离线可用</span>
+            <span><em style="background:#3b82f6"></em>HTML</span>
+            <span><em style="background:#0ea5e9"></em>原生 CSS</span>
+            <span><em style="background:#14b8a6"></em>原生 JS</span>
+            <span><em style="background:#f59e0b"></em>零构建</span>
+            <span><em style="background:#8b5cf6"></em>离线可用</span>
           </div>
-          <span class="dash-icp">静态站点 · 不需要后端</span>
+          <span class="dash-icp">静态站点 · 不需要后端 · 技术栈详见「关于」</span>
         </div>
       </div>
 

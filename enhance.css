@@ -1158,6 +1158,9 @@ body.mj-native-cursor .ed-pen { display: none; }
 .mj-ticks { display: flex; flex-direction: column; gap: .35rem; }
 .mj-tick { display: flex; gap: .6rem; align-items: baseline; font-size: .84rem; }
 .mj-tick .yr { font-family: var(--font-mono); font-size: .7rem; color: var(--element-deep); flex: none; width: 2.8rem; }
+/* "关于"页的技术栈那一节是"分类 → 说明"，标签比 4 位年份长，
+   2.8rem 会把"框架与构建"挤成两行，所以给一档宽标签（同样一套 rows 渲染）。 */
+.mj-ticks.wide .mj-tick .yr { width: 5.6rem; }
 .mj-xps { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: .7rem; }
 .mj-xp { position: relative; background: var(--paper-card); border: 0; border-radius: var(--radius-cover); padding: .5rem .5rem .6rem; text-align: center; }
 .mj-xp span { font-size: .875rem; }
