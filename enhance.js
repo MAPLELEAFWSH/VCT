@@ -97,27 +97,12 @@
      2. 自定义光标
      ============================================================ */
   const Cursor = (() => {
-    if (TOUCH || REDUCED) return { destroy() {}, setEnabled() {} };
-    /* ★ 默认关。参考的四个站都自带"环 + 点"的自绘光标，这是它们共同的辨识度
-       之一；默认打开等于先把这个特征抄过来。现在它是一项可选的外观开关
-       （设置抽屉里的「墨点光标」），想用的人自己开。 */
-    const KEY = 'mj_cursor';
-    const readPref = () => { try { return localStorage.getItem(KEY) === 'on'; } catch (e) { return false; } };
+    if (TOUCH || REDUCED) return { destroy() {} };
     const host = el('div', '', '<div class="ring"></div><div class="dot"></div><div class="tag"></div>');
     host.id = 'mj-cursor';
     document.body.append(host);
+    document.body.classList.add('mj-cursor-on');
     const ring = $('.ring', host), dot = $('.dot', host), tag = $('.tag', host);
-
-    function setEnabled(v) {
-      let on = !!v;
-      try { localStorage.setItem(KEY, on ? 'on' : 'off'); } catch (e) {}
-      document.body.classList.toggle('mj-cursor-on', on);
-      // 关掉时把缓动循环一起停掉，不留一个空转的订阅者
-      if (!on) park();
-      else wake();
-      return on;
-    }
-    document.body.classList.toggle('mj-cursor-on', readPref());
 
     let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my, last = 0;
     // 拖尾已移除：12 个 DOM 节点的高频增删本身就是在低帧率下加重拖动延迟的一环，
@@ -212,7 +197,7 @@
       document.body.classList.remove('mj-cursor-on', 'mj-native-cursor');
     };
     onPageGone(destroy);
-    return { destroy, setEnabled };
+    return { destroy };
   })();
 
   /* ============================================================
@@ -345,13 +330,13 @@
     /* 头像跟随用户自己改过的头像（Profile 模块存在 localStorage.mj2_profile 里） */
     (() => {
       const im = $('#mjOpenAvatar', host); if (!im) return;
-      let src = 'assets/paper/avatar.svg';
+      let src = 'assets/avatar-user.jpg';
       try {
         const saved = JSON.parse(localStorage.getItem('mj2_profile') || '{}');
         if (saved && saved.avatar) src = saved.avatar;
       } catch (e) {}
       im.src = src;
-      im.addEventListener('error', () => { im.src = 'assets/paper/avatar.svg'; }, { once: true });
+      im.addEventListener('error', () => { im.src = 'assets/avatar-user.jpg'; }, { once: true });
     })();
 
     const core = $('#mjOpenCore', host), label = $('#mjGateLabel', host), hint = $('#mjOpenHint', host);
@@ -454,21 +439,21 @@
   /* 场景与文案都按"一个普通人的一天"来写：起床泡茶、出门、做饭、读书、睡前写下今天。
      背景图是程序化生成的纸感墨晕（assets/paper/），不依赖任何第三方素材。 */
   const MEMORY_SCENES = [
-    { img: 'assets/paper/bg-03.svg', el: 'anemo', cap: '第 01 幕 · 天刚亮，先泡一杯茶', pos: '50% 50%' },
-    { img: 'assets/paper/bg-04.svg', el: 'geo', cap: '第 02 幕 · 出门走走，随手拍了几张', pos: '44% 52%' },
-    { img: 'assets/paper/bg-05.svg', el: 'hydro', cap: '第 03 幕 · 回来做饭，锅里咕嘟咕嘟', pos: '48% 54%' },
-    { img: 'assets/paper/bg-06.svg', el: 'electro', cap: '第 04 幕 · 下午读一会儿书', pos: '50% 46%' },
-    { img: 'assets/paper/bg-07.svg', el: 'cryo', cap: '第 05 幕 · 夜里把今天写下来', pos: '50% 50%' }
+    { img: 'assets/mys/bg-03.jpg', el: 'anemo', cap: '第 01 幕 · 天刚亮，先泡一杯茶', pos: '50% 50%' },
+    { img: 'assets/mys/bg-04.jpg', el: 'geo', cap: '第 02 幕 · 出门走走，随手拍了几张', pos: '44% 52%' },
+    { img: 'assets/mys/bg-05.jpg', el: 'hydro', cap: '第 03 幕 · 回来做饭，锅里咕嘟咕嘟', pos: '48% 54%' },
+    { img: 'assets/mys/bg-06.jpg', el: 'electro', cap: '第 04 幕 · 下午读一会儿书', pos: '50% 46%' },
+    { img: 'assets/mys/bg-07.jpg', el: 'cryo', cap: '第 05 幕 · 夜里把今天写下来', pos: '50% 50%' }
   ];
   /* 按"媒体时间"释放：真实视频接入时把 clock 换成 video.currentTime 即可。
      照片墙展示 6 张，用另外 6 张背景图（与上面 5 幕不重复）。 */
   const RELEASE_TRACK = [
-    { at: 2.6, kind: 'photo', label: '清晨', scene: 0, img: 'assets/paper/bg-01.svg' },
-    { at: 6.4, kind: 'clue', label: '线索 A', scene: 0, img: 'assets/paper/bg-02.svg', clue: 'A' },
-    { at: 10.2, kind: 'photo', label: '路上', scene: 1, img: 'assets/paper/bg-03.svg' },
-    { at: 14.0, kind: 'clue', label: '线索 B', scene: 2, img: 'assets/paper/bg-04.svg', clue: 'B' },
-    { at: 17.8, kind: 'reward', label: '隐藏奖励', scene: 3, img: 'assets/paper/bg-06.svg' },
-    { at: 21.6, kind: 'reward', label: '夜里', scene: 4, img: 'assets/paper/bg-07.svg' }
+    { at: 2.6, kind: 'photo', label: '清晨', scene: 0, img: 'assets/mys/bg-01.jpg' },
+    { at: 6.4, kind: 'clue', label: '线索 A', scene: 0, img: 'assets/mys/bg-02.jpg', clue: 'A' },
+    { at: 10.2, kind: 'photo', label: '路上', scene: 1, img: 'assets/mys/bg-03.jpg' },
+    { at: 14.0, kind: 'clue', label: '线索 B', scene: 2, img: 'assets/mys/bg-04.jpg', clue: 'B' },
+    { at: 17.8, kind: 'reward', label: '隐藏奖励', scene: 3, img: 'assets/mys/bg-06.jpg' },
+    { at: 21.6, kind: 'reward', label: '夜里', scene: 4, img: 'assets/mys/bg-07.jpg' }
   ];
   const MEDIA_DURATION = 24;
 
@@ -752,7 +737,7 @@
       if (dirty) {
         dirty = false;
         /* 进度 = 舞台被钉住后滚了多远 / 可钉住的总长度。
-           舞台 sticky 在 top: var(--nav-h)，所以板块顶边从导航栏下沿一路走到
+           舞台 sticky 在 top: 4.5rem，所以板块顶边从 72px 一路走到
            −(板块高 − 舞台高) 的过程，就是"模块内叙事"播放的全过程；
            走完之后板块才继续上移（模块间滚动）。 */
         const r = host.getBoundingClientRect();
@@ -945,7 +930,7 @@
         slug: 'post-' + i,
         title: ($('.post-title', c) || {}).textContent?.trim() || ('文章 ' + (i + 1)),
         desc: ($('.post-desc', c) || {}).textContent?.trim() || '',
-        cover: ($('.post-cover img', c) || {}).getAttribute?.('src') || 'assets/paper/bg-03.svg',
+        cover: ($('.post-cover img', c) || {}).getAttribute?.('src') || 'assets/mys/bg-03.jpg',
         tags,
         cat: deriveCat(tags),
         date: ($('.post-meta .m', c) || {}).textContent?.trim() || '',
@@ -953,7 +938,7 @@
       };
     });
     if (out.length) return out;
-    return [{ i: 0, slug: 'post-0', title: '示例文章', desc: '正文待补充。', cover: 'assets/paper/bg-03.svg', tags: [], cat: 'tech', date: '2026-01-01', pinned: false }];
+    return [{ i: 0, slug: 'post-0', title: '示例文章', desc: '正文待补充。', cover: 'assets/mys/bg-03.jpg', tags: [], cat: 'tech', date: '2026-01-01', pinned: false }];
   }
   const POSTS = readPostsFromDOM();
   /* 四篇都是"普通人也会遇到的生活小事"，不指向任何专业领域，
@@ -1758,12 +1743,12 @@
         return n;
       };
       const seed = () => ([
-        ['assets/paper/bg-03.svg', '海边的一天', '摄影', '2026 · 一组照片', '阴天去的，风很大，反而拍到了想要的灰蓝色。挑出九张放在这里。'],
-        ['assets/paper/bg-06.svg', '一个人的晚饭', '料理', '2026', '三道菜的配比与时间，附一份采购清单，一个人做也不会浪费。'],
-        ['assets/paper/bg-05.svg', '今年读过的书', '阅读', '2025', '十二本书的短评，最后挑出最想推荐的三本。'],
-        ['assets/paper/bg-04.svg', '旧木桌翻新', '手作', '2025', '打磨、上油、换把手，一个周末做完，比买新的有成就感。'],
-        ['assets/paper/bg-07.svg', '城市散步地图', '日常', '2024', '把常走的那几条小路画成了一张手绘地图，标着哪里能坐下来。'],
-        ['assets/paper/bg-01.svg', '第一次做面包', '料理', '2024', '失败两次之后终于发起来了，把配比和温度都记了下来。']
+        ['assets/mys/bg-03.jpg', '海边的一天', '摄影', '2026 · 一组照片', '阴天去的，风很大，反而拍到了想要的灰蓝色。挑出九张放在这里。'],
+        ['assets/mys/bg-06.jpg', '一个人的晚饭', '料理', '2026', '三道菜的配比与时间，附一份采购清单，一个人做也不会浪费。'],
+        ['assets/mys/bg-05.jpg', '今年读过的书', '阅读', '2025', '十二本书的短评，最后挑出最想推荐的三本。'],
+        ['assets/mys/bg-04.jpg', '旧木桌翻新', '手作', '2025', '打磨、上油、换把手，一个周末做完，比买新的有成就感。'],
+        ['assets/mys/bg-07.jpg', '城市散步地图', '日常', '2024', '把常走的那几条小路画成了一张手绘地图，标着哪里能坐下来。'],
+        ['assets/mys/bg-01.jpg', '第一次做面包', '料理', '2024', '失败两次之后终于发起来了，把配比和温度都记了下来。']
       ]);
       EdList.register('works', seed);
       const rows = () => EdList.get('works', seed);
@@ -2133,36 +2118,36 @@
       };
       const seed = () => ([
         {
-          cover: 'assets/paper/bg-03.svg', title: '海边的一天', cat: '摄影', date: '2026-03',
+          cover: 'assets/mys/bg-03.jpg', title: '海边的一天', cat: '摄影', date: '2026-03',
           tags: ['照片', '阴天', '散步'],
           summary: '阴天去的，风很大，反而拍到了想要的灰蓝色。把这一天的照片、走过的路线和当时的想法整理成一篇图文。',
           blocks: [
             { t: 'text', v: '本来想等一个晴天再去，后来想通了：阴天的海是灰蓝色的，和晴天完全两种东西。到了之后发现人很少，风把浪推得很高。' },
-            { t: 'image', src: 'assets/paper/bg-05.svg', cap: '涨潮前的那二十分钟' },
+            { t: 'image', src: 'assets/mys/bg-05.jpg', cap: '涨潮前的那二十分钟' },
             { t: 'text', v: '拍了大概六十张，回来只留下九张。留下的标准不是"好看"，而是"能让我想起当时站在那儿的感觉"。' },
             { t: 'video', src: '', cap: '这一天的短片（把 B 站链接填进来就会内嵌播放）' }
           ]
         },
         {
-          cover: 'assets/paper/bg-06.svg', title: '一个人的晚饭', cat: '料理', date: '2026-02',
+          cover: 'assets/mys/bg-06.jpg', title: '一个人的晚饭', cat: '料理', date: '2026-02',
           tags: ['食谱', '配比'],
           summary: '三道菜的配比与时间，附一份采购清单 —— 一个人做饭最容易浪费，这份清单按一人份算。',
           blocks: [
             { t: 'text', v: '一个人做饭最大的问题不是麻烦，是买多了用不完。所以这份清单只写一人份的量，剩下的食材也会给一个去处。' },
-            { t: 'image', src: 'assets/paper/bg-04.svg', cap: '三道菜的成品' }
+            { t: 'image', src: 'assets/mys/bg-04.jpg', cap: '三道菜的成品' }
           ]
         },
         {
-          cover: 'assets/paper/bg-05.svg', title: '今年读过的书', cat: '阅读', date: '2025-12',
+          cover: 'assets/mys/bg-05.jpg', title: '今年读过的书', cat: '阅读', date: '2025-12',
           tags: ['书单', '短评'],
           summary: '十二本书的短评，不抄句子，只写"在哪一页停了下来、为什么停"。',
           blocks: [
             { t: 'text', v: '比起摘抄，我更想留下的是"当时读到哪一句停了一下"。那种停顿过半年再看还在，摘抄就不一定了。' },
-            { t: 'image', src: 'assets/paper/bg-07.svg', cap: '今年读完的一摞' }
+            { t: 'image', src: 'assets/mys/bg-07.jpg', cap: '今年读完的一摞' }
           ]
         },
         {
-          cover: 'assets/paper/bg-04.svg', title: '旧木桌翻新', cat: '手作', date: '2025-08',
+          cover: 'assets/mys/bg-04.jpg', title: '旧木桌翻新', cat: '手作', date: '2025-08',
           tags: ['动手', '周末'],
           summary: '打磨、上油、换把手，一个周末做完。记下用了什么、花了多久、哪一步最容易做坏。',
           blocks: [
@@ -3067,9 +3052,7 @@
       right.insertBefore(wrap, right.firstChild);
     }
 
-    // 页边栏：场景序列导轨（只列真实视图 + 说明 + 可增删改 + 可搜）
-    // 布局改成"主页面 + 一条页边"之后，两条 aside 都落在右列（见 index.html 的
-    // #main-grid grid-areas），所以这里仍按 .left-sidebar 取，只是它现在在右边。
+    // 左栏：场景序列导轨（只列真实视图 + 说明 + 可增删改 + 可搜）
     const left = $('.left-sidebar') || $('#sidebar');
     if (left) {
       const box = el('div', 'sheet');
@@ -3745,51 +3728,9 @@
     document.addEventListener('keydown', e => {
       if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'f') { e.preventDefault(); Perf.toggle(); }
     });
-
-    /* ★ 把两条侧栏并成一条"页边"。
-       布局现在是"一张主页面 + 一条页边"（见 index.html 的 #main-grid），而
-       DOM 里是两个 <aside> 夹着一个 <main>，CSS 里没法把它们叠进同一列。
-       小部件全靠 id 找宿主（#mjStats / #calGrid / 天气那些），所以把右栏的
-       节点整体搬进左栏、再删掉右栏，功能不受影响。
-       放在 boot 末尾：此时各模块（含往左栏追加场景序列导轨的那一处）都已初始化完。 */
-    (function mergeRails() {
-      const ls = document.querySelector('aside.left-sidebar');
-      const rs = document.querySelector('aside.right-sidebar');
-      if (!ls || !rs) return;
-      while (rs.firstChild) ls.appendChild(rs.firstChild);
-      rs.remove();
-    })();
-
-    /* ★ 再把三件"仪表"从页边挪到正文下方，做成一条横向的"本站仪器"带。
-       页边只有 240px 宽，10 张小部件竖着排出来有 3600 多 px —— 塞进一屏高的
-       sticky 栏里等于要滚 4 屏多，很难用。使用情况 / 天气 / 日历 属于"一眼扫过"
-       的信息，横着摊在正文底下比挤在窄栏里合适，页边也因此短掉一截。
-       仍然是按 id 找宿主，所以搬位置不影响它们自己的逻辑。
-
-       ⚠ 注意插到哪儿：Router 在初始化时已经把 main#content 的子节点**整体搬进了**
-       .mj-view[data-view="home"]，所以页脚已经不是 #content 的直接子节点了。
-       写成 content.insertBefore(band, footer) 会抛 NotFoundError，
-       而 band 是游离节点 —— 三张卡片会连着 band 一起被丢掉（小部件凭空消失）。
-       所以这里一律插到"页脚真正的父节点"里。 */
-    (function hoistInstruments() {
-      const ls = document.querySelector('aside.left-sidebar');
-      if (!ls) return;
-      const band = document.createElement('div');
-      band.className = 'instrument-band enter-rise';
-      ['使用情况', '天气', '日历'].forEach(name => {
-        const card = [...ls.children].find(c => (c.textContent || '').includes(name));
-        if (card) band.appendChild(card);
-      });
-      if (!band.children.length) return;
-      const footer = document.querySelector('.site-footer');
-      const host = (footer && footer.parentNode) || document.querySelector('.mj-view[data-view="home"]') || document.querySelector('main#content');
-      if (!host) { ls.appendChild(band); return; }   // 兜底：宁可留在页边，也别丢
-      if (footer && footer.parentNode === host) host.insertBefore(band, footer);
-      else host.appendChild(band);
-    })();
   }
   if (document.readyState === 'loading') addEventListener('DOMContentLoaded', boot);
   else boot();
 
-  window.MJX = { Achievements, Memory, setElement, ELEMENTS, POSTS, Router, Perf, Raf, ARTICLE_BODIES, deriveCat, readPostsFromDOM, MangaFX, Cursor };
+  window.MJX = { Achievements, Memory, setElement, ELEMENTS, POSTS, Router, Perf, Raf, ARTICLE_BODIES, deriveCat, readPostsFromDOM, MangaFX };
 })();

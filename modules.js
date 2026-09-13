@@ -882,11 +882,7 @@
           <button class="sb-btn" id="mjSbImport" type="button" title="导入本地数据">导入</button>
           <button class="sb-btn" id="mjSbKeys" type="button" title="键盘快捷键">⌘</button>
         </div>`;
-      /* ★ 挂到设置抽屉里，而不是 document.body。
-         它原来是"贴屏幕底边的一整条状态栏"（XinghuisamaBlogs / Yuimi 的形态），
-         现在作为抽屉底部的「应用信息」，不再占据屏幕底边。
-         抽屉不在（理论上不会）时退回 body，功能不至于丢。 */
-      (document.getElementById('settingPanel') || document.body).appendChild(bar);
+      document.body.appendChild(bar);
       paint();
       // 导出 / 导入：桌面版走主进程写盘，网页版退化成下载 / 选文件
       document.getElementById('mjSbExport').addEventListener('click', async () => {
@@ -1095,7 +1091,7 @@
     }
 
     /* 没有专辑封面时用"系统默认音乐文件"图标兜底。
-       原来是拿 assets/paper/cover-01.svg 顶上（那是首示例曲的封面），换了歌就张冠李戴。
+       原来是拿 assets/xryx.webp 顶上（那是首示例曲的封面），换了歌就张冠李戴。
        这里画一个中性的图标：浅蓝渐变页 + 折角 + 白色音符，观感接近 Windows 的默认音频文件图标。 */
     const DEFAULT_COVER = `<svg class="cover-ph" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
       <defs><linearGradient id="mjCovG" x1="0" y1="0" x2="0" y2="1">
@@ -1426,7 +1422,7 @@
           slug: 'post-' + i,
           title: ($('.post-title', c) || {}).textContent?.trim() || ('文章 ' + (i + 1)),
           desc,
-          cover: ($('.post-cover img', c) || {}).getAttribute?.('src') || 'assets/paper/bg-01.svg',
+          cover: ($('.post-cover img', c) || {}).getAttribute?.('src') || 'assets/mys/bg-01.jpg',
           tags, cat: deriveCat(tags),
           date: ($('.post-meta .m', c) || {}).textContent?.trim() || new Date().toISOString().slice(0, 10),
           pinned: !!$('.post-pinned', c),
@@ -1457,7 +1453,7 @@
         const t = Date.now().toString(36);
         return {
           id: 'p' + t, slug: 'post-' + t,
-          title: '', desc: '', cover: 'assets/paper/bg-01.svg',
+          title: '', desc: '', cover: 'assets/mys/bg-01.jpg',
           tags: [], cat: 'tech',
           date: new Date().toISOString().slice(0, 10),
           pinned: false, body: [['p', '']]
@@ -1558,7 +1554,7 @@
           p.date = document.getElementById('mj2pDate').value.trim() || new Date().toISOString().slice(0, 10);
           p.cat = document.getElementById('mj2pCat').value;
           p.tags = document.getElementById('mj2pTags').value.split(/[,，]/).map(s => s.trim()).filter(Boolean);
-          p.cover = document.getElementById('mj2pCover').value.trim() || 'assets/paper/bg-01.svg';
+          p.cover = document.getElementById('mj2pCover').value.trim() || 'assets/mys/bg-01.jpg';
           p.pinned = document.getElementById('mj2pPin').checked;
           p.body = textToBlocks(document.getElementById('mj2pBody').value);
           Posts.upsert(p);

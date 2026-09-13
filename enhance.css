@@ -20,46 +20,26 @@
 }
 .mj-tape.r { left: auto; right: 26px; transform: rotate(4deg); }
 
-/* ---------- 自绘光标：墨点 ----------
-   ★ 形态换掉了。之前是"细描边圆环 + 中心小圆点"，而参考的四个站
-   （Fuwari / Firefly / Mizuki / Yuimi）用的都是这个"环 + 点"的形态 ——
-   环半径、描边、hover 放大几乎是同一套。这里改成手写的墨点：
-   一支笔尖（决定画面上那个不规则的实心墨点）+ 一圈墨晕（径向渐变扩散，
-   不是描边），没有圆环。另外默认是**关**的，在设置抽屉里可以打开。 */
+/* ---------- 自定义光标 ---------- */
 #mj-cursor { position: fixed; top: 0; left: 0; z-index: 100000; pointer-events: none; }
 /* 光标每帧都在写 transform。给它自己一个合成层，这样移动时只动合成层，
    不会牵连下面整页重绘（这是自绘光标最容易被忽略的一笔开销）。 */
 #mj-cursor .ring, #mj-cursor .dot { will-change: transform; }
-/* 墨晕：径向渐变自己就能散开，不用 filter: blur()
-   （全屏图层上的滤镜会让这一层多走一遍光栅化，小元素上也没必要付这个代价） */
 #mj-cursor .ring {
-  position: absolute; width: 20px; height: 20px; margin: -10px 0 0 -10px; border: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle at 42% 38%,
-    color-mix(in oklab, var(--element) 32%, transparent) 0%,
-    color-mix(in oklab, var(--element) 16%, transparent) 46%,
-    transparent 72%);
-  transition: width .2s, height .2s, margin .2s, opacity .2s;
+  position: absolute; width: 32px; height: 32px; margin: -16px 0 0 -16px; border-radius: 50%;
+  border: 1.5px solid var(--element); background: color-mix(in oklab, var(--element) 12%, transparent);
+  transition: width .18s, height .18s, margin .18s, background-color .18s, border-color .18s;
 }
-/* 笔尖：不是一个正圆，用四角半径做出手画墨点的形状 */
-#mj-cursor .dot {
-  position: absolute; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px;
-  background: var(--element);
-  border-radius: 58% 42% 52% 48% / 48% 54% 46% 52%;
-  transition: width .16s, height .16s, margin .16s, border-radius .3s;
-}
+#mj-cursor .dot { position: absolute; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 50%; background: var(--element); }
 #mj-cursor .tag {
-  position: absolute; left: 22px; top: 13px; white-space: nowrap; font-size: 11.5px; font-weight: 700;
+  position: absolute; left: 20px; top: 12px; white-space: nowrap; font-size: 11.5px; font-weight: 700;
   color: var(--element-deep); background: var(--paper-card); border: 1px solid var(--rule-hair);
-  border-radius: var(--radius-chip); padding: 1px 8px; opacity: 0; transform: translateX(-4px);
+  border-radius: 999px; padding: 1px 8px; opacity: 0; transform: translateX(-4px);
   transition: opacity .18s, transform .18s;
 }
-#mj-cursor.hover .ring { width: 56px; height: 56px; margin: -28px 0 0 -28px; }
-/* 悬停时笔尖收细、墨晕铺开 —— 像笔尖悬在纸上方 */
-#mj-cursor.hover .dot { width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; }
+#mj-cursor.hover .ring { width: 50px; height: 50px; margin: -25px 0 0 -25px; background: color-mix(in oklab, var(--element) 24%, transparent); }
 #mj-cursor.hover .tag { opacity: 1; transform: none; }
-/* 按下像落笔：墨点铺大一点 */
-#mj-cursor.down .dot { width: 15px; height: 15px; margin: -7.5px 0 0 -7.5px; border-radius: 52% 48% 46% 54% / 54% 46% 52% 48%; }
+#mj-cursor.down .ring { width: 24px; height: 24px; margin: -12px 0 0 -12px; }
 #mj-cursor.off .ring, #mj-cursor.off .dot, #mj-cursor.off .tag { opacity: 0; }
 #mj-trail { position: fixed; top: 0; left: 0; z-index: 99999; pointer-events: none; }
 #mj-trail i { position: absolute; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: var(--element); }
@@ -111,7 +91,7 @@ body.mj-native-cursor .ed-pen { display: none; }
   caret-color: currentColor;
   cursor: text;
 }
-/* 编辑态的选区：白字要压在 --element-strong 上（白字压 --element 只有 2.85:1） */
+/* 编辑态选区：白字要压在 --element-strong 上（压 --element 只有 ≈2.6:1） */
 .mj-editable.ed-on::selection,
 .mj-editable.ed-on ::selection {
   background: var(--element-strong);
@@ -474,9 +454,8 @@ body.mj-native-cursor .ed-pen { display: none; }
 }
 .mj-route-list a { align-items: flex-start; }
 .mj-route-list a .st { margin-top: .1rem; }
-/* 目标不存在时明确标出来，而不是点了没反应。
-   不要用 opacity 压淡整行 —— --ink-meta 本身就是照着 AA 标定的，
-   叠一层 .55 会掉到 3.2:1；失效状态靠右侧的 "!" 与红色角标表达就够。 */
+/* 目标不存在时明确标出来，而不是点了没反应 */
+/* 不要用 opacity 压淡整行：--ink-meta 本身已按 AA 标定，叠 .55 会掉到 3.2:1 */
 .mj-route-list a.dead { color: var(--ink-meta); }
 .mj-route-list a.dead .st::after { content: "!"; }
 .mj-route-list a.dead .st { color: #c2504f; }
@@ -534,7 +513,7 @@ body.mj-native-cursor .ed-pen { display: none; }
    进度直接等于滚动位置（去掉了原来那层弹簧阻尼），滚动和内容严格 1:1，
    不会出现"手在滚、画面滞后"的两套节奏打架。 */
 #mj-memory { position: relative; height: min(186vh, 1760px); }
-#mj-memory .stage { position: sticky; top: var(--nav-h); height: min(calc(100vh - var(--nav-h)), 860px); overflow: hidden; background: #0b0e13; contain: strict; }
+#mj-memory .stage { position: sticky; top: 4.5rem; height: min(calc(100vh - 4.5rem), 860px); overflow: hidden; background: #0b0e13; contain: strict; }
 /* 记忆段落是整块深色（#0b0e13），直接顶着下面的浅色页面等于一条硬黑边。
    在段落末端加一条"深色 → 页面底色"的渐隐，把两个模块的接缝化开。
    渐隐只贴在段落底部，滚动到接近结尾时才进入视口。
@@ -954,8 +933,7 @@ body.mj-native-cursor .ed-pen { display: none; }
 .mj-fcard.open .back { transform: rotateY(-180deg); }
 .mj-fcard.open .front { transform: rotateY(0deg); }
 .mj-fcard.done { cursor: default; }
-/* 配对完成的卡片不再可点（cursor: default），"已完成"由 HUD 的计数表达。
-   这里原来用 opacity: .58 压淡正面 —— 那是文字，压到 .58 过不了 AA。 */
+/* 这里是文字，压到 .58 过不了 AA；"已完成"由 HUD 计数表达 */
 .mj-fcard.done .front { color: var(--ink-meta); }
 .mj-fcard:hover:not(.done):not(.open) .back { transform: translateY(-3px); }
 .mj-fcard:active:not(.done) { transform: scale(.96); }
@@ -1020,7 +998,7 @@ body.mj-native-cursor .ed-pen { display: none; }
 .mj-article pre code { background: none; padding: 0; color: #d9e2ec; font-size: 1em; line-height: inherit; }
 .mj-article img { border-radius: var(--radius-cover); margin: 2em 0; }
 .mj-article hr { border: 0; border-top: 1px dashed var(--rule-hair); margin: 2em 0; }
-.mj-readbar { position: fixed; top: var(--nav-h); left: 0; right: 0; height: 2.5px; z-index: 60; }
+.mj-readbar { position: fixed; top: 4.5rem; left: 0; right: 0; height: 2.5px; z-index: 60; }
 .mj-readbar i { display: block; height: 100%; width: 0; background: var(--element); }
 
 /* ---------- Works ---------- */
@@ -1157,8 +1135,7 @@ body.mj-native-cursor .ed-pen { display: none; }
 .mj-panel-title { margin: 0 0 .35rem; font-size: 1.125rem; font-weight: 700; line-height: 1.5; }
 #mj-panel .sub { font-size: .875rem; color: var(--ink-meta); margin-bottom: .75rem; }
 .mj-achs { display: flex; flex-direction: column; gap: .35rem; margin-bottom: .75rem; }
-/* 未解锁的成就：用 --ink-meta（AA 标定过的次要色）表示"还没拿到"，
-   不用 opacity: .4 —— 那是文字，压到 .4 只有 2:1。 */
+/* 未解锁成就：用 --ink-meta（AA 标定过的次要色），不用 opacity: .4（只有 2:1） */
 .mj-ach { display: flex; gap: .5rem; align-items: center; font-size: .875rem; color: var(--ink-meta); }
 .mj-ach.got { color: var(--ink-strong); }
 .mj-ach .d { width: 18px; height: 18px; border-radius: var(--radius-chip); background: var(--stamp-bg); display: grid; place-items: center; font-size: .6875rem; flex: none; }

@@ -44,70 +44,52 @@
   /* 裸数字（不带单位），直接当 oklch(L C var(--element-hue)) 第三个参数。
      默认 230 = 水元素；七元素的值见 enhance.js 的 ELEMENTS。 */
   --element-hue: 240;
-  /* 形状尺度：22 / 10 / 14 / 4 —— 这套数是本站自己的。
-     参考主题那一系用的是 16 / 8 / 12 / 6（rounded-lg/xl/md）。
-     不是"随便改个数"：外形尺度撞在一起，两个站看起来就像同一个骨架；
-     把它们拉开是成本最低、也最容易被一眼看出来的差异化。 */
-  --radius-card: 1.375rem;       /* 卡片：22px，比参考系明显更圆、更像一张软纸 */
-  --radius-btn: .625rem;         /* 按钮：10px */
-  --radius-cover: .875rem;       /* 封面 / 头像：14px */
-  --radius-chip: .25rem;         /* 小标签 / 行内码：4px，更"印章"一些 */
-  /* 正文栏宽度的取舍：75rem 时三栏挤得正文只剩 576px，90rem 又散。 */
+  --radius-card: 1rem;           /* 卡片 */
+  --radius-btn: .5rem;           /* 按钮 */
+  --radius-cover: .75rem;        /* 封面 / 头像 */
+  --radius-chip: .375rem;        /* 小标签 / 行内码 */
+  /* 正文栏宽度的取舍：75rem 时三栏挤得正文只剩 576px，90rem 又散。
+     84rem = 1344px，正文栏约 720px，导航栏同宽。 */
   --page-measure: 84rem;
   --layout-page-width: var(--page-measure);
   --layout-sidebar-width: 17.5rem;
-  /* 页边栏宽度：参考站在 280–320px（17.5–20rem），这里收窄到 240px，
-     让"一条页边"的观感和小部件堆叠的观感都不一样。 */
-  --margin-width: 15rem;
-  /* 顶栏高度单独一个令牌：记忆区的 sticky 偏移、阅读进度条、以及
-     主网格的负上移都跟它对齐，改一处就全跟着走。 */
-  --nav-h: 3.5rem;               /* 56px（参考系是 72 / 71） */
-  /* 封面高度：参考系是首页 65vh（另外两家 96vh / 100vh）、内页 35vh。
-     本站压矮一档，首页 44vh、内页 26vh —— 更像"翻开的一页"而不是广告横幅。 */
-  --cover-height: 26vh;
-  --cover-height-home: min(44vh, 560px);
+  --cover-height: 35vh;
+  --cover-height-home: min(65vh, 760px);
   --panel-lift: 3.5rem;
   --enter-delay: 150ms;
   --cover-veil: 0.8;
   --cover-soften: 1px;
   --paper-card-opacity: 0.92;
 
-  /* ★ 颜色取值是本站自己的一档，不是照搬参考主题的。
-     参考主题（Fuwari / Mizuki 一系）亮色档是
-       0.98 / 0.95 / 0.93 / 0.90 / 0.85 / 0.70 / 0.60 / 0.55 / 0.25，彩度 0.005–0.14
-     本站整体压暗一档、彩度抬一档（0.97 / 0.936 / 0.916 / 0.884 / 0.834 / 0.668 …，
-     彩度 0.013–0.152），读起来更"墨"一点；卡片也从纯白换成带一点纸色的白。
-     所有用于正文的颜色都单独量过对比度（见下面的注释）。 */
-  --element: oklch(0.668 0.152 var(--element-hue));
+  --element: oklch(0.70 0.14 var(--element-hue));
   /* 正文/徽标要落在浅底上，需要比 --element 更暗才够对比度（W3C 4.5:1） */
-  --element-deep: oklch(0.455 0.151 var(--element-hue));
-  --element-strong: oklch(0.428 0.150 var(--element-hue));
-  --paper: oklch(0.963 0.013 var(--element-hue));
-  /* 纸不是纯白：留一点点元素色，卡片叠在页面上才有"两层纸"的层次 */
-  --paper-card: oklch(0.995 0.004 var(--element-hue));
-  --paper-card-veil: rgba(253, 253, 255, 0.92);
-  /* 这个值原本取 oklch(0.55 0.12)，压在 --stamp-bg 上只有 4.05:1，过不了
-     WCAG AA。现在 0.477 压在 0.936 上 ≈5.0:1，视觉上几乎无差别。 */
-  --stamp-ink: oklch(0.477 0.128 var(--element-hue));
-  --stamp-bg: oklch(0.936 0.031 var(--element-hue));
-  --stamp-bg-hover: oklch(0.886 0.056 var(--element-hue));
-  --stamp-bg-press: oklch(0.834 0.087 var(--element-hue));
-  --ink-wash-hover: oklch(0.943 0.029 var(--element-hue));
-  --ink-wash-press: oklch(0.971 0.014 var(--element-hue));
-  --ink-strong: oklch(0.231 0.024 var(--element-hue));
-  --title-live: oklch(0.576 0.113 var(--element-hue));
-  --rule-hair: rgba(0, 0, 0, 0.105);
-  --rule-line: rgba(0, 0, 0, 0.132);
-  --rule-meta: rgba(0, 0, 0, 0.235);
-  /* 次要文字：参考主题是"主色 50% 透明度"，但 50% 黑在浅底上只有 3.98:1，
-     过不了 AA；本站用 62%（≈5.9:1）。 */
-  --ink-meta: rgba(0, 0, 0, 0.62);
-  --panel-paper: oklch(0.995 0.004 var(--element-hue));
-  --link-rule: oklch(0.916 0.046 var(--element-hue));
-  --link-wash: oklch(0.939 0.030 var(--element-hue));
-  --link-wash-press: oklch(0.882 0.057 var(--element-hue));
-  --toc-live: oklch(0.681 0.143 var(--element-hue));
-  --selection-ink: oklch(0.884 0.055 var(--element-hue));
+  --element-deep: oklch(0.48 0.14 var(--element-hue));
+  --element-strong: oklch(0.45 0.14 var(--element-hue));
+  --paper: oklch(0.95 0.01 var(--element-hue));
+  --paper-card: #ffffff;
+  --paper-card-veil: rgba(255, 255, 255, 0.92);
+  /* 这个值原本取 oklch(0.55 0.12)，但它压在自己的 --stamp-bg(0.95 0.025) 上
+     只有 4.05:1，过不了 WCAG AA。降到 0.50（≈4.94:1）视觉几乎无差别。 */
+  --stamp-ink: oklch(0.50 0.12 var(--element-hue));
+  --stamp-bg: oklch(0.95 0.025 var(--element-hue));
+  --stamp-bg-hover: oklch(0.9 0.05 var(--element-hue));
+  --stamp-bg-press: oklch(0.85 0.08 var(--element-hue));
+  --ink-wash-hover: oklch(0.95 0.025 var(--element-hue));
+  --ink-wash-press: oklch(0.98 0.01 var(--element-hue));
+  --ink-strong: oklch(0.25 0.02 var(--element-hue));
+  --title-live: oklch(0.6 0.1 var(--element-hue));
+  --rule-hair: rgba(0, 0, 0, 0.08);
+  --rule-line: rgba(0, 0, 0, 0.1);
+  --rule-meta: rgba(0, 0, 0, 0.2);
+  /* 次要文字是"主色 50% 透明度"，但 50% 黑在浅底上只有
+     3.98:1，同样过不了 AA；抬到 58%（≈5.32:1）。 */
+  --ink-meta: rgba(0, 0, 0, 0.58);
+  --panel-paper: #ffffff;
+  --link-rule: oklch(0.93 0.04 var(--element-hue));
+  --link-wash: oklch(0.95 0.025 var(--element-hue));
+  --link-wash-press: oklch(0.90 0.05 var(--element-hue));
+  --toc-live: oklch(0.70 0.13 var(--element-hue));
+  --selection-ink: oklch(0.90 0.05 var(--element-hue));
 
   --font-body: "Noto Sans SC", "Zen Maru Gothic", system-ui, sans-serif;
   --font-cjk: "Noto Sans SC", system-ui, sans-serif;
@@ -121,32 +103,31 @@
 }
 
 :root.dark {
-  /* 暗色同一条思路：整体比参考主题的暗档再暗一点、彩度抬一点 */
-  --element: oklch(0.728 0.150 var(--element-hue));
-  --element-deep: oklch(0.806 0.112 var(--element-hue));
-  --element-strong: oklch(0.462 0.148 var(--element-hue));
-  --paper: oklch(0.148 0.017 var(--element-hue));
-  --paper-card: oklch(0.218 0.018 var(--element-hue));
-  --paper-card-veil: rgba(28, 31, 37, 0.92);
-  --stamp-ink: oklch(0.762 0.108 var(--element-hue));
-  --stamp-bg: oklch(0.318 0.040 var(--element-hue));
-  --stamp-bg-hover: oklch(0.367 0.045 var(--element-hue));
-  --stamp-bg-press: oklch(0.415 0.051 var(--element-hue));
-  --ink-wash-hover: oklch(0.288 0.040 var(--element-hue));
-  --ink-wash-press: oklch(0.259 0.029 var(--element-hue));
-  /* 注意：--ink-strong 在亮/暗两种模式下取值不同。参考主题里这个变量在暗色下
-     不变（它靠 prose-invert 接管正文）；本站把它当主文字色用，照搬会变成
-     深字压深底，所以暗色下取值要反过来。 */
-  --ink-strong: oklch(0.962 0.013 var(--element-hue));
-  --rule-hair: rgba(255, 255, 255, 0.105);
-  --rule-line: rgba(255, 255, 255, 0.132);
-  --rule-meta: rgba(255, 255, 255, 0.235);
-  --ink-meta: rgba(255, 255, 255, 0.66);
-  --panel-paper: oklch(0.178 0.018 var(--element-hue));
-  --link-rule: oklch(0.382 0.088 var(--element-hue));
-  --link-wash: oklch(0.382 0.088 var(--element-hue));
-  --link-wash-press: oklch(0.334 0.078 var(--element-hue));
-  --selection-ink: oklch(0.382 0.088 var(--element-hue));
+  --element: oklch(0.75 0.14 var(--element-hue));
+  --element-deep: oklch(0.82 0.10 var(--element-hue));
+  --element-strong: oklch(0.48 0.14 var(--element-hue));
+  --paper: oklch(0.16 0.014 var(--element-hue));
+  --paper-card: oklch(0.23 0.015 var(--element-hue));
+  --paper-card-veil: rgba(31, 34, 40, 0.92);
+  --stamp-ink: oklch(0.75 0.1 var(--element-hue));
+  --stamp-bg: oklch(0.33 0.035 var(--element-hue));
+  --stamp-bg-hover: oklch(0.38 0.04 var(--element-hue));
+  --stamp-bg-press: oklch(0.43 0.045 var(--element-hue));
+  --ink-wash-hover: oklch(0.30 0.035 var(--element-hue));
+  --ink-wash-press: oklch(0.27 0.025 var(--element-hue));
+  /* 注意：--ink-strong 在亮/暗两种模式下取值相同，因为它靠
+     prose-invert / text-* 工具类接管暗色正文。本站把 --ink-strong 当主文字色用，
+     照抄会让暗色模式变成深字压深底，所以这里保留亮色取值。 */
+  --ink-strong: oklch(0.95 0.01 var(--element-hue));
+  --rule-hair: rgba(255, 255, 255, 0.08);
+  --rule-line: rgba(255, 255, 255, 0.1);
+  --rule-meta: rgba(255, 255, 255, 0.2);
+  --ink-meta: rgba(255, 255, 255, 0.62);
+  --panel-paper: oklch(0.19 0.015 var(--element-hue));
+  --link-rule: oklch(0.40 0.08 var(--element-hue));
+  --link-wash: oklch(0.40 0.08 var(--element-hue));
+  --link-wash-press: oklch(0.35 0.07 var(--element-hue));
+  --selection-ink: oklch(0.40 0.08 var(--element-hue));
   color-scheme: dark;
 }
 
@@ -237,7 +218,7 @@ body.wallpaper-soft #wallpaper img { filter: blur(var(--cover-soften)); }
    并且全站没有一处 backdrop-filter。 */
 #navbar-wrapper { position: sticky; top: 0; z-index: 50; }
 #navbar {
-  max-width: var(--layout-page-width); margin: 0 auto; height: var(--nav-h);
+  max-width: var(--layout-page-width); margin: 0 auto; height: 4.5rem;
   display: flex; align-items: center; justify-content: space-between; padding: 0 1rem;
   transition: transform .3s cubic-bezier(.4,0,.2,1), opacity .3s cubic-bezier(.4,0,.2,1);
 }
@@ -288,7 +269,7 @@ body.wallpaper-soft #wallpaper img { filter: blur(var(--cover-soften)); }
    ============================================================ */
 #banner-wrapper {
   position: relative; width: 100%; height: var(--cover-height-home);
-  margin-top: calc(-1 * var(--nav-h)); overflow: hidden;
+  margin-top: -4.5rem; overflow: hidden;
 }
 #banner-wrapper img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; visibility: hidden; transition: opacity 1.5s ease, visibility 0s linear 1.5s; }
 #banner-wrapper img.on { opacity: 1; visibility: visible; transition: opacity 1.5s ease, visibility 0s; }
@@ -322,50 +303,14 @@ body.wallpaper-soft #wallpaper img { filter: blur(var(--cover-soften)); }
 html.mj-not-home #mj-memory { display: none; }
 html.mj-not-home #banner-wrapper { display: none; }
 html.mj-not-home #main-outer { margin-top: 5.5rem; }
-/* ★ 布局：一张主页面 + 一条"页边"（不再是左右对称的两条栏）
-   ------------------------------------------------------------
-   改之前是 17.5rem / 1fr / 17.5rem 的对称三栏 —— "大图封面 + 左右各一列小组件"
-   这一类骨架和参考主题是同一个模子。现在换成手帐的读法：页面在左、页边在右，
-   所有小部件收进**一条**栏里（栏宽也从 280–320px 收窄到 240px）。
-
-   两条栏在 DOM 里被 #content 隔开（<aside> <main> <aside>），CSS 里没法把
-   它们叠成一列，所以启动时把右栏的内容并进左栏、删掉右栏（见 enhance.js 的
-   mergeRails）。小部件都靠 id 找宿主，搬容器不影响它们。
-
-   页边做成 sticky + 内部滚动：不然 11 张小部件竖着排出来有 3700 多 px，
-   会把整页撑到 6000px、内容旁边空出一大片。这样页面高度只由正文决定，
-   页边自己滚自己的。 */
 #main-grid {
   max-width: var(--layout-page-width); margin: 0 auto; padding: 1.4rem 1rem 1rem;
-  display: grid;
-  grid-template-columns: minmax(0,1fr) var(--margin-width);
-  grid-template-areas: "page rail";
+  display: grid; grid-template-columns: var(--layout-sidebar-width) minmax(0,1fr) var(--layout-sidebar-width);
   gap: 1rem; align-items: start;
 }
-main#content { grid-area: page; }
-aside.left-sidebar {
-  grid-area: rail;
-  position: sticky; top: calc(var(--nav-h) + 1rem);
-  max-height: calc(100vh - var(--nav-h) - 2rem);
-  overflow-y: auto; overscroll-behavior: contain;
-  scrollbar-width: thin;
-}
-aside.right-sidebar { display: none; }
 /* 模块之间的竖向节奏：统一 1rem 会显得"卡片叠卡片"很硬，
    放大到 1.2rem 并配合更柔的入场动画，让模块之间有呼吸感。 */
-aside.left-sidebar, aside.right-sidebar { display: flex; flex-direction: column; gap: 1.2rem; min-width: 0; }
-/* ★ 页边是"sticky + 内部滚动"的，而 flex 列的子项默认 flex-shrink:1 ——
-   不写这一行的话，小部件会被压扁塞进 max-height 里（看起来像卡片都变矮了），
-   而不是溢出后滚动。 */
-aside.left-sidebar > * { flex: none; }
-/* 正文底部的"本站仪器"带：使用情况 / 天气 / 日历 三件横着摊开。
-   它们是启动时从页边搬过来的（见 enhance.js 的 hoistInstruments）。 */
-.instrument-band { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; }
-.instrument-band > * { min-width: 0; }
-/* 窄屏时仪器带降成两列 / 一列：三列在 700px 下每格只剩 210px，
-   日历格子和统计数字都会挤成一团。 */
-@media (max-width: 999px) { .instrument-band { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 639px) { .instrument-band { grid-template-columns: minmax(0, 1fr); } }
+aside.left-sidebar, aside.right-sidebar { display: flex; flex-direction: column; gap: 1.2rem; }
 main#content { display: flex; flex-direction: column; gap: 1.2rem; min-width: 0; }
 
 /* ============================================================
@@ -450,9 +395,8 @@ main#content { display: flex; flex-direction: column; gap: 1.2rem; min-width: 0;
 }
 .chip:hover { background: var(--stamp-bg-hover); }
 .chip:active { transform: scale(.94); }
-/* 计数不再用 opacity 压淡：--stamp-ink 的取值是照着"正好过 AA"标定的
-   （oklch(0.50) 压在 --stamp-bg(0.95) 上 ≈4.94:1），再叠一层 0.75 透明度
-   就等于把对比度拉回 3.6:1，直接掉出 AA。层级靠字号和字重区分就够了。 */
+/* 计数不要用 opacity 压淡：--stamp-ink 是照着"正好过 AA"标定的（≈4.9:1），
+   再叠一层 0.75 就掉到 3.6:1。层级靠字号和字重区分就够了。 */
 .chip .n { font-size: .7rem; font-weight: 400; }
 .cat-row { display: flex; flex-direction: column; gap: .15rem; }
 .cat-row a {
@@ -504,26 +448,21 @@ body.outline-cards .mj-view .sheet { border-color: color-mix(in oklab, var(--rul
 }
 
 /* ============================================================
-   应用信息（原来是"贴底的应用状态栏"）
-   ★ 形态改掉了：XinghuisamaBlogs 与 Yuimi-chaya 都是"固定贴屏幕底边的一整条
-   状态栏"，照做等于把那个辨识度最高的部件直接搬过来。现在它只是设置抽屉
-   底部的一段「应用信息」：视图 / 数据量 / 帧率 / 导出导入都还在，
-   但不再占据屏幕底边，也不再是常驻全站的条。内容由 modules.js 的 Stats 回填。
+   应用状态栏（往"下载自用的桌面应用"靠拢的形态）
+   固定贴底，左侧是应用身份 + 当前页，中间是真实数据，右侧是帧率与数据操作。
    ============================================================ */
 #mjStatus {
-  position: static; margin-top: 1.1rem; padding-top: .85rem;
-  display: flex; flex-direction: column; align-items: stretch; gap: .55rem;
-  border-top: 1px dashed var(--rule-hair);
-  background: transparent;
-  font-family: var(--font-mono); font-size: 11px; line-height: 1.5;
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 9998;
+  display: flex; align-items: center; gap: .75rem;
+  height: 30px; padding: 0 .75rem;
+  background: var(--paper-card);
+  border-top: 1px solid var(--rule-hair);
+  font-family: var(--font-mono); font-size: 11px; line-height: 1;
   color: var(--ink-meta);
   user-select: none; -webkit-user-select: none;
 }
-#mjStatus .sb-left, #mjStatus .sb-mid, #mjStatus .sb-right {
-  display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; justify-content: flex-start;
-}
-/* 抽屉里放得下，就不必像原来那样在窄屏把中段藏起来 */
-#mjStatus .sb-mid { gap: .7rem; }
+#mjStatus .sb-left, #mjStatus .sb-right { display: flex; align-items: center; gap: .5rem; flex: none; }
+#mjStatus .sb-mid { display: flex; align-items: center; gap: .9rem; flex: 1 1 auto; justify-content: center; min-width: 0; overflow: hidden; white-space: nowrap; }
 #mjStatus .sb-app { display: inline-flex; align-items: center; gap: .35rem; color: var(--ink-strong); font-weight: 600; }
 #mjStatus .sb-dot {
   width: 7px; height: 7px; border-radius: 50%; background: var(--element);
@@ -535,18 +474,21 @@ body.outline-cards .mj-view .sheet { border-color: color-mix(in oklab, var(--rul
   padding: 1px 6px; border-radius: 999px;
   background: var(--stamp-bg); color: var(--stamp-ink);
 }
-#mjStatus .sb-sep { display: none; }
+#mjStatus .sb-sep { width: 1px; height: 14px; background: var(--rule-hair); }
 #mjStatus .sb-view { color: var(--element-deep); }
 /* 不要在这里加 opacity：--ink-meta 已经压着 4.5:1 的线，
    再叠一层 .8 不透明度会掉到 3.49:1（Lighthouse 会判 color-contrast 失败）。 */
 #mjStatus .sb-fps { font-variant-numeric: tabular-nums; }
 #mjStatus .sb-btn {
-  font: inherit; height: 22px; padding: 0 .55rem; border: 0; cursor: pointer;
+  font: inherit; height: 20px; padding: 0 .5rem; border: 0; cursor: pointer;
   border-radius: var(--radius-chip); background: var(--stamp-bg); color: var(--stamp-ink);
   transition: background-color .15s cubic-bezier(.4,0,.2,1), color .15s ease, transform .15s cubic-bezier(.4,0,.2,1);
 }
 #mjStatus .sb-btn:hover { background: var(--stamp-bg-hover); color: var(--element-deep); }
 #mjStatus .sb-btn:active { transform: scale(.94); }
+@media (max-width: 720px) {
+  #mjStatus .sb-mid { display: none; }
+}
 /* 状态栏是固定贴底的，给页面留出高度，别压住页脚 */
 #main-grid { padding-bottom: 2.6rem; }
 
@@ -583,8 +525,6 @@ body.outline-cards .mj-view .sheet { border-color: color-mix(in oklab, var(--rul
 }
 .music-bar { height: .3rem; border-radius: 999px; background: var(--stamp-bg); overflow: hidden; cursor: pointer; }
 .music-bar i { display: block; height: 100%; width: 32%; background: var(--element); }
-/* 播放进度的时间数字：用 --ink-meta（AA 标定）而不是 opacity: .72，
-   压淡文字会把 5.9:1 拉到 3.9:1。 */
 .music-time { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: .65rem; color: var(--ink-meta); }
 .music-ctrl { display: flex; align-items: center; justify-content: center; gap: .6rem; }
 .music-ctrl .mb { width: 2.2rem; height: 2.2rem; border-radius: 50%; display: grid; place-items: center; border: 0; cursor: pointer; background: var(--stamp-bg); color: var(--stamp-ink); transition: background-color .15s, transform .1s; }
@@ -687,40 +627,18 @@ footer.site-footer a:hover { color: var(--element-deep); }
 #floating-controls button:hover { transform: translateY(-2px); background: var(--stamp-bg); }
 #floating-controls button.hidden { display: none; }
 
-/* ★ 设置书签：竖向贴在右边缘（writing-mode 竖排），点开抽屉。
-   注意它是独立元素，不在 #floating-controls 里 —— 那个容器有
-   `#floating-controls button` 这条规则（含宽度/圆角/圆形），
-   书签放进去会被它按住，形状改不动。 */
-#fcSetting {
-  position: fixed; right: 0; top: 50%; transform: translateY(-50%);
-  z-index: 62; cursor: pointer;
-  writing-mode: vertical-rl; letter-spacing: .22em;
-  padding: .95rem .42rem; border: 1px solid var(--rule-hair); border-right: 0;
-  border-radius: var(--radius-btn) 0 0 var(--radius-btn);
-  background: var(--panel-paper); color: var(--stamp-ink);
-  font-family: inherit; font-size: .76rem; font-weight: 500;
-  box-shadow: -6px 0 18px -12px rgba(0,0,0,.5);
-  transition: transform .18s cubic-bezier(.4,0,.2,1), background-color .15s;
-}
-#fcSetting:hover { transform: translateY(-50%) translateX(-3px); background: var(--stamp-bg); }
-#fcSetting:active { transform: translateY(-50%) translateX(-3px) scale(.97); }
-
-/* 浮动面板（设置抽屉）
-   从右侧边缘滑出、贴满右边缘：只有左上/左下是圆角，右侧是"插进本子"的直边。 */
+/* 浮动面板（设置）
+   .float-sheet = rounded-1rem + --panel-paper + shadow-xl，暗色下 shadow-none */
 .float-sheet {
-  position: fixed; right: 0; top: var(--nav-h); bottom: 0; z-index: 61;
-  width: min(21rem, 92vw);
-  border-radius: var(--radius-card) 0 0 var(--radius-card);
-  background: var(--panel-paper);
-  box-shadow: -20px 0 25px -12px rgb(0 0 0 / .1), -8px 0 10px -6px rgb(0 0 0 / .1);
-  border: 0; border-left: 1px solid var(--rule-hair);
-  padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
-  overflow-y: auto; overscroll-behavior: contain;
-  transform-origin: right center;
-  transition: transform .22s cubic-bezier(.4,0,.2,1), opacity .22s cubic-bezier(.4,0,.2,1);
+  position: fixed; right: 1rem; bottom: 5.2rem; z-index: 61; width: 20rem;
+  border-radius: var(--radius-card); background: var(--panel-paper);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / .1), 0 8px 10px -6px rgb(0 0 0 / .1);
+  border: 0;
+  padding: 1rem; transform-origin: bottom right;
+  transition: transform .15s cubic-bezier(.4,0,.2,1), opacity .15s cubic-bezier(.4,0,.2,1);
 }
 :root.dark .float-sheet { box-shadow: none; }
-.float-sheet.closed { transform: translateX(101%); opacity: 0; pointer-events: none; }
+.float-sheet.closed { transform: translateY(.5rem) scale(.96); opacity: 0; pointer-events: none; }
 .fp-row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .35rem 0; font-size: .8rem; }
 .fp-row + .fp-row { border-top: 1px dashed var(--rule-hair); }
 .fp-seg { display: flex; gap: .2rem; background: var(--stamp-bg); padding: .15rem; border-radius: .5rem; }
@@ -945,14 +863,11 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
   border: 2px solid currentColor; background: transparent;
   transition: background-color .16s ease, border-color .16s ease;
 }
-/* "开"的状态用 --element-strong 而不是 --element 当底：
-   白字压在 --element(0.668) 上只有 2.85:1，过不了 AA；压在 strong(0.428) 上 ≈5.5:1。
-   全站的"实心强调块 + 白字"都统一走 strong（日历的今天、.mj2-btn.solid 都是）。 */
+/* 白字压在 --element(0.70) 上只有 ≈2.6:1，过不了 AA；全站"实心强调块+白字"统一走 strong */
 .fp-switch button:not(.off) { background: var(--element-strong); color: #fff; border-color: var(--element-strong); }
 .fp-switch button:not(.off)::before { background: #fff; border-color: #fff; }
 .fp-switch button:not(.off):hover { background: color-mix(in oklab, var(--element) 84%, #000); }
-/* "关"的状态不要用透明度压淡：--stamp-ink 压在抽屉底上本来够 AA，
-   但叠一层 .62 就掉到 2.85:1（暗色 2.32:1）—— 关着但看得清，用颜色和描边区分。 */
+/* "关"的状态不要压透明度：叠 .62 会掉到 2.85:1（暗色 2.32:1）。用颜色和描边区分。 */
 .fp-switch button.off { background: transparent; border-color: var(--rule-hair); color: var(--ink-meta); }
 .fp-switch button.off:hover { color: var(--element-deep); background: var(--stamp-bg-hover); }
 /* 按下去缩一下，松手回弹（transition 在 button 上，不会卡在按下态） */
@@ -962,16 +877,13 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
    响应式
    ============================================================ */
 @media (max-width: 1279px) {
-  /* 页边收到内容下方：不再并排，也取消 sticky 与内部滚动 */
-  #main-grid { grid-template-columns: minmax(0,1fr); grid-template-areas: "page" "rail"; }
-  aside.left-sidebar {
-    position: static; max-height: none; overflow: visible;
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1.2rem;
-  }
+  #main-grid { grid-template-columns: var(--layout-sidebar-width) minmax(0,1fr); }
+  aside.right-sidebar { display: none; }
 }
 @media (max-width: 767px) {
   :root { --layout-page-width: 100%; }
   #main-grid { grid-template-columns: minmax(0,1fr); padding: 0 .75rem .75rem; }
+  aside.left-sidebar { display: none; }
   .nav-links { display: none; }
   #banner-wrapper { height: min(55vh, 620px); }
   .post-card a.post-link { flex-direction: column; }
@@ -1000,8 +912,8 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 
 <!-- 全屏壁纸 -->
 <div id="wallpaper" aria-hidden="true">
-  <img src="assets/paper/bg-01.svg" alt="" class="on" />
-  <img src="assets/paper/bg-02.svg" alt="" />
+  <img src="assets/mys/bg-01.jpg" alt="" class="on" />
+  <img src="assets/mys/bg-02.jpg" alt="" />
   <div class="gradient-breathe"></div>
 </div>
 
@@ -1028,7 +940,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
   <nav id="navbar" aria-label="主导航">
     <div class="nav-inner">
       <a class="nav-brand" href="#">
-        <img class="nav-logo" src="assets/paper/petal.svg" alt="" />
+        <img class="nav-logo" src="assets/sakura.webp" alt="" />
         <span id="navBrandName">元素手帐</span>
       </a>
       <div class="nav-links">
@@ -1053,8 +965,8 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 
 <!-- Banner -->
 <div id="banner-wrapper">
-  <img src="assets/paper/bg-01.svg" alt="" class="on" />
-  <img src="assets/paper/bg-02.svg" alt="" />
+  <img src="assets/mys/bg-01.jpg" alt="" class="on" />
+  <img src="assets/mys/bg-02.jpg" alt="" />
   <div id="banner-overlay" aria-hidden="true"></div>
   <div id="banner-text">
     <h1 class="enter-rise" style="animation-delay:0ms" data-ed="banner.title" data-ed-default="今天也值得记一笔">今天也值得记一笔</h1>
@@ -1093,7 +1005,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
       <!-- 个人资料 -->
       <div class="sheet card-pad enter-rise" style="animation-delay:0ms">
         <a class="profile-avatar" href="#" id="mjAvatarLink" aria-label="关于我">
-          <img src="assets/paper/avatar.svg" alt="头像" id="mjAvatarImg" />
+          <img src="assets/avatar-user.jpg" alt="头像" id="mjAvatarImg" />
           <span class="hover-mask">▤</span>
         </a>
         <div class="profile-name">元素手帐</div>
@@ -1151,7 +1063,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
         <article class="post-card sheet">
           <span class="post-pinned">置顶</span>
           <a class="post-link" href="#">
-            <div class="post-cover"><img src="assets/paper/bg-03.svg" alt="" loading="lazy" /></div>
+            <div class="post-cover"><img src="assets/mys/bg-03.jpg" alt="" loading="lazy" /></div>
             <div class="post-body">
               <div class="post-title">搬进来之后的第一件事</div>
               <div class="post-desc">空房间最麻烦的不是没有家具，而是不知道光从哪边进来。住了两周才把桌子挪到对的位置。</div>
@@ -1167,7 +1079,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 
         <article class="post-card sheet">
           <a class="post-link" href="#">
-            <div class="post-cover"><img src="assets/paper/bg-05.svg" alt="" loading="lazy" /></div>
+            <div class="post-cover"><img src="assets/mys/bg-05.jpg" alt="" loading="lazy" /></div>
             <div class="post-body">
               <div class="post-title">关于早起这件小事</div>
               <div class="post-desc">试过很多方法，最后有用的只有一条：把闹钟放到必须下床才能关的地方。附一份我用了半年的晨间流程。</div>
@@ -1183,7 +1095,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 
         <article class="post-card sheet">
           <a class="post-link" href="#">
-            <div class="post-cover"><img src="assets/paper/bg-06.svg" alt="" loading="lazy" /></div>
+            <div class="post-cover"><img src="assets/mys/bg-06.jpg" alt="" loading="lazy" /></div>
             <div class="post-body">
               <div class="post-title">一本读完想立刻重读的书</div>
               <div class="post-desc">有些书是拿来"用"的，这本是拿来反复翻的。记下几个被打动的段落，以及我为什么在最后一章停了很久。</div>
@@ -1199,7 +1111,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 
         <article class="post-card sheet">
           <a class="post-link" href="#">
-            <div class="post-cover"><img src="assets/paper/bg-07.svg" alt="" loading="lazy" /></div>
+            <div class="post-cover"><img src="assets/mys/bg-07.jpg" alt="" loading="lazy" /></div>
             <div class="post-body">
               <div class="post-title">周末做一次慢炖</div>
               <div class="post-desc">不用守着锅，两小时之后它自己就好了。写清楚配比与时间，下次照着做不会失手。</div>
@@ -1312,7 +1224,7 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
         <div class="widget-head"><span class="w-ico">▸</span><span class="ed-label">音乐</span></div>
         <div class="widget-body music-side">
           <div class="music-head">
-            <div class="music-cover"><img id="mCover" src="assets/paper/cover-01.svg" alt="" /></div>
+            <div class="music-cover"><img id="mCover" src="assets/xryx.webp" alt="" /></div>
             <div class="music-meta">
               <div class="music-title" id="mTitle">夏日与海</div>
               <div class="music-artist" id="mArtist">示例曲目</div>
@@ -1335,15 +1247,10 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 <!-- 浮动控制 -->
 <div id="floating-controls">
   <button type="button" id="fcTop" class="hidden" aria-label="回到顶部">↑</button>
+  <button type="button" id="fcSetting" aria-label="显示设置">⚙</button>
 </div>
 
-<!-- ★ 设置：右边缘的一枚"索引书签" + 从右侧滑出的抽屉。
-     参考主题（Firefly / Mizuki）都是"右下角一个圆形齿轮按钮 + 一块浮起来的小卡片"，
-     这里换成手帐本侧面贴的书签：竖向写在右边缘，点开滑出一整条抽屉。
-     书签上写的是字而不是齿轮图标 —— 位置、形状、开合方向都和那个形态不同。 -->
-<button type="button" id="fcSetting" aria-label="打开设置" aria-expanded="false" aria-controls="settingPanel">设置</button>
-
-<!-- 设置抽屉 -->
+<!-- 设置面板 -->
 <div class="float-sheet closed" id="settingPanel">
   <div class="fp-row"><span>主题色相</span><span id="hueLabel" style="font-family:var(--font-mono)">240</span></div>
   <div class="fp-row" style="display:block">
@@ -1387,15 +1294,6 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
       <button type="button" data-fx="fireflies">萤火</button>
       <button type="button" data-fx="danmaku">弹幕</button>
       <button type="button" data-fx="ripple">涟漪</button>
-    </div>
-  </div>
-  <!-- ★ 自绘光标默认关：参考的四个站都自带"环 + 点"的自绘光标，
-       默认打开等于先把这个特征抄过来。想用的人在这里自己开。 -->
-  <div class="fp-row">
-    <span>墨点光标</span>
-    <div class="fp-seg" id="cursorSeg">
-      <button type="button" data-cur="off" class="on">关</button>
-      <button type="button" data-cur="on">开</button>
     </div>
   </div>
 </div>
@@ -1560,26 +1458,6 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
     try { savedSoft = localStorage.getItem('mj_wp_soft') || '0'; } catch (e) {}
     setSoft(savedSoft === '1');
   }
-  /* 墨点光标开关：默认关（参考站都自带自绘光标，默认开等于先把这个特征拿过来）。
-     真正的显隐由 enhance.js 的 Cursor.setEnabled 负责，包括停掉缓动循环；
-     这个脚本比 enhance.js 先执行，所以点击时才去取 window.MJX。 */
-  var cursorSeg = document.getElementById('cursorSeg');
-  if (cursorSeg) {
-    var paintCursor = function (on) {
-      cursorSeg.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', (b.dataset.cur === 'on') === on); });
-    };
-    cursorSeg.querySelectorAll('button').forEach(function (b) {
-      b.addEventListener('click', function () {
-        var on = b.dataset.cur === 'on';
-        if (window.MJX && window.MJX.Cursor && window.MJX.Cursor.setEnabled) window.MJX.Cursor.setEnabled(on);
-        else { try { localStorage.setItem('mj_cursor', on ? 'on' : 'off'); } catch (e) {} }
-        paintCursor(on);
-      });
-    });
-    var initialCursor = false;
-    try { initialCursor = localStorage.getItem('mj_cursor') === 'on'; } catch (e) {}
-    paintCursor(initialCursor);
-  }
   document.getElementById('bgBtn').addEventListener('click', function () {
     var order = ['banner', 'fullscreen', 'none'];
     var nowEl = document.querySelector('#wpSeg button.on');
@@ -1587,28 +1465,14 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
     setWallpaperMode(order[(idx + 1) % order.length]);
   });
 
-  /* ---------- 设置抽屉（右边缘的书签开合） ---------- */
+  /* ---------- 设置面板 ---------- */
   var panel = document.getElementById('settingPanel');
-  var tab = document.getElementById('fcSetting');
-  tab.addEventListener('click', function () {
-    var closed = panel.classList.toggle('closed');
-    // 书签是 disclosure 的触发器，开合状态要同步给读屏
-    tab.setAttribute('aria-expanded', closed ? 'false' : 'true');
-  });
+  document.getElementById('fcSetting').addEventListener('click', function () { panel.classList.toggle('closed'); });
   document.addEventListener('click', function (e) {
     if (!panel.classList.contains('closed') &&
         !panel.contains(e.target) &&
-        !tab.contains(e.target)) {
+        !document.getElementById('fcSetting').contains(e.target)) {
       panel.classList.add('closed');
-      tab.setAttribute('aria-expanded', 'false');
-    }
-  });
-  // Esc 关闭
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && !panel.classList.contains('closed')) {
-      panel.classList.add('closed');
-      tab.setAttribute('aria-expanded', 'false');
-      tab.focus();
     }
   });
 
@@ -1669,10 +1533,10 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
      占位作者名，封面换成自己生成的墨环图。
      要放自己的歌，把 title / artist / cover 换成自己的就好。 */
   var TRACKS = [
-    { title: '夏日与海', artist: '示例曲目', cover: 'assets/paper/cover-01.svg', len: 164 },
-    { title: '深夜调音室', artist: '示例曲目', cover: 'assets/paper/cover-02.svg', len: 212 },
-    { title: '存在证明', artist: '示例曲目', cover: 'assets/paper/cover-03.svg', len: 233 },
-    { title: '星之航路', artist: '示例曲目', cover: 'assets/paper/cover-04.svg', len: 198 }
+    { title: '夏日与海', artist: '示例曲目', cover: 'assets/xryx.webp', len: 164 },
+    { title: '深夜调音室', artist: '示例曲目', cover: 'assets/hitori.webp', len: 212 },
+    { title: '存在证明', artist: '示例曲目', cover: 'assets/cl.webp', len: 233 },
+    { title: '星之航路', artist: '示例曲目', cover: 'assets/dazbee.webp', len: 198 }
   ];
   var ti2 = 0, mPlaying = false, mPos = 52, mTimer = null;
   var mCover = document.getElementById('mCover');

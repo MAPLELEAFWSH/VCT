@@ -31,8 +31,7 @@
 .cal-grid .d.today { background: var(--element-strong); color: #fff; font-weight: 700; }
 .cal-grid .d:not(.today):hover { background: var(--stamp-bg-hover); }
 .cal-grid .d.sel { box-shadow: inset 0 0 0 2px var(--element); font-weight: 700; }
-/* 非本月的日期：用 --ink-meta 与本月区分（它本身就是 AA 标定过的），
-   不再叠 opacity: .5 —— 那会把日期数字压到 3.1:1。 */
+/* 非本月日期用 --ink-meta 区分即可，不再叠 opacity（会压到 3.1:1） */
 .cal-grid .d.other { color: var(--ink-meta); }
 .mj2-diff {
   margin-top: .55rem; padding: .45rem .6rem; border-radius: .5rem;
@@ -163,8 +162,7 @@
 .mj2-track .ti { min-width: 0; }
 .mj2-track .ti b { display: block; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mj2-track .ti span { font-size: .62rem; color: var(--ink-meta); }
-/* 删除按钮是"图形对象"（非文本），按 WCAG 需要 3:1。
-   原来 opacity: .45 连 3:1 都不到；改成实色，悬停变红。 */
+/* 删除按钮是图形对象，按 WCAG 要 3:1；原来 .45 连 3:1 都不到 */
 .mj2-track .del { margin-left: auto; color: var(--ink-meta); font-size: .8rem; }
 .mj2-track .del:hover { color: #c2504f; }
 

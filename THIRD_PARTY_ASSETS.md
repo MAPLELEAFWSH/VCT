@@ -12,20 +12,38 @@
 
 | 路径 | 是什么 | 来源 | 授权情况 |
 | --- | --- | --- | --- |
-| `assets/paper/bg-01…07.svg` | 7 张纸感墨晕背景（壁纸 / 记忆场景 / 文章与项目封面） | **本项目程序化生成** | 随本站 MIT 一起发布 |
-| `assets/paper/cover-01…04.svg` | 4 张音乐封面（同心墨环） | 同上 | 同上 |
-| `assets/paper/petal.svg` | 导航栏的樱花花瓣标记 | 同上 | 同上 |
-| `assets/paper/avatar.svg` | 默认头像 | 同上 | 同上 |
-| `assets/paper/app-icon.svg` | 应用图标的矢量源文件 | 同上 | 同上 |
+| `assets/mys/bg-01…07.jpg` | 7 张背景图（壁纸 / 记忆场景 / 文章与项目封面） | **第三方素材**（目录名与尺寸指向米游社一类的游戏社区） | **不在本站 MIT 授权内**，见下 |
+| `assets/xryx.webp`、`hitori.webp`、`cl.webp`、`dazbee.webp` | 侧栏音乐的 4 张封面 | 同上 | 同上 |
+| `assets/sakura.webp` | 导航栏的樱花标记 | 同上 | 同上 |
+| `assets/avatar-user.jpg`、`assets/avatar.webp` | 头像 | 同上 | 同上 |
 | `assets/app-icon.png`<br>`assets/app-icon-512.png` | 桌面版安装包与窗口图标（256 / 512） | **待确认** | 见下 |
+| `assets/paper/*.svg`（14 个） | 本项目**程序化生成**的一整套替代素材：纸感墨晕背景、墨环封面、花瓣、默认头像、图标矢量源 | 自己生成 | 随本站 MIT 一起发布 |
+
+`assets/paper/` 那一套是备选：它不依赖任何第三方素材，想换成"完全干净"的素材时，
+把代码里的 `assets/mys/bg-0N.jpg` 换成 `assets/paper/bg-0N.svg` 即可
+（封面同理换成 `cover-01…04.svg`，标记换成 `petal.svg`，头像换成 `avatar.svg`）。
+
+### ★ 关于上面那批第三方图片
+
+这些图片是站点自用阶段就已经在用的素材，**作者决定保留**。需要说明的是：
+
+- 本站的 MIT 许可证**不覆盖**它们，它们也不因为"放在这个仓库里"就变成可自由取用。
+- 米哈游 / 相关作品的图片、角色美术，其权利属于原权利人。参考项目
+  Firefly 自己的 README 里也写着"流萤部分相关图片素材版权归……米哈游所有"。
+- 如果这些图的来源或授权情况你自己也不确定，最省事的做法是换成
+  `assets/paper/` 那一套（见上），或者取得相应许可。
+- 只想在本地自用的个人站点，风险与公开发布不同；请按自己的发布范围判断。
+
+**下一位复用者请注意**：`assets/paper/` 可以随 MIT 一起用；
+`assets/mys/`、那 4 张封面、`sakura.webp`、`avatar-*.jpg/webp` 不行。
 
 没有外部字体文件：字体走 Google Fonts 的在线引用（Noto Sans SC / Noto Serif SC /
 Zen Maru Gothic / JetBrains Mono），各自遵循它们自己的许可（SIL OFL 等）。
 
 ### 关于两张 app-icon.png
 
-这两个 PNG 是更早的时候放进来的，**不是**上面的生成脚本产出的，我（维护者）
-无法确认它们是否完全由自己绘制。发布前请自行确认：
+这两个 PNG 是更早的时候放进来的，**不是** `assets/paper/` 那套生成脚本产出的，
+我（维护者）无法确认它们是否完全由自己绘制。发布前请自行确认：
 
 - 如果是你自己画的 / 有明确授权的 → 不用担心，把上表这一行的"待确认"改成来源即可。
 - 如果来路不明 → 用 `assets/paper/app-icon.svg` 重新导出 PNG 替换
@@ -36,16 +54,20 @@ Zen Maru Gothic / JetBrains Mono），各自遵循它们自己的许可（SIL OF
 
 ---
 
-## 二、以前有过、现在已经移除的素材
+## 二、曾经改成"全自绘素材"、后来又改回来的过程
 
-为了不引起纠纷，下面这些**已经从仓库移除**（换成上面那批自己生成的素材）：
+维护过程中一度把这批第三方图片换成 `assets/paper/` 那套生成素材，
+后来按"参考项目条款并未限制版式与素材使用"的判断改回保留原图。
+这一节留个记录，免得以后看到 `assets/paper/` 里的文件不知道是干什么的：
 
-| 原来的文件 | 用在哪 | 为什么移除 |
+| 文件 | 本来用在哪 | 现在的状态 |
 | --- | --- | --- |
-| `assets/mys/bg-01…07.jpg` | 壁纸、记忆场景、文章封面、项目封面 | 目录名与尺寸看像是从游戏社区保存的图，来源与授权都无法确认 |
-| `assets/xryx.webp`、`hitori.webp`、`cl.webp`、`dazbee.webp` | 侧栏音乐封面 | 同上；而且它们配的"作者名"是真实作品与角色的名字 |
-| `assets/sakura.webp` | 导航栏标记 | 同上，换成自己画的花瓣 |
-| `assets/avatar-user.jpg`、`assets/avatar.webp` | 默认头像 | 同上（`avatar.webp` 其实已经没有被引用了） |
+| `assets/mys/bg-01…07.jpg` | 壁纸、记忆场景、文章与项目封面 | 已改回使用 |
+| `assets/xryx.webp`、`hitori.webp`、`cl.webp`、`dazbee.webp` | 侧栏音乐封面 | 已改回使用 |
+| `assets/sakura.webp` | 导航栏标记 | 已改回使用 |
+| `assets/avatar-user.jpg` | 默认头像 | 已改回使用 |
+| `assets/avatar.webp` | ——（仓库里没有被引用） | 保留但未使用 |
+| `assets/paper/*.svg` | 替代素材 | 保留为备选，代码未引用 |
 
 同时改掉的还有侧栏那 4 条示例曲目：它们原本挂着真实作品/角色的署名，
 现在统一是「示例曲目」这个中性占位名。**这不代表本站收录了那些歌。**
@@ -56,12 +78,15 @@ Zen Maru Gothic / JetBrains Mono），各自遵循它们自己的许可（SIL OF
 
 如果你要拿这个项目改自己的站：
 
-1. 上面第一张表里"来源 = 本项目程序化生成"的，随 MIT 一起用没问题。
-2. `assets/app-icon.png` 请按第一条自行处理。
-3. 你自己后来换进去的图（壁纸、头像、封面、文章配图），授权由你自己确认。
-   来源不清楚的，别把"仓库里能下载"当成许可；要么拿到许可，要么换成
-   自己创作、或者明确允许使用的素材。
-4. 打包或部署前把**所有**素材都过一遍：主题背景、文章封面、头像、图标、
+1. `assets/paper/*.svg` 是本项目自己生成的，随 MIT 一起用没问题。
+2. `assets/mys/*`、`assets/xryx.webp`／`hitori.webp`／`cl.webp`／`dazbee.webp`、
+   `assets/sakura.webp`、`assets/avatar-user.jpg`、`assets/avatar.webp`
+   都是第三方素材，**不在本仓库的 MIT 授权内**：要么换成 `assets/paper/` 那套，
+   要么自己取得许可。
+3. `assets/app-icon.png` 请按第一张表的说明自行处理。
+4. 你自己后来换进去的图（壁纸、头像、封面、文章配图），授权由你自己确认。
+   来源不清楚的，别把"仓库里能下载"当成许可。
+5. 打包或部署前把**所有**素材都过一遍：主题背景、文章封面、头像、图标、
    以及 README 里用的截图，别只换了首页背景就以为干净了。
 
 ---
