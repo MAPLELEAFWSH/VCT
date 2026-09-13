@@ -7,6 +7,25 @@
 <meta name="description" content="一个可以自由改的个人手帐站：日常随笔、读书笔记、厨房记录与走走看看，配主题色、壁纸模式、氛围特效和小游戏。" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<!-- 站点图标：不声明的话浏览器会去要 /favicon.ico，静态托管上没有这个文件，
+     于是每次加载都留下一个 404（也是控制台里唯一一条报错）。 -->
+<link rel="icon" type="image/png" href="assets/app-icon.png" />
+<link rel="apple-touch-icon" href="assets/app-icon.png" />
+<script>
+/* 第一帧之前判断"这一屏到底是不是首页"。
+   下面那段记忆占位（186vh）只在首页出现；如果首屏就是 #/friends 之类的深链接，
+   等路由跑完再隐藏它，主内容已经被顶下去又弹回来一次（CLS 0.97）。
+   这里的判断和 enhance.js 的 Router.parse() 对齐：只有这 8 个首段确定为非首页，
+   其余（空 / home / chapter / memory / 不认识）都按首页处理，宁可多留着占位，
+   也不要出现"占位收掉了但首页内容还在"的空档。 */
+(function () {
+  var NON_HOME = ['blog', 'works', 'games', 'projects', 'schedule', 'about', 'friends', 'chat'];
+  var seg = location.hash.replace(/^#\/?/, '').split(/[/?]/).filter(Boolean);
+  if (seg.length && NON_HOME.indexOf(seg[0]) >= 0) {
+    document.documentElement.classList.add('mj-not-home');
+  }
+})();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@400;600;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet" />
 <style>
 /* ============================================================
@@ -268,6 +287,14 @@ body.wallpaper-soft #wallpaper img { filter: blur(var(--wallpaper-blur)); }
 /* 主网格不再负向上压：这个 -3.5rem 原是为"面板压住 Banner"设计的，
    但 Opening Memory 插进 Banner 与主网格之间后，它变成了压住记忆区内容（实测重叠 79,856 px²） */
 #main-outer { position: relative; z-index: 30; margin-top: 0; }
+/* 首屏直接落在非首页路由时（比如别人把 /#/friends 发给你），
+   下面这三样都要在第一帧之前就位。等路由跑完再改的话，
+   主内容会先被 186vh 的记忆区顶到 top≈2359、再被收起来的 Banner 弹回 top≈160
+   （实测 CLS 0.97）。这里的取值跟 enhance.js 的 setChrome() 一一对应：
+   内页收 Banner、收起记忆区、并给主网格补 5.5rem 的顶距。 */
+html.mj-not-home #mj-memory { display: none; }
+html.mj-not-home #banner-wrapper { display: none; }
+html.mj-not-home #main-outer { margin-top: 5.5rem; }
 #main-grid {
   max-width: var(--layout-page-width); margin: 0 auto; padding: 1.4rem 1rem 1rem;
   display: grid; grid-template-columns: var(--layout-sidebar-width) minmax(0,1fr) var(--layout-sidebar-width);
@@ -944,6 +971,15 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
     </svg>
   </div>
 </div>
+
+<!-- ★ "记忆"那一段（186vh 的滚动叙事）以前是 enhance.js 建好之后才插进来的，
+     也就是说首屏画完之后才有这个 1748px 的块，它把下面的 #main-outer 从
+     top=611 一把推到 top=2359、整块推出视口 —— 这就是首屏 CLS 0.35 的来源。
+     现在占位写死在 HTML 里，高度由 enhance.css 的 #mj-memory 规则立刻生效，
+     JS 只往里面填内容，不再"凭空长出一大块"。没有 JS 时用 noscript 收掉，
+     免得留下 1748px 的空白。 -->
+<noscript><style>#mj-memory{display:none}</style></noscript>
+<section id="mj-memory" aria-label="Opening Memory"></section>
 
 <!-- 主网格 -->
 <div id="main-outer">

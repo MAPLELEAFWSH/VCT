@@ -103,10 +103,16 @@ body.mj-native-cursor .ed-pen { display: none; }
 }
 
 /* ---------- 条目增删控件（公告 / 标签 / 关于） ---------- */
-.ed-row { display: flex; align-items: flex-start; gap: .35rem; margin: 0 0 .45rem; }.ed-row > span:first-child { flex: 1 1 auto; min-width: 0; }
+.ed-row { display: flex; align-items: flex-start; gap: .35rem; margin: 0 0 .45rem; }
+.ed-row > span:first-child { flex: 1 1 auto; min-width: 0; }
 .ed-tools { display: inline-flex; gap: .18rem; flex: none; opacity: 0; transition: opacity .16s ease; }
+/* ★ 每一个"装得下 .ed-tools 的容器"都必须在这里列出来，否则那对 ＋/×
+   会永远停在 opacity:0 —— 元素还在、也点得到，但用户根本看不见，
+   表现就是"这一栏没法增删"。之前漏了 .mj-friend（友链）和
+   .ed-pair（目录 / 分类），那两处就成了只能看不能改。 */
 .ed-row:hover .ed-tools, .ed-chip:hover .ed-tools, .mj-tick:hover .ed-tools,
 .mj-xp:hover .ed-tools, .mj-check label:hover .ed-tools,
+.mj-friend:hover .ed-tools, .ed-pair:hover .ed-tools,
 .ed-tools:focus-within { opacity: 1; }
 /* ★ 尺寸不能小于 24×24。
    WCAG 2.2 的 target-size（触控目标尺寸）下限是 24×24 CSS px；
@@ -1075,6 +1081,14 @@ body.mj-native-cursor .ed-pen { display: none; }
 .mj-friend:hover .fav { transform: rotate(-6deg) scale(1.06); }
 .mj-friend b { display: block; font-size: .9375rem; font-weight: 700; }
 .mj-friend span { font-size: .875rem; color: var(--content-meta); }
+/* 头像可点击换图（以前这块只有色块 + 首字母，没有任何换图的入口） */
+.mj-friend .fav { position: relative; cursor: pointer; }
+.mj-friend .fav.has-img { box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 35%, transparent); }
+.mj-friend .fav:focus-visible { outline: 2px solid var(--primary-text); outline-offset: 2px; }
+/* 悬停时透出一支铅笔，告诉人"这里能换"；纯装饰，不参与点击 */
+.mj-friend .fav-pen { position: absolute; inset: 0; display: grid; place-items: center; font-style: normal; font-size: .85rem;
+  border-radius: inherit; background: rgba(8,10,14,.55); color: #fff; opacity: 0; transition: opacity .16s ease; pointer-events: none; }
+.mj-friend .fav:hover .fav-pen, .mj-friend .fav:focus-visible .fav-pen { opacity: 1; }
 
 /* ---------- 成就 HUD / 面板 / 提示 ---------- */
 #mj-toasts { position: fixed; right: 1rem; top: 5rem; z-index: 99998; display: flex; flex-direction: column; gap: .85rem; align-items: flex-end; }

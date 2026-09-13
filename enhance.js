@@ -488,9 +488,12 @@
   }
 
   const Memory = (() => {
-    const host = el('section');
-    host.id = 'mj-memory';
-    host.setAttribute('aria-label', 'Opening Memory');
+    /* ★ 优先接管 index.html 里那个占位节点。
+       它的高度（186vh）在第一帧就占住了位置，所以往里面填内容不会引起位移；
+       只有占位不存在时（比如被别的宿主裁掉过）才自己建一个再插。 */
+    const host = document.getElementById('mj-memory') || el('section');
+    if (!host.id) host.id = 'mj-memory';
+    if (!host.getAttribute('aria-label')) host.setAttribute('aria-label', 'Opening Memory');
     host.innerHTML = `
       <div class="stage">
         <div class="mj-mem-bar"><i id="mjMemBar"></i></div>
@@ -511,9 +514,12 @@
           </span>
         </div>
       </div>`;
-    const banner = $('#banner-wrapper');
-    if (banner && banner.parentNode) banner.parentNode.insertBefore(host, banner.nextSibling);
-    else document.body.appendChild(host);
+    /* 占位节点本来就在正确的位置上，就不要再搬它一次（搬动 = 一次重排） */
+    if (!host.parentNode) {
+      const banner = $('#banner-wrapper');
+      if (banner && banner.parentNode) banner.parentNode.insertBefore(host, banner.nextSibling);
+      else document.body.appendChild(host);
+    }
 
     const layersHost = $('#mjMemLayers', host), objHost = $('#mjMemObjects', host);
     const blackout = $('#mj-blackout', host), cap = $('#mj-mem-cap', host), hint = $('#mj-mem-hint', host), bar = $('#mjMemBar', host);
@@ -679,26 +685,18 @@
         if (e.target.closest('#mjScenePick')) {
           const target = pickIdx;            // 记住点"选择图片"时选中的是哪一幕
           const sc = MEMORY_SCENES[target] || {};
-          const inp = el('input', 'mj2-hidden-input');
-          inp.type = 'file'; inp.accept = 'image/*';
-          inp.setAttribute('aria-label', '选择第 ' + (target + 1) + ' 幕的照片');
-          document.body.appendChild(inp);
-          inp.addEventListener('change', () => {
-            const f = inp.files && inp.files[0]; inp.remove();
-            if (!f) return;
-            shrink(f, 1600, .82).then(url => {
-              if (!url) { alert('这张图读不出来，换一张试试。'); return; }
-              const m = Object.assign({}, State.read().sceneImgs || {});
-              m[target] = url;
-              State.write({ sceneImgs: m });
-              applyScene(target, url);
-              refresh(); paintNow();
-              const wallIdx = RELEASE_TRACK.map((o, i) => (o && o.scene === target ? i : -1)).filter(i => i >= 0);
-              Achievements.toast('★', '第 ' + (target + 1) + ' 幕已换图',
-                (capOf(sc) ? capOf(sc) + '　' : '') + (wallIdx.length ? '照片墙第 ' + wallIdx.map(i => i + 1).join('、') + ' 张同步换好了' : '照片墙没有对应项'));
-            });
+          pickImage({ maxSide: 1600, quality: .82, label: '选择第 ' + (target + 1) + ' 幕的照片' }, (url, cancelled) => {
+            if (cancelled) return;
+            if (!url) { alert('这张图读不出来，换一张试试。'); return; }
+            const m = Object.assign({}, State.read().sceneImgs || {});
+            m[target] = url;
+            State.write({ sceneImgs: m });
+            applyScene(target, url);
+            refresh(); paintNow();
+            const wallIdx = RELEASE_TRACK.map((o, i) => (o && o.scene === target ? i : -1)).filter(i => i >= 0);
+            Achievements.toast('★', '第 ' + (target + 1) + ' 幕已换图',
+              (capOf(sc) ? capOf(sc) + '　' : '') + (wallIdx.length ? '照片墙第 ' + wallIdx.map(i => i + 1).join('、') + ' 张同步换好了' : '照片墙没有对应项'));
           });
-          inp.click();
           return;
         }
         if (e.target.closest('#mjSceneReset')) {
@@ -1095,8 +1093,12 @@
       else { const base = Object.assign({}, m[name] || {}); delete base[section]; m[name] = base; }
       State.write({ lists: m });
     };
-    const tools = (name, i, section) => `
+    /* extra：可选的额外按钮，插在 ＋/× 前面（友链用它放"换回色块"）。
+       放在同一个 .ed-tools 里，就能共用悬停显形和 24×24 的点击区，
+       不用再为它写一条新的显形规则。 */
+    const tools = (name, i, section, extra) => `
       <span class="ed-tools">
+        ${extra || ''}
         <button class="ed-mini" type="button" data-ed-add="${name}" data-i="${i}"${section ? ` data-sec="${section}"` : ''} title="在这条后面插入一条" aria-label="新增一条">＋</button>
         <button class="ed-mini danger" type="button" data-ed-del="${name}" data-i="${i}"${section ? ` data-sec="${section}"` : ''} title="删除这条" aria-label="删除这一条">×</button>
       </span>`;
@@ -1204,6 +1206,38 @@
       };
       fr.readAsDataURL(file);
     });
+  }
+
+  /* 选一张图 → 压缩 → 交给 onPick(dataUrl, cancelled)。
+     ★ 隐藏 input 的生死由这里管。之前每个调用点都自己 new 一个 input、
+       只在 change 里 remove()：用户一按取消，change 根本不触发，
+       那个 input 就永远留在 <body> 里（1px、opacity 0、pointer-events none，
+       看不见但一直在，取消几次就攒几个）。选中/取消/读不出来，三条路都会摘掉它。
+     cancelled 用来区分"用户取消"和"图坏了" —— 前者不该弹提示。 */
+  function pickImage(opts, onPick) {
+    const o = opts || {};
+    const inp = el('input', 'mj2-hidden-input');
+    inp.type = 'file'; inp.accept = 'image/*';
+    inp.setAttribute('aria-label', o.label || '选择一张图片');
+    let done = false;
+    const finish = (file, cancelled) => {
+      if (done) return;
+      done = true;
+      inp.remove();
+      window.removeEventListener('focus', onFocus);
+      if (cancelled || !file) { onPick(null, !!cancelled); return; }
+      shrink(file, o.maxSide || 1280, o.quality || .8).then(url => onPick(url, false));
+    };
+    /* 取消时浏览器不给任何事件，只能用"窗口重新拿到焦点 + files 还是空的"来兜底。
+       Chrome 会先发 change 再回焦点，所以这里要确认 files 确实为空。 */
+    const onFocus = () => setTimeout(() => {
+      if (!inp.files || !inp.files.length) finish(null, true);
+    }, 500);
+    inp.addEventListener('change', () => finish(inp.files && inp.files[0], false));
+    inp.addEventListener('cancel', () => finish(null, true));
+    window.addEventListener('focus', onFocus);
+    document.body.appendChild(inp);
+    inp.click();
   }
 
   /* ============================================================
@@ -1841,24 +1875,16 @@
       }
 
       function pickCover(i) {
-        const inp = el('input', 'mj2-hidden-input');
-        inp.type = 'file'; inp.accept = 'image/*';
-        inp.setAttribute('aria-label', '选择作品封面');
-        document.body.appendChild(inp);
-        inp.addEventListener('change', () => {
-          const f = inp.files && inp.files[0]; inp.remove();
-          if (!f) return;
-          shrink(f, 960, .8).then(url => {
-            if (!url) { alert('这张图读不出来，换一张试试。'); return; }
-            const arr = rows().map(x => Array.isArray(x) ? x.slice() : ['', '', '', '', '']);
-            if (!arr[i]) return;
-            arr[i][0] = url;
-            EdList.setSec('works', seed, null, arr);
-            paint(); bindText();
-            Achievements.toast('★', '换好封面', '第 ' + (i + 1) + ' 件作品');
-          });
+        pickImage({ maxSide: 960, quality: .8, label: '选择作品封面' }, (url, cancelled) => {
+          if (cancelled) return;
+          if (!url) { alert('这张图读不出来，换一张试试。'); return; }
+          const arr = rows().map(x => Array.isArray(x) ? x.slice() : ['', '', '', '', '']);
+          if (!arr[i]) return;
+          arr[i][0] = url;
+          EdList.setSec('works', seed, null, arr);
+          paint(); bindText();
+          Achievements.toast('★', '换好封面', '第 ' + (i + 1) + ' 件作品');
         });
-        inp.click();
       }
 
       elGrid.addEventListener('click', e => {
@@ -2199,19 +2225,11 @@
           if (b.src) pickBox.appendChild(phBox);
           pickBox.title = '点击更换这张图';
           pickBox.addEventListener('click', () => {
-            const inp = el('input', 'mj2-hidden-input');
-            inp.type = 'file'; inp.accept = 'image/*';
-            inp.setAttribute('aria-label', '选择一张图片');
-            document.body.appendChild(inp);
-            inp.addEventListener('change', () => {
-              const f = inp.files && inp.files[0]; inp.remove();
-              if (!f) return;
-              shrink(f, 1280, .82).then(u => {
-                if (!u) { alert('这张图读不出来，换一张试试。'); return; }
-                mutate(arr => { arr[idx].blocks[i] = Object.assign({}, arr[idx].blocks[i], { src: u }); });
-              });
+            pickImage({ maxSide: 1280, quality: .82, label: '选择一张图片' }, (u, cancelled) => {
+              if (cancelled) return;
+              if (!u) { alert('这张图读不出来，换一张试试。'); return; }
+              mutate(arr => { arr[idx].blocks[i] = Object.assign({}, arr[idx].blocks[i], { src: u }); });
             });
-            inp.click();
           });
           const cap = mk('figcaption', 'mj-blk-cap' + (editing ? ' mj-editable' : ''), b.cap || (editing ? '（点一下写图注）' : ''));
           if (editing) {
@@ -2393,16 +2411,10 @@
           cover.title = '点击更换封面';
           cover.appendChild(mk('span', 'mj-art-cover-pen', '✎'));
           cover.addEventListener('click', () => {
-            const inp = el('input', 'mj2-hidden-input');
-            inp.type = 'file'; inp.accept = 'image/*';
-            inp.setAttribute('aria-label', '选择项目封面');
-            document.body.appendChild(inp);
-            inp.addEventListener('change', () => {
-              const f = inp.files && inp.files[0]; inp.remove();
-              if (!f) return;
-              shrink(f, 1280, .82).then(u => { if (u) mutate(a => { a[idx].cover = u; }); });
+            pickImage({ maxSide: 1280, quality: .82, label: '选择项目封面' }, (u, cancelled) => {
+              if (cancelled || !u) return;
+              mutate(a => { a[idx].cover = u; });
             });
-            inp.click();
           });
         }
         const title = mk('h1', 'mj-art-title' + (editing ? ' mj-editable' : ''), p.title || (editing ? '（写个标题）' : '未命名项目'));
@@ -2613,45 +2625,28 @@
         const xpImg = e.target.closest('[data-xpimg]');
         if (xpImg) {
           const idx = +xpImg.dataset.xpimg;
-          const inp = el('input', 'mj2-hidden-input');
-          inp.type = 'file'; inp.accept = 'image/*';
-          inp.setAttribute('aria-label', '选择一张图片');
-          document.body.appendChild(inp);
-          inp.addEventListener('change', () => {
-            const f = inp.files && inp.files[0]; inp.remove();
-            if (!f) return;
-            shrink(f, 640, .82).then(url => {
-              if (!url) { alert('这张图读不出来，换一张试试。'); return; }
-              const m = Object.assign({}, State.read().xpImgs || {});
-              m[idx] = url;
-              State.write({ xpImgs: m });
-              xpImg.style.cssText = `background-image:url('${url}');background-size:cover;background-position:center`;
-              Achievements.toast('★', '已放入相框', '第 ' + (idx + 1) + ' 张兴趣卡片');
-            });
+          pickImage({ maxSide: 640, quality: .82, label: '选择一张图片' }, (url, cancelled) => {
+            if (cancelled) return;
+            if (!url) { alert('这张图读不出来，换一张试试。'); return; }
+            const m = Object.assign({}, State.read().xpImgs || {});
+            m[idx] = url;
+            State.write({ xpImgs: m });
+            xpImg.style.cssText = `background-image:url('${url}');background-size:cover;background-position:center`;
+            Achievements.toast('★', '已放入相框', '第 ' + (idx + 1) + ' 张兴趣卡片');
           });
-          inp.click();
           return;
         }
         // 增删条目：重建整个视图最简单也最不容易出状态错乱
         if (EdList.handle(e, () => Router.go())) return;
       };
       function pickFrame() {
-        const inp = el('input', 'mj2-hidden-input');
-        inp.type = 'file'; inp.accept = 'image/*';
-        inp.setAttribute('aria-label', '选择一张图片');
-        document.body.appendChild(inp);
-        inp.addEventListener('change', () => {
-          const f = inp.files && inp.files[0]; inp.remove();
-          if (!f) return;
-          shrink(f, 1280, 0.8).then(url => {
-            if (!url) return;
-            State.write({ aboutImg: url });
-            const im = $('#mjFrameImg', host);
-            if (im) { im.style.cssText = `background-image:url('${url}');background-size:cover;background-position:center`; }
-            Achievements.toast('★', '图片已更换', '想换回来点"用回默认"');
-          });
+        pickImage({ maxSide: 1280, quality: 0.8, label: '选择一张图片' }, (url, cancelled) => {
+          if (cancelled || !url) return;
+          State.write({ aboutImg: url });
+          const im = $('#mjFrameImg', host);
+          if (im) { im.style.cssText = `background-image:url('${url}');background-size:cover;background-position:center`; }
+          Achievements.toast('★', '图片已更换', '想换回来点"用回默认"');
         });
-        inp.click();
       }
       const onChange = e => {
         const cb = e.target.closest('[data-td]'); if (!cb) return;
@@ -2679,6 +2674,9 @@
     friends() {
       /* 友链改成可自由增删改：每条是 [名称, 简介, 链接]，链接点得动、
          文字就地改、悬停浮出 ＋/×，另有"新增友链"与"恢复默认"。 */
+      /* 每条友链是 [名称, 简介, 链接, 头像]。
+         ★ 第 4 格（头像）是后加的：以前头像只是个色块 + 首字母，**没有任何办法换**。
+         老数据只有 3 格，读出来是 undefined，照样显示色块，不会出错。 */
       const seed = () => [
         ['随手记', '写日常的小站', ''],
         ['午后书房', '读书与摘抄', ''],
@@ -2691,23 +2689,56 @@
       const host = el('div', 'mj-view');
       host.dataset.view = 'friends';
 
+      /* 选一张图当友链头像：和别处一样压到 256px 再存，别把 localStorage 撑爆 */
+      function pickFav(i) {
+        pickImage({ maxSide: 256, quality: .85, label: '选择这张友链的头像' }, (url, cancelled) => {
+          if (cancelled) return;
+          if (!url) { alert('这张图读不出来，换一张试试。'); return; }
+          const arr = EdList.get('friends', seed).map(x => Array.isArray(x) ? x.slice() : [String(x || ''), '', '']);
+          const cur = arr[i] || ['', '', ''];
+          cur[3] = url;
+          arr[i] = cur;
+          EdList.setSec('friends', seed, null, arr);
+          draw();
+          Achievements.toast('★', '换好头像', '「' + (cur[0] || '友链') + '」');
+        });
+      }
+      const clearFav = i => {
+        const arr = EdList.get('friends', seed).map(x => Array.isArray(x) ? x.slice() : [String(x || ''), '', '']);
+        if (arr[i]) arr[i][3] = '';
+        EdList.setSec('friends', seed, null, arr);
+        draw();
+      };
+
       const draw = () => {
         const arr = EdList.get('friends', seed);
         host.innerHTML = `
-          <div class="card-base list-bar"><h2 class="lb-title">友链坐标</h2><span class="mj-stat">一起写字的人 · 名称/简介/链接都能改</span>
+          <div class="card-base list-bar"><h2 class="lb-title">友链坐标</h2><span class="mj-stat">一起写字的人 · 头像 / 名称 / 简介 / 链接都能改，条目可增删</span>
             <button class="mj2-btn" id="mjFriReset" type="button" style="margin-left:auto">恢复默认</button></div>
           <div class="mj-friends" id="mjFriList">${arr.map((f, i) => {
-            const [n, d, url] = Array.isArray(f) ? f : [String(f || ''), '', ''];
+            const [n, d, url, favRaw] = Array.isArray(f) ? f : [String(f || ''), '', '', ''];
             const initial = (n || '?').trim().charAt(0).toUpperCase();
             const safeUrl = /^https?:\/\/[^\s"'<>]+$/i.test(url || '') ? url : '';
+            /* 头像只认 data:image/*（shrink() 的产物）。存坏的值就当没设置，
+               免得它被拼进 style="background-image:url('...')" 里把样式撑坏 */
+            const fav = /^data:image\/[a-z+]+;base64,[A-Za-z0-9+/=]+$/i.test(favRaw || '') ? favRaw : '';
+            // 名字要进 aria-label 属性，引号会把这一行的标签截断，去掉
+            const label = String(n || '新友链').replace(/["<>]/g, '');
             return `<div class="mj-friend">
-              <span class="fav" style="${ph(ELEMENTS[i % 7].id, i)}"><i>${initial}</i></span>
+              <span class="fav${fav ? ' has-img' : ''}" data-fav="${i}" role="button" tabindex="0"
+                title="点击更换头像" aria-label="更换「${label}」的头像"
+                style="${fav ? `background-image:url('${fav}');background-size:cover;background-position:center` : ph(ELEMENTS[i % 7].id, i)}">
+                <i${fav ? ' hidden' : ''}>${initial}</i>
+                <em class="fav-pen" aria-hidden="true">✎</em>
+              </span>
               <span class="fj-body">
                 <b data-fr="${i}:0">${n || '新友链'}</b>
                 <span data-fr="${i}:1">${d || '（点一下写简介）'}</span>
                 <span class="fj-url">${safeUrl ? `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeUrl.replace(/^https?:\/\//, '').slice(0, 30)}</a>` : '<em data-fr="' + i + ':2">（点一下填链接）</em>'}</span>
               </span>
-              ${EdList.tools('friends', i)}
+              ${EdList.tools('friends', i, null, fav
+                ? `<button class="ed-mini" type="button" data-favclear="${i}" title="换回色块头像" aria-label="换回色块头像">↺</button>`
+                : '')}
             </div>`;
           }).join('')}</div>
           <div class="ed-bar" style="margin-top:.8rem">
@@ -2728,11 +2759,26 @@
           if (confirm('把友链恢复成默认？')) { EdList.reset('friends'); draw(); }
           return;
         }
+        // 头像上的"用回色块"要排在"点头像换图"前面，否则会被后者吃掉
+        const clr = e.target.closest('[data-favclear]');
+        if (clr) { e.preventDefault(); e.stopPropagation(); clearFav(+clr.dataset.favclear); return; }
+        const fav = e.target.closest('[data-fav]');
+        if (fav) { e.preventDefault(); e.stopPropagation(); pickFav(+fav.dataset.fav); return; }
         if (EdList.handle(e, () => draw())) return;
       };
+      /* 头像挂的是 role="button"，键盘回车/空格也得能开文件框，
+         不然这就是个"看起来能点、键盘点不动"的假按钮 */
+      const onKey = e => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        const fav = e.target.closest && e.target.closest('[data-fav]');
+        if (!fav) return;
+        e.preventDefault();
+        pickFav(+fav.dataset.fav);
+      };
       host.addEventListener('click', onClick);
+      host.addEventListener('keydown', onKey);
       draw();
-      return { host, destroy() { host.removeEventListener('click', onClick); host.remove(); } };
+      return { host, destroy() { host.removeEventListener('click', onClick); host.removeEventListener('keydown', onKey); host.remove(); } };
     },
 
     /* 茶室：真正的实现在 chat.js 里（那边要处理两条传输通道和一大套状态），
@@ -2783,6 +2829,10 @@
     function setChrome(view) {
       // 记忆区只在 home 出现，否则 520vh 空舞台会顶在所有页面上
       if (Memory.host) Memory.host.style.display = view === 'home' ? '' : 'none';
+      /* 和 index.html <head> 里那段"第一帧之前"的判断保持同步：
+         进来时是深链接就先挂上 class，之后路由切回首页要记得摘掉，
+         否则 CSS 的 html.mj-not-home #mj-memory{display:none} 会一直把它藏着。 */
+      document.documentElement.classList.toggle('mj-not-home', view !== 'home');
       // 既有壁纸/Banner 在内页收起来，让内容成为主角
       const bw = $('#banner-wrapper');
       if (bw) bw.style.display = view === 'home' ? '' : 'none';
