@@ -597,7 +597,13 @@ body.mj-native-cursor .ed-pen { display: none; }
 }
 #mj-mem-cap.on { opacity: 1; }
 #mj-mem-hint { position: absolute; left: 50%; bottom: 140px; transform: translateX(-50%); font-family: var(--font-mono); font-size: 11px; color: var(--ink-meta); letter-spacing: .18em; }
-.mj-mem-bar { position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--rule-hair); }
+/* ★ 进度条的"槽"改成透明（只留进度本身那道 --element 的填充）。
+   底色和波浪同色之后，这条 2px 的浅灰槽（--rule-hair = 8% 黑）正好压在
+   "波浪下沿 = 第二幕上沿"这个位置上 —— 全页只剩这一条横线，在平坦的纸面上
+   反而成了唯一的"接缝标记"，会被读成"这里有个边"。
+   槽的作用只是提示"这是条满分 100% 的进度"，而填满的填充本身就说明了这件事，
+   所以直接去掉槽、保留填充：既没有接缝线，进度也照旧看得见。 */
+.mj-mem-bar { position: absolute; left: 0; right: 0; top: 0; height: 2px; background: transparent; }
 .mj-mem-bar i { display: block; height: 100%; width: 0; background: var(--element); }
 /* ---------- 「走过的地方」照片墙 ----------
    6 张横向不规则摆放的照片，间距放大、单张放大，之间用线相连；
