@@ -56,6 +56,9 @@
   --page-measure: 84rem;
   --layout-page-width: var(--page-measure);
   --layout-sidebar-width: 17.5rem;
+  /* 页边栏宽度：参考站在 280–320px（17.5–20rem），这里收窄到 240px，
+     让"一条页边"的观感和小部件堆叠的观感都不一样。 */
+  --margin-width: 15rem;
   /* 顶栏高度单独一个令牌：记忆区的 sticky 偏移、阅读进度条、以及
      主网格的负上移都跟它对齐，改一处就全跟着走。 */
   --nav-h: 3.5rem;               /* 56px（参考系是 72 / 71） */
@@ -311,14 +314,50 @@ body.wallpaper-soft #wallpaper img { filter: blur(var(--cover-soften)); }
 html.mj-not-home #mj-memory { display: none; }
 html.mj-not-home #banner-wrapper { display: none; }
 html.mj-not-home #main-outer { margin-top: 5.5rem; }
+/* ★ 布局：一张主页面 + 一条"页边"（不再是左右对称的两条栏）
+   ------------------------------------------------------------
+   改之前是 17.5rem / 1fr / 17.5rem 的对称三栏 —— "大图封面 + 左右各一列小组件"
+   这一类骨架和参考主题是同一个模子。现在换成手帐的读法：页面在左、页边在右，
+   所有小部件收进**一条**栏里（栏宽也从 280–320px 收窄到 240px）。
+
+   两条栏在 DOM 里被 #content 隔开（<aside> <main> <aside>），CSS 里没法把
+   它们叠成一列，所以启动时把右栏的内容并进左栏、删掉右栏（见 enhance.js 的
+   mergeRails）。小部件都靠 id 找宿主，搬容器不影响它们。
+
+   页边做成 sticky + 内部滚动：不然 11 张小部件竖着排出来有 3700 多 px，
+   会把整页撑到 6000px、内容旁边空出一大片。这样页面高度只由正文决定，
+   页边自己滚自己的。 */
 #main-grid {
   max-width: var(--layout-page-width); margin: 0 auto; padding: 1.4rem 1rem 1rem;
-  display: grid; grid-template-columns: var(--layout-sidebar-width) minmax(0,1fr) var(--layout-sidebar-width);
+  display: grid;
+  grid-template-columns: minmax(0,1fr) var(--margin-width);
+  grid-template-areas: "page rail";
   gap: 1rem; align-items: start;
 }
+main#content { grid-area: page; }
+aside.left-sidebar {
+  grid-area: rail;
+  position: sticky; top: calc(var(--nav-h) + 1rem);
+  max-height: calc(100vh - var(--nav-h) - 2rem);
+  overflow-y: auto; overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+aside.right-sidebar { display: none; }
 /* 模块之间的竖向节奏：统一 1rem 会显得"卡片叠卡片"很硬，
    放大到 1.2rem 并配合更柔的入场动画，让模块之间有呼吸感。 */
-aside.left-sidebar, aside.right-sidebar { display: flex; flex-direction: column; gap: 1.2rem; }
+aside.left-sidebar, aside.right-sidebar { display: flex; flex-direction: column; gap: 1.2rem; min-width: 0; }
+/* ★ 页边是"sticky + 内部滚动"的，而 flex 列的子项默认 flex-shrink:1 ——
+   不写这一行的话，小部件会被压扁塞进 max-height 里（看起来像卡片都变矮了），
+   而不是溢出后滚动。 */
+aside.left-sidebar > * { flex: none; }
+/* 正文底部的"本站仪器"带：使用情况 / 天气 / 日历 三件横着摊开。
+   它们是启动时从页边搬过来的（见 enhance.js 的 hoistInstruments）。 */
+.instrument-band { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; }
+.instrument-band > * { min-width: 0; }
+/* 窄屏时仪器带降成两列 / 一列：三列在 700px 下每格只剩 210px，
+   日历格子和统计数字都会挤成一团。 */
+@media (max-width: 999px) { .instrument-band { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 639px) { .instrument-band { grid-template-columns: minmax(0, 1fr); } }
 main#content { display: flex; flex-direction: column; gap: 1.2rem; min-width: 0; }
 
 /* ============================================================
@@ -403,14 +442,17 @@ main#content { display: flex; flex-direction: column; gap: 1.2rem; min-width: 0;
 }
 .chip:hover { background: var(--stamp-bg-hover); }
 .chip:active { transform: scale(.94); }
-.chip .n { opacity: .75; font-size: .7rem; font-weight: 400; }
+/* 计数不再用 opacity 压淡：--stamp-ink 的取值是照着"正好过 AA"标定的
+   （oklch(0.50) 压在 --stamp-bg(0.95) 上 ≈4.94:1），再叠一层 0.75 透明度
+   就等于把对比度拉回 3.6:1，直接掉出 AA。层级靠字号和字重区分就够了。 */
+.chip .n { font-size: .7rem; font-weight: 400; }
 .cat-row { display: flex; flex-direction: column; gap: .15rem; }
 .cat-row a {
   display: flex; align-items: center; justify-content: space-between; padding: .4rem .55rem;
   border-radius: .5rem; font-size: .85rem; transition: background-color .15s, color .15s;
 }
 .cat-row a:hover { background: var(--ink-wash-hover); color: var(--element-deep); }
-.cat-row a .n { font-family: var(--font-mono); font-size: .72rem; opacity: .8; }
+.cat-row a .n { font-family: var(--font-mono); font-size: .72rem; }
 
 /* 站点统计 → 使用情况 */
 .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
@@ -881,13 +923,16 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
    响应式
    ============================================================ */
 @media (max-width: 1279px) {
-  #main-grid { grid-template-columns: var(--layout-sidebar-width) minmax(0,1fr); }
-  aside.right-sidebar { display: none; }
+  /* 页边收到内容下方：不再并排，也取消 sticky 与内部滚动 */
+  #main-grid { grid-template-columns: minmax(0,1fr); grid-template-areas: "page" "rail"; }
+  aside.left-sidebar {
+    position: static; max-height: none; overflow: visible;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1.2rem;
+  }
 }
 @media (max-width: 767px) {
   :root { --layout-page-width: 100%; }
   #main-grid { grid-template-columns: minmax(0,1fr); padding: 0 .75rem .75rem; }
-  aside.left-sidebar { display: none; }
   .nav-links { display: none; }
   #banner-wrapper { height: min(55vh, 620px); }
   .post-card a.post-link { flex-direction: column; }

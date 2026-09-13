@@ -3052,7 +3052,9 @@
       right.insertBefore(wrap, right.firstChild);
     }
 
-    // 左栏：场景序列导轨（只列真实视图 + 说明 + 可增删改 + 可搜）
+    // 页边栏：场景序列导轨（只列真实视图 + 说明 + 可增删改 + 可搜）
+    // 布局改成"主页面 + 一条页边"之后，两条 aside 都落在右列（见 index.html 的
+    // #main-grid grid-areas），所以这里仍按 .left-sidebar 取，只是它现在在右边。
     const left = $('.left-sidebar') || $('#sidebar');
     if (left) {
       const box = el('div', 'sheet');
@@ -3728,6 +3730,48 @@
     document.addEventListener('keydown', e => {
       if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'f') { e.preventDefault(); Perf.toggle(); }
     });
+
+    /* ★ 把两条侧栏并成一条"页边"。
+       布局现在是"一张主页面 + 一条页边"（见 index.html 的 #main-grid），而
+       DOM 里是两个 <aside> 夹着一个 <main>，CSS 里没法把它们叠进同一列。
+       小部件全靠 id 找宿主（#mjStats / #calGrid / 天气那些），所以把右栏的
+       节点整体搬进左栏、再删掉右栏，功能不受影响。
+       放在 boot 末尾：此时各模块（含往左栏追加场景序列导轨的那一处）都已初始化完。 */
+    (function mergeRails() {
+      const ls = document.querySelector('aside.left-sidebar');
+      const rs = document.querySelector('aside.right-sidebar');
+      if (!ls || !rs) return;
+      while (rs.firstChild) ls.appendChild(rs.firstChild);
+      rs.remove();
+    })();
+
+    /* ★ 再把三件"仪表"从页边挪到正文下方，做成一条横向的"本站仪器"带。
+       页边只有 240px 宽，10 张小部件竖着排出来有 3600 多 px —— 塞进一屏高的
+       sticky 栏里等于要滚 4 屏多，很难用。使用情况 / 天气 / 日历 属于"一眼扫过"
+       的信息，横着摊在正文底下比挤在窄栏里合适，页边也因此短掉一截。
+       仍然是按 id 找宿主，所以搬位置不影响它们自己的逻辑。
+
+       ⚠ 注意插到哪儿：Router 在初始化时已经把 main#content 的子节点**整体搬进了**
+       .mj-view[data-view="home"]，所以页脚已经不是 #content 的直接子节点了。
+       写成 content.insertBefore(band, footer) 会抛 NotFoundError，
+       而 band 是游离节点 —— 三张卡片会连着 band 一起被丢掉（小部件凭空消失）。
+       所以这里一律插到"页脚真正的父节点"里。 */
+    (function hoistInstruments() {
+      const ls = document.querySelector('aside.left-sidebar');
+      if (!ls) return;
+      const band = document.createElement('div');
+      band.className = 'instrument-band enter-rise';
+      ['使用情况', '天气', '日历'].forEach(name => {
+        const card = [...ls.children].find(c => (c.textContent || '').includes(name));
+        if (card) band.appendChild(card);
+      });
+      if (!band.children.length) return;
+      const footer = document.querySelector('.site-footer');
+      const host = (footer && footer.parentNode) || document.querySelector('.mj-view[data-view="home"]') || document.querySelector('main#content');
+      if (!host) { ls.appendChild(band); return; }   // 兜底：宁可留在页边，也别丢
+      if (footer && footer.parentNode === host) host.insertBefore(band, footer);
+      else host.appendChild(band);
+    })();
   }
   if (document.readyState === 'loading') addEventListener('DOMContentLoaded', boot);
   else boot();

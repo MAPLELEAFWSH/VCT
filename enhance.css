@@ -474,7 +474,7 @@ body.mj-native-cursor .ed-pen { display: none; }
 .fj-url { font-family: var(--font-mono); font-size: .72rem !important; }
 .fj-url a { color: var(--element-deep); text-decoration: underline; text-decoration-style: dashed; text-underline-offset: 3px; }
 .fj-url a:hover { background: var(--ink-wash-hover); text-decoration: none; }
-.fj-url em { font-style: normal; opacity: .7; }
+.fj-url em { font-style: normal; }
 .mj-friend .fav { display: grid; place-items: center; }
 .mj-friend .fav i { font-style: normal; font-weight: 700; color: #fff; font-size: .95rem; text-shadow: 0 1px 3px rgba(0,0,0,.4); }
 /* 兴趣卡片：图片可以换（放在 .xp-frame 的白卡纸里，见下方相框样式） */
@@ -497,7 +497,7 @@ body.mj-native-cursor .ed-pen { display: none; }
 .mj-route-list a:hover { background: var(--ink-wash-hover); color: var(--element-deep); transform: translateX(2px); }
 .mj-route-list a:active { transform: translateX(2px) scale(.985); }
 .mj-route-list a.on { background: var(--stamp-bg); color: var(--element-deep, var(--element)); font-weight: 700; }
-.mj-route-list .no { font-family: var(--font-mono); font-size: .75rem; opacity: .7; width: 2.25rem; flex: none; }
+.mj-route-list .no { font-family: var(--font-mono); font-size: .75rem; width: 2.25rem; flex: none; }
 .mj-route-list .st { margin-left: auto; font-size: .75rem; color: var(--ink-meta); flex: none; }
 .mj-route-list a.found .st { color: var(--element-deep); }
 

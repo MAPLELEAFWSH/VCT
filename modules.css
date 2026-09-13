@@ -74,7 +74,7 @@
 .mj2-th-p { width: 6.4rem; text-align: left !important; padding-left: .5rem !important; }
 .mj2-th-p .p { display: block; font-weight: 700; font-size: .72rem; color: var(--ink-strong); }
 .mj2-th-p .tm { display: block; font-family: var(--font-mono); font-size: .6rem; color: var(--ink-meta); margin-top: .1rem; letter-spacing: 0; }
-.mj2-th-p .blk { display: block; font-size: .56rem; color: var(--element-deep); opacity: .85; margin-top: .12rem; letter-spacing: 0; }
+.mj2-th-p .blk { display: block; font-size: .56rem; color: var(--element-deep); margin-top: .12rem; letter-spacing: 0; }
 .mj2-sched-table tbody tr.block-start th, .mj2-sched-table tbody tr.block-start td { border-top: 2px solid color-mix(in oklab, var(--rule-hair) 70%, transparent); }
 .mj2-sched-table tbody tr.block-start th { border-top-left-radius: .4rem; }
 .mj2-sched-table tbody tr.live-row th.mj2-th-p { color: var(--element-deep); }
