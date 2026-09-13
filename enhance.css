@@ -163,11 +163,29 @@ body.mj-native-cursor .ed-pen { display: none; }
    舞台换成纸色之后它就成了一块黑疤 —— 现在改用站点通用的纸墨令牌：
    底色 --panel-paper（浅色白 / 深色深）、描边 --rule-*、文字 --ink-*，
    于是它浮在纸上像一张小标签，两套主题各自成立。
-   底下的 .ed-add 按钮不再需要覆盖成白字，直接吃 .ed-add 的默认样式即可。 */
+   底下的 .ed-add 按钮不再需要覆盖成白字，直接吃 .ed-add 的默认样式即可。
+
+   ★★ 必须**永远是一行**（flex-wrap: nowrap）—— 这条踩过坑：
+   原来是 flex-wrap: wrap，而里面的内容（标题 + 5 个圆点 + 缩略图 + 一整句
+   "正在改：第 5 幕 · …（照片墙第 6 张会一起换）· 当前是默认图" + 两个按钮）
+   在 1100px 宽下根本放不下，于是折成了三行，实测盒子变成 545×119。
+   它锚在 bottom: 5rem（80px），三行的高度让顶边一路顶到 199px ——
+   而"向下滚动"提示在 140px、幕字幕在 168px，两条都被它压住了：
+   既挡字，"999px 圆角"套在 119px 高的盒子上也成了一个畸形的长胶囊。
+   现在：容器不换行 + 说明文字超长就省略号 + 状态收成一个角标，
+   高度由最高的孩子（按钮 24px）决定、加内边距约 39px，
+   顶边 119px 永远低于提示的 140px —— 遮挡在结构上不可能再发生。
+   长句（墙上哪几张会跟着换）挪进 title，不占版面。 */
 .mem-picker {
   position: absolute; left: 50%; bottom: 5rem; transform: translateX(-50%);
-  z-index: 9; display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
-  padding: .4rem .6rem; border-radius: 999px;
+  z-index: 9; display: flex; align-items: center; gap: .5rem;
+  flex-wrap: nowrap; white-space: nowrap;
+  /* 宽度的上限要同时避开右下角那串悬浮球：控件是居中的，而球贴着右边，
+     所以左右各留一份"球宽 + 1.5rem"才够（复用 --fab-size，和球那轮同一套令牌）。
+     窗口窄到放不下时，压缩的是中间那句说明文字（见 .mem-now-txt 的省略号），
+     标签 / 圆点 / 按钮都是 flex: none，永远不会被压坏。 */
+  max-width: calc(100% - 2 * (var(--fab-size) + 1.5rem));
+  padding: .35rem .55rem; border-radius: 999px;
   background: color-mix(in oklab, var(--panel-paper) 92%, transparent);
   border: 1px solid var(--rule-line);
   box-shadow: 0 10px 30px -16px rgba(0, 0, 0, .38);
@@ -178,22 +196,39 @@ body.mj-native-cursor .ed-pen { display: none; }
 #mj-memory:hover .mem-picker, .mem-picker:focus-within {
   opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-2px);
 }
-.mem-picker-t { font-size: .72rem; color: var(--ink-meta); letter-spacing: .06em; }
-.mem-picker-row { display: inline-flex; align-items: center; gap: .25rem; }
-/* "正在改哪一张"：缩略图 + 说明，最宽不超过容器的 22rem */
+/* flex: none 的地方都是"不许被压扁"的：标签、圆点列、按钮列、缩略图、角标 */
+.mem-picker-t { flex: none; font-size: .72rem; color: var(--ink-meta); letter-spacing: .04em; }
+.mem-picker-row { flex: none; display: inline-flex; align-items: center; gap: .25rem; }
+/* "正在改哪一张"：缩略图 + 一句说明 + 状态角标。整块可压缩，说明文字可省略 */
 .mem-picker-now {
-  display: inline-flex; align-items: center; gap: .45rem; max-width: 22rem;
-  padding: .18rem .5rem .18rem .22rem; border-radius: var(--radius-chip);
+  flex: 0 1 auto; min-width: 0; max-width: 18rem;
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .15rem .4rem .15rem .2rem; border-radius: var(--radius-chip);
   background: var(--ink-wash-hover);
 }
+/* 缩略图按 2:1 取：记忆段那五张原图是 1920×768（2.5:1），
+   2:1 只裁掉很少一点；原来的 34×22（1.55:1）会把左右裁掉一大截。 */
 .mem-now-thumb {
-  width: 2.1rem; height: 1.4rem; border-radius: .22rem; object-fit: cover; flex: none;
+  flex: none; width: 2.5rem; height: 1.25rem; border-radius: .22rem; object-fit: cover;
   box-shadow: 0 0 0 1px var(--rule-meta);
 }
 .mem-now-txt {
+  flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis;
   font-size: .68rem; line-height: 1.35; color: var(--ink-meta);
-  text-align: left; white-space: normal;
+  text-align: left;
 }
+/* 状态角标单独拆出来、flex: none：这样"省略号"永远只吃说明文字，
+   不会把"默认 / 已换图"这个最关键的状态一起截掉。
+   两种状态用两套画法：默认是"安静的浅底 + 次要墨"（浅底上 4.9:1）；
+   已换图是"实心元素色 + 白字"，和旁边选中的圆点同一档
+   （白字压在 --element-strong 上浅色 6.79:1 / 深色 6.00:1）。
+   一开始 .own 用的是"--element-deep 字 + 18% 元素色底"，实测只有 4.47:1，
+   刚好差一点点过不了 AA —— 改成实心底之后两套主题都稳了。 */
+.mem-now-badge {
+  flex: none; font-size: .62rem; line-height: 1.45; padding: 0 .34rem; border-radius: 999px;
+  color: var(--ink-meta); background: color-mix(in oklab, var(--ink-strong) 6%, transparent);
+}
+.mem-now-badge.own { color: #fff; background: var(--element-strong); }
 .mem-dot {
   position: relative;
   width: 22px; height: 22px; padding: 0; border: 1px solid var(--rule-meta); cursor: pointer;
@@ -204,12 +239,15 @@ body.mj-native-cursor .ed-pen { display: none; }
 }
 .mem-dot:hover { transform: scale(1.14); border-color: var(--ink-strong); color: var(--ink-strong); }
 /* 选中的圆点用 --element-strong 而不是 --element：白字压在 --element
-   上只有 2.9:1，过不了 AA（和 .fp-switch / .mem-dot 那轮对比度修正同一个原因）。 */
+   上只有 2.9:1，过不了 AA（和 .fp-switch 那轮对比度修正同一个原因）。 */
 .mem-dot.sel { background: var(--element-strong); border-color: var(--element-strong); color: #fff; }
 .mem-dot.has::after {
   content: ""; position: absolute; margin: -14px -14px 0 0; width: 5px; height: 5px;
   border-radius: 50%; background: var(--element);
 }
+/* 这一行的按钮压小一档：一行的高度由最高的孩子决定，
+   .ed-add 默认 29px 会把整个盒子撑高 5px（用尺寸覆盖，不是颜色覆盖）。 */
+.mem-picker .ed-add { font-size: .72rem; padding: .2rem .5rem; min-height: 1.5rem; }
 @media (max-width: 720px) { .mem-picker { display: none; } }
 
 /* ---------- 顶栏百度检索 ---------- */

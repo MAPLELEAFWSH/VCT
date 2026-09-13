@@ -537,14 +537,16 @@
         <p id="mj-mem-cap"></p>
         <p id="mj-mem-hint">向下滚动 · 记忆开始播放</p>
         <div class="mem-picker" id="mjScenePicker">
-          <span class="mem-picker-t">换这一幕的照片</span>
+          <span class="mem-picker-t">换哪一幕</span>
           <span class="mem-picker-row" id="mjSceneRow"></span>
-          <!-- ★ 明确告诉操作者"现在正在改哪一张、它长什么样"。
-               只给 1–5 号圆点的话，根本不知道它对应幕里的哪张、更不知道墙上哪张照片会跟着变。 -->
+          <!-- ★ 明确告诉操作者"现在正在改哪一张、它长什么样"，但整条必须压在一行里：
+               缩略图 + 一句说明 + 一个"默认 / 已换图"角标。
+               长句（墙上哪几张会一起换）在 JS 里放到 title，不占版面 ——
+               详见 enhance.css 里 .mem-picker 那段：折行会把这条控件顶穿字幕。 -->
           <span class="mem-picker-now" id="mjSceneNow"></span>
           <span class="mem-picker-row">
-            <button class="ed-add" type="button" id="mjScenePick">选择图片…</button>
-            <button class="ed-add" type="button" id="mjSceneReset">全部用回默认</button>
+            <button class="ed-add" type="button" id="mjScenePick">换图</button>
+            <button class="ed-add" type="button" id="mjSceneReset">用回默认</button>
           </span>
         </div>
       </div>`;
@@ -688,13 +690,19 @@
         const saved = savedMap();
         $$('button', pickerRow).forEach((b, i) => b.classList.toggle('has', !!saved[i]));
       };
-      /* 把"正在改哪一幕 / 它现在是什么图 / 墙上哪几张会跟着变"讲清楚 */
+      /* 把"正在改哪一幕 / 它现在是什么图 / 墙上哪几张会跟着变"讲清楚。
+         capOf 去掉种子 cap 自带的"第 N 幕 ·"前缀（它在本条控件里会重复）。 */
       const capOf = sc => String(sc.cap || '').replace(/^\s*第\s*\d+\s*幕\s*·\s*/, '');
+      /* ★ 这条控件必须**压在一行里**（原因见 enhance.css 里 .mem-picker 那段：
+         折行会把盒子顶穿上面的提示与字幕）。
+         所以可见文字只留三段最必要的：缩略图 / "第 N 幕 · 这一幕是什么" / 状态角标。
+         完整那句（含"照片墙第几张会一起换"）放进 title，鼠标停一下就能看到。 */
       const paintNow = () => {
         if (!nowEl) return;
         const sc = MEMORY_SCENES[pickIdx] || {};
         const saved = !!savedMap()[pickIdx];
         const wallIdx = RELEASE_TRACK.map((o, i) => (o && o.scene === pickIdx ? i : -1)).filter(i => i >= 0);
+        const wallTxt = wallIdx.length ? '照片墙第 ' + wallIdx.map(i => i + 1).join('、') + ' 张会一起换' : '照片墙没有对应项';
         nowEl.innerHTML = '';
         const thumb = document.createElement('img');
         thumb.className = 'mem-now-thumb';
@@ -704,11 +712,15 @@
         txt.className = 'mem-now-txt';
         // 种子里的 cap 自带"第 01 幕 ·"前缀，这里去掉，免得和前面的"第 N 幕"重复
         const cap = capOf(sc);
-        txt.textContent = '正在改：第 ' + (pickIdx + 1) + ' 幕'
-          + (cap ? ' · ' + cap : '')
-          + (wallIdx.length ? '（照片墙第 ' + wallIdx.map(i => i + 1).join('、') + ' 张会一起换）' : '')
-          + (saved ? ' · 已换成你自己的图' : ' · 当前是默认图');
-        nowEl.append(thumb, txt);
+        txt.textContent = '第 ' + (pickIdx + 1) + ' 幕' + (cap ? ' · ' + cap : '');
+        /* 状态单独一个角标、不参与省略号：说明文字被截断时，
+           "默认 / 已换图"这个最要紧的信息必须还在。 */
+        const badge = document.createElement('span');
+        badge.className = 'mem-now-badge' + (saved ? ' own' : '');
+        badge.textContent = saved ? '已换图' : '默认';
+        nowEl.title = '正在改：第 ' + (pickIdx + 1) + ' 幕' + (cap ? ' · ' + cap : '')
+          + '（' + wallTxt + '）· ' + (saved ? '已换成你自己的图' : '当前是默认图');
+        nowEl.append(thumb, txt, badge);
       };
       refresh(); paintNow();
       host2.addEventListener('click', e => {
