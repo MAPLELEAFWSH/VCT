@@ -2,7 +2,10 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!-- ★ interactive-widget=resizes-content：手机上弹出软键盘时，让**布局视口**
+     跟着缩小（默认只缩"视觉视口"）。不写的话，固定贴底的那些元素
+     （状态栏、悬浮球、聊天输入框）不会跟着抬起来，打字时会被键盘盖住。 -->
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />
 <title>元素手帐 · 把日子记下来</title>
 <meta name="description" content="一个可以自由改的个人手帐站：日常随笔、读书笔记、厨房记录与走走看看，配主题色、壁纸模式、氛围特效和小游戏。" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -500,7 +503,7 @@ body.outline-cards .mj-view .sheet { border-color: color-mix(in oklab, var(--rul
    再叠一层 .8 不透明度会掉到 3.49:1（Lighthouse 会判 color-contrast 失败）。 */
 #mjStatus .sb-fps { font-variant-numeric: tabular-nums; }
 #mjStatus .sb-btn {
-  font: inherit; height: 20px; padding: 0 .5rem; border: 0; cursor: pointer;
+  font: inherit; height: 24px; padding: 0 .5rem; border: 0; cursor: pointer;
   border-radius: var(--radius-chip); background: var(--stamp-bg); color: var(--stamp-ink);
   transition: background-color .15s cubic-bezier(.4,0,.2,1), color .15s ease, transform .15s cubic-bezier(.4,0,.2,1);
 }
@@ -508,6 +511,17 @@ body.outline-cards .mj-view .sheet { border-color: color-mix(in oklab, var(--rul
 #mjStatus .sb-btn:active { transform: scale(.94); }
 @media (max-width: 720px) {
   #mjStatus .sb-mid { display: none; }
+}
+/* ★ 手机：状态栏整体抬高一档。
+   安卓的"手势条"是系统画在页面之上的，贴底那 20~30px 点不到 ——
+   而状态栏里正好是导出/导入/快捷键三个按钮（原来只有 20px 高）。
+   把 --status-h 换成 44px、内容上移 14px：按钮落在手势条上方的安全区里，
+   而且这个令牌是"状态栏 / 悬浮球 / 设置面板"三者共用的，
+   所以右下角那串球和设置面板会**自动**跟着让位，不用各自再算一遍。 */
+@media (hover: none) and (max-width: 767px) {
+  :root { --status-h: 44px; }
+  #mjStatus { padding-bottom: 14px; }
+  #mjStatus .sb-btn { height: 28px; padding: 0 .6rem; }
 }
 /* 状态栏是固定贴底的，给页面留出高度，别压住页脚 */
 #main-grid { padding-bottom: 2.6rem; }
@@ -662,6 +676,8 @@ footer.site-footer a:hover { color: var(--element-deep); }
   position: fixed; right: 1rem; z-index: 61; width: 20rem;
   bottom: calc(var(--status-h) + .75rem + var(--fab-stack) + .75rem);
   max-height: calc(100vh - var(--status-h) - var(--fab-stack) - 3rem);
+  /* dvh：手机上地址栏收放时 vh 不变，面板底部会被顶出屏幕 */
+  max-height: calc(100dvh - var(--status-h) - var(--fab-stack) - 3rem);
   overflow-y: auto; overscroll-behavior: contain;
   border-radius: var(--radius-card); background: var(--panel-paper);
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / .1), 0 8px 10px -6px rgb(0 0 0 / .1);
@@ -939,6 +955,12 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
 .fp-switch button.off:hover { color: var(--element-deep); background: var(--stamp-bg-hover); }
 /* 按下去缩一下，松手回弹（transition 在 button 上，不会卡在按下态） */
 .fp-switch button:active { transform: scale(.94); }
+/* ★ 触屏上的点击目标下限是 24×24（WCAG 2.2 target-size 2.5.8）。
+   设置面板里的开关和分段按钮（壁纸模式、软分隔）原本只有 22px 高，
+   鼠标上没问题，手指上太窄。只在触屏设备上加高，桌面保持原样。 */
+@media (hover: none) {
+  .fp-switch button, .fp-seg button { min-height: 26px; padding-top: .32rem; padding-bottom: .32rem; }
+}
 
 /* ============================================================
    响应式
