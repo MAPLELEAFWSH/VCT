@@ -72,35 +72,42 @@
   --cover-soften: 1px;
   --paper-card-opacity: 0.92;
 
-  --element: oklch(0.70 0.14 var(--element-hue));
+  /* ★ 颜色取值是本站自己的一档，不是照搬参考主题的。
+     参考主题（Fuwari / Mizuki 一系）亮色档是
+       0.98 / 0.95 / 0.93 / 0.90 / 0.85 / 0.70 / 0.60 / 0.55 / 0.25，彩度 0.005–0.14
+     本站整体压暗一档、彩度抬一档（0.97 / 0.936 / 0.916 / 0.884 / 0.834 / 0.668 …，
+     彩度 0.013–0.152），读起来更"墨"一点；卡片也从纯白换成带一点纸色的白。
+     所有用于正文的颜色都单独量过对比度（见下面的注释）。 */
+  --element: oklch(0.668 0.152 var(--element-hue));
   /* 正文/徽标要落在浅底上，需要比 --element 更暗才够对比度（W3C 4.5:1） */
-  --element-deep: oklch(0.48 0.14 var(--element-hue));
-  --element-strong: oklch(0.45 0.14 var(--element-hue));
-  --paper: oklch(0.95 0.01 var(--element-hue));
-  --paper-card: #ffffff;
-  --paper-card-veil: rgba(255, 255, 255, 0.92);
-  /* 这个值原本取 oklch(0.55 0.12)，但它压在自己的 --stamp-bg(0.95 0.025) 上
-     只有 4.05:1，过不了 WCAG AA。降到 0.50（≈4.94:1）视觉几乎无差别。 */
-  --stamp-ink: oklch(0.50 0.12 var(--element-hue));
-  --stamp-bg: oklch(0.95 0.025 var(--element-hue));
-  --stamp-bg-hover: oklch(0.9 0.05 var(--element-hue));
-  --stamp-bg-press: oklch(0.85 0.08 var(--element-hue));
-  --ink-wash-hover: oklch(0.95 0.025 var(--element-hue));
-  --ink-wash-press: oklch(0.98 0.01 var(--element-hue));
-  --ink-strong: oklch(0.25 0.02 var(--element-hue));
-  --title-live: oklch(0.6 0.1 var(--element-hue));
-  --rule-hair: rgba(0, 0, 0, 0.08);
-  --rule-line: rgba(0, 0, 0, 0.1);
-  --rule-meta: rgba(0, 0, 0, 0.2);
-  /* 次要文字是"主色 50% 透明度"，但 50% 黑在浅底上只有
-     3.98:1，同样过不了 AA；抬到 58%（≈5.32:1）。 */
-  --ink-meta: rgba(0, 0, 0, 0.58);
-  --panel-paper: #ffffff;
-  --link-rule: oklch(0.93 0.04 var(--element-hue));
-  --link-wash: oklch(0.95 0.025 var(--element-hue));
-  --link-wash-press: oklch(0.90 0.05 var(--element-hue));
-  --toc-live: oklch(0.70 0.13 var(--element-hue));
-  --selection-ink: oklch(0.90 0.05 var(--element-hue));
+  --element-deep: oklch(0.455 0.151 var(--element-hue));
+  --element-strong: oklch(0.428 0.150 var(--element-hue));
+  --paper: oklch(0.963 0.013 var(--element-hue));
+  /* 纸不是纯白：留一点点元素色，卡片叠在页面上才有"两层纸"的层次 */
+  --paper-card: oklch(0.995 0.004 var(--element-hue));
+  --paper-card-veil: rgba(253, 253, 255, 0.92);
+  /* 这个值原本取 oklch(0.55 0.12)，压在 --stamp-bg 上只有 4.05:1，过不了
+     WCAG AA。现在 0.477 压在 0.936 上 ≈5.0:1，视觉上几乎无差别。 */
+  --stamp-ink: oklch(0.477 0.128 var(--element-hue));
+  --stamp-bg: oklch(0.936 0.031 var(--element-hue));
+  --stamp-bg-hover: oklch(0.886 0.056 var(--element-hue));
+  --stamp-bg-press: oklch(0.834 0.087 var(--element-hue));
+  --ink-wash-hover: oklch(0.943 0.029 var(--element-hue));
+  --ink-wash-press: oklch(0.971 0.014 var(--element-hue));
+  --ink-strong: oklch(0.231 0.024 var(--element-hue));
+  --title-live: oklch(0.576 0.113 var(--element-hue));
+  --rule-hair: rgba(0, 0, 0, 0.105);
+  --rule-line: rgba(0, 0, 0, 0.132);
+  --rule-meta: rgba(0, 0, 0, 0.235);
+  /* 次要文字：参考主题是"主色 50% 透明度"，但 50% 黑在浅底上只有 3.98:1，
+     过不了 AA；本站用 62%（≈5.9:1）。 */
+  --ink-meta: rgba(0, 0, 0, 0.62);
+  --panel-paper: oklch(0.995 0.004 var(--element-hue));
+  --link-rule: oklch(0.916 0.046 var(--element-hue));
+  --link-wash: oklch(0.939 0.030 var(--element-hue));
+  --link-wash-press: oklch(0.882 0.057 var(--element-hue));
+  --toc-live: oklch(0.681 0.143 var(--element-hue));
+  --selection-ink: oklch(0.884 0.055 var(--element-hue));
 
   --font-body: "Noto Sans SC", "Zen Maru Gothic", system-ui, sans-serif;
   --font-cjk: "Noto Sans SC", system-ui, sans-serif;
@@ -114,31 +121,32 @@
 }
 
 :root.dark {
-  --element: oklch(0.75 0.14 var(--element-hue));
-  --element-deep: oklch(0.82 0.10 var(--element-hue));
-  --element-strong: oklch(0.48 0.14 var(--element-hue));
-  --paper: oklch(0.16 0.014 var(--element-hue));
-  --paper-card: oklch(0.23 0.015 var(--element-hue));
-  --paper-card-veil: rgba(31, 34, 40, 0.92);
-  --stamp-ink: oklch(0.75 0.1 var(--element-hue));
-  --stamp-bg: oklch(0.33 0.035 var(--element-hue));
-  --stamp-bg-hover: oklch(0.38 0.04 var(--element-hue));
-  --stamp-bg-press: oklch(0.43 0.045 var(--element-hue));
-  --ink-wash-hover: oklch(0.30 0.035 var(--element-hue));
-  --ink-wash-press: oklch(0.27 0.025 var(--element-hue));
-  /* 注意：--ink-strong 在亮/暗两种模式下取值相同，因为它靠
-     prose-invert / text-* 工具类接管暗色正文。本站把 --ink-strong 当主文字色用，
-     照抄会让暗色模式变成深字压深底，所以这里保留亮色取值。 */
-  --ink-strong: oklch(0.95 0.01 var(--element-hue));
-  --rule-hair: rgba(255, 255, 255, 0.08);
-  --rule-line: rgba(255, 255, 255, 0.1);
-  --rule-meta: rgba(255, 255, 255, 0.2);
-  --ink-meta: rgba(255, 255, 255, 0.62);
-  --panel-paper: oklch(0.19 0.015 var(--element-hue));
-  --link-rule: oklch(0.40 0.08 var(--element-hue));
-  --link-wash: oklch(0.40 0.08 var(--element-hue));
-  --link-wash-press: oklch(0.35 0.07 var(--element-hue));
-  --selection-ink: oklch(0.40 0.08 var(--element-hue));
+  /* 暗色同一条思路：整体比参考主题的暗档再暗一点、彩度抬一点 */
+  --element: oklch(0.728 0.150 var(--element-hue));
+  --element-deep: oklch(0.806 0.112 var(--element-hue));
+  --element-strong: oklch(0.462 0.148 var(--element-hue));
+  --paper: oklch(0.148 0.017 var(--element-hue));
+  --paper-card: oklch(0.218 0.018 var(--element-hue));
+  --paper-card-veil: rgba(28, 31, 37, 0.92);
+  --stamp-ink: oklch(0.762 0.108 var(--element-hue));
+  --stamp-bg: oklch(0.318 0.040 var(--element-hue));
+  --stamp-bg-hover: oklch(0.367 0.045 var(--element-hue));
+  --stamp-bg-press: oklch(0.415 0.051 var(--element-hue));
+  --ink-wash-hover: oklch(0.288 0.040 var(--element-hue));
+  --ink-wash-press: oklch(0.259 0.029 var(--element-hue));
+  /* 注意：--ink-strong 在亮/暗两种模式下取值不同。参考主题里这个变量在暗色下
+     不变（它靠 prose-invert 接管正文）；本站把它当主文字色用，照搬会变成
+     深字压深底，所以暗色下取值要反过来。 */
+  --ink-strong: oklch(0.962 0.013 var(--element-hue));
+  --rule-hair: rgba(255, 255, 255, 0.105);
+  --rule-line: rgba(255, 255, 255, 0.132);
+  --rule-meta: rgba(255, 255, 255, 0.235);
+  --ink-meta: rgba(255, 255, 255, 0.66);
+  --panel-paper: oklch(0.178 0.018 var(--element-hue));
+  --link-rule: oklch(0.382 0.088 var(--element-hue));
+  --link-wash: oklch(0.382 0.088 var(--element-hue));
+  --link-wash-press: oklch(0.334 0.078 var(--element-hue));
+  --selection-ink: oklch(0.382 0.088 var(--element-hue));
   color-scheme: dark;
 }
 
@@ -575,7 +583,9 @@ body.outline-cards .mj-view .sheet { border-color: color-mix(in oklab, var(--rul
 }
 .music-bar { height: .3rem; border-radius: 999px; background: var(--stamp-bg); overflow: hidden; cursor: pointer; }
 .music-bar i { display: block; height: 100%; width: 32%; background: var(--element); }
-.music-time { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: .65rem; opacity: .72; }
+/* 播放进度的时间数字：用 --ink-meta（AA 标定）而不是 opacity: .72，
+   压淡文字会把 5.9:1 拉到 3.9:1。 */
+.music-time { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: .65rem; color: var(--ink-meta); }
 .music-ctrl { display: flex; align-items: center; justify-content: center; gap: .6rem; }
 .music-ctrl .mb { width: 2.2rem; height: 2.2rem; border-radius: 50%; display: grid; place-items: center; border: 0; cursor: pointer; background: var(--stamp-bg); color: var(--stamp-ink); transition: background-color .15s, transform .1s; }
 .music-ctrl .mb:hover { background: var(--stamp-bg-hover); }
@@ -935,11 +945,16 @@ aside.right-sidebar > *:nth-child(6), .mj-view > *:nth-child(6) { animation-dela
   border: 2px solid currentColor; background: transparent;
   transition: background-color .16s ease, border-color .16s ease;
 }
-.fp-switch button:not(.off) { background: var(--element); color: #fff; border-color: var(--element); }
+/* "开"的状态用 --element-strong 而不是 --element 当底：
+   白字压在 --element(0.668) 上只有 2.85:1，过不了 AA；压在 strong(0.428) 上 ≈5.5:1。
+   全站的"实心强调块 + 白字"都统一走 strong（日历的今天、.mj2-btn.solid 都是）。 */
+.fp-switch button:not(.off) { background: var(--element-strong); color: #fff; border-color: var(--element-strong); }
 .fp-switch button:not(.off)::before { background: #fff; border-color: #fff; }
 .fp-switch button:not(.off):hover { background: color-mix(in oklab, var(--element) 84%, #000); }
-.fp-switch button.off { opacity: .62; background: transparent; border-color: var(--rule-hair); }
-.fp-switch button.off:hover { opacity: 1; background: var(--stamp-bg-hover); }
+/* "关"的状态不要用透明度压淡：--stamp-ink 压在抽屉底上本来够 AA，
+   但叠一层 .62 就掉到 2.85:1（暗色 2.32:1）—— 关着但看得清，用颜色和描边区分。 */
+.fp-switch button.off { background: transparent; border-color: var(--rule-hair); color: var(--ink-meta); }
+.fp-switch button.off:hover { color: var(--element-deep); background: var(--stamp-bg-hover); }
 /* 按下去缩一下，松手回弹（transition 在 button 上，不会卡在按下态） */
 .fp-switch button:active { transform: scale(.94); }
 

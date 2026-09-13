@@ -31,7 +31,9 @@
 .cal-grid .d.today { background: var(--element-strong); color: #fff; font-weight: 700; }
 .cal-grid .d:not(.today):hover { background: var(--stamp-bg-hover); }
 .cal-grid .d.sel { box-shadow: inset 0 0 0 2px var(--element); font-weight: 700; }
-.cal-grid .d.other { color: var(--ink-meta); opacity: .5; }
+/* 非本月的日期：用 --ink-meta 与本月区分（它本身就是 AA 标定过的），
+   不再叠 opacity: .5 —— 那会把日期数字压到 3.1:1。 */
+.cal-grid .d.other { color: var(--ink-meta); }
 .mj2-diff {
   margin-top: .55rem; padding: .45rem .6rem; border-radius: .5rem;
   background: var(--stamp-bg); font-size: .76rem; line-height: 1.5;
@@ -161,8 +163,10 @@
 .mj2-track .ti { min-width: 0; }
 .mj2-track .ti b { display: block; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mj2-track .ti span { font-size: .62rem; color: var(--ink-meta); }
-.mj2-track .del { margin-left: auto; opacity: .45; font-size: .8rem; }
-.mj2-track .del:hover { opacity: 1; color: #d33; }
+/* 删除按钮是"图形对象"（非文本），按 WCAG 需要 3:1。
+   原来 opacity: .45 连 3:1 都不到；改成实色，悬停变红。 */
+.mj2-track .del { margin-left: auto; color: var(--ink-meta); font-size: .8rem; }
+.mj2-track .del:hover { color: #c2504f; }
 
 /* ---------- ⑦ 头像 / ID / 签名：悬停与点击的过渡和动画 ---------- */
 .mj2-edit-badge {
@@ -189,7 +193,7 @@
 .mj2-name-edit:active { transform: translateY(0) scale(.97); }
 .mj2-name-edit:hover .pen, .mj2-name-edit.editing .pen { opacity: 1; transform: rotate(-8deg) scale(1.1); }
 .mj2-name-edit .pen {
-  font-size: .65rem; opacity: .45;
+  font-size: .65rem; opacity: .7;
   transition: opacity .18s ease, transform .2s cubic-bezier(.34,1.56,.64,1);
 }
 /* 编辑态：呼吸的聚焦环（用 box-shadow 做动画，不触发重排） */

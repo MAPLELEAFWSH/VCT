@@ -111,9 +111,10 @@ body.mj-native-cursor .ed-pen { display: none; }
   caret-color: currentColor;
   cursor: text;
 }
+/* 编辑态的选区：白字要压在 --element-strong 上（白字压 --element 只有 2.85:1） */
 .mj-editable.ed-on::selection,
 .mj-editable.ed-on ::selection {
-  background: var(--element);
+  background: var(--element-strong);
   color: #fff;
 }
 /* 保存反馈也改成"颜色过渡"而不是动画：
@@ -473,8 +474,10 @@ body.mj-native-cursor .ed-pen { display: none; }
 }
 .mj-route-list a { align-items: flex-start; }
 .mj-route-list a .st { margin-top: .1rem; }
-/* 目标不存在时明确标出来，而不是点了没反应 */
-.mj-route-list a.dead { opacity: .55; }
+/* 目标不存在时明确标出来，而不是点了没反应。
+   不要用 opacity 压淡整行 —— --ink-meta 本身就是照着 AA 标定的，
+   叠一层 .55 会掉到 3.2:1；失效状态靠右侧的 "!" 与红色角标表达就够。 */
+.mj-route-list a.dead { color: var(--ink-meta); }
 .mj-route-list a.dead .st::after { content: "!"; }
 .mj-route-list a.dead .st { color: #c2504f; }
 /* 场景序列搜索 */
@@ -579,7 +582,7 @@ body.mj-native-cursor .ed-pen { display: none; }
   display: flex; flex-direction: column; align-items: center; gap: .25rem;
 }
 .mj-wall-title .en {
-  font-family: var(--font-mono); font-size: 10px; letter-spacing: .36em; opacity: .66;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: .36em; opacity: .8;
 }
 .mj-wall {
   position: relative;
@@ -951,7 +954,9 @@ body.mj-native-cursor .ed-pen { display: none; }
 .mj-fcard.open .back { transform: rotateY(-180deg); }
 .mj-fcard.open .front { transform: rotateY(0deg); }
 .mj-fcard.done { cursor: default; }
-.mj-fcard.done .front { opacity: .58; }
+/* 配对完成的卡片不再可点（cursor: default），"已完成"由 HUD 的计数表达。
+   这里原来用 opacity: .58 压淡正面 —— 那是文字，压到 .58 过不了 AA。 */
+.mj-fcard.done .front { color: var(--ink-meta); }
 .mj-fcard:hover:not(.done):not(.open) .back { transform: translateY(-3px); }
 .mj-fcard:active:not(.done) { transform: scale(.96); }
 .mj-fcard:focus-visible { outline: 2px solid var(--element); outline-offset: 3px; border-radius: .6rem; }
@@ -1152,8 +1157,10 @@ body.mj-native-cursor .ed-pen { display: none; }
 .mj-panel-title { margin: 0 0 .35rem; font-size: 1.125rem; font-weight: 700; line-height: 1.5; }
 #mj-panel .sub { font-size: .875rem; color: var(--ink-meta); margin-bottom: .75rem; }
 .mj-achs { display: flex; flex-direction: column; gap: .35rem; margin-bottom: .75rem; }
-.mj-ach { display: flex; gap: .5rem; align-items: center; font-size: .875rem; opacity: .4; }
-.mj-ach.got { opacity: 1; }
+/* 未解锁的成就：用 --ink-meta（AA 标定过的次要色）表示"还没拿到"，
+   不用 opacity: .4 —— 那是文字，压到 .4 只有 2:1。 */
+.mj-ach { display: flex; gap: .5rem; align-items: center; font-size: .875rem; color: var(--ink-meta); }
+.mj-ach.got { color: var(--ink-strong); }
 .mj-ach .d { width: 18px; height: 18px; border-radius: var(--radius-chip); background: var(--stamp-bg); display: grid; place-items: center; font-size: .6875rem; flex: none; }
 .mj-ach.got .d { background: var(--element-strong); color: #fff; }
 .mj-clues { display: flex; flex-direction: column; gap: .25rem; padding-top: .75rem; border-top: 1px dashed var(--rule-hair); font-family: var(--font-mono); font-size: .75rem; color: var(--ink-meta); }
